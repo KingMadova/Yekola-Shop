@@ -1,0 +1,3696 @@
+=== src/app/api/leads/route.ts ===
+import { NextResponse } from "next/server";
+import { isRecord, parseLeadPayload } from "@/lib/leads";
+
+const WINDOW_MS = 10 * 60 * 1000;
+const MAX_PER_WINDOW = 5;
+const hits = new Map<string, number[]>();
+
+/** Limite simple par IP (mémoire du serveur : suffisant contre les abus ordinaires). */
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const recent = (hits.get(ip) ?? []).filter((time) => now - time < WINDOW_MS);
+  recent.push(now);
+  hits.set(ip, recent);
+  return recent.length > MAX_PER_WINDOW;
+}
+
+export async function POST(request: Request) {
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ ok: false }, { status: 400 });
+  }
+
+  // Champ piège invisible : seuls les robots le remplissent. On répond « ok » sans rien enregistrer.
+  if (isRecord(body) && typeof body.website === "string" && body.website.trim() !== "") {
+    return NextResponse.json({ ok: true });
+  }
+
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "inconnue";
+  if (isRateLimited(ip)) return NextResponse.json({ ok: false }, { status: 429 });
+
+  const lead = parseLeadPayload(body);
+  if (!lead) return NextResponse.json({ ok: false }, { status: 400 });
+
+  const url = process.env.GOOGLE_SHEETS_WEBHOOK_URL;
+  const secret = process.env.LEADS_WEBHOOK_SECRET;
+  if (!url || !secret) {
+    console.warn("[leads] GOOGLE_SHEETS_WEBHOOK_URL ou LEADS_WEBHOOK_SECRET manquant");
+    return NextResponse.json({ ok: false }, { status: 503 });
+  }
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ ...lead, token: secret }),
+      redirect: "follow",
+      cache: "no-store",
+    });
+    const result: unknown = await response.json().catch(() => null);
+    if (!response.ok || !isRecord(result) || result.ok !== true) {
+      throw new Error(`Réponse inattendue du script (${response.status})`);
+    }
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error("[leads] échec de l'envoi vers Google Sheets", error);
+    return NextResponse.json({ ok: false }, { status: 502 });
+  }
+}
+
+
+
+=== src/app/catalogue/page.tsx ===
+import type { Metadata } from "next";
+import Link from "next/link";
+import { CatalogueFilters } from "@/components/catalogue/CatalogueFilters";
+import { ProductGrid } from "@/components/catalogue/ProductGrid";
+import { InterestSignal } from "@/components/lead/InterestSignal";
+import { btnWhatsApp, container, focusRing } from "@/components/ui/styles";
+import { PRODUCTS } from "@/data/products";
+import { filterProducts, parseCatalogueQuery } from "@/lib/catalogue";
+import { HEALTH_GOAL_META } from "@/lib/config";
+import { buildAdviceMessage, buildNeedAdviceMessage, buildWhatsAppUrl } from "@/lib/whatsapp";
+
+export const metadata: Metadata = {
+  title: "Catalogue",
+  description: "Tous les produits Forever, classés par catégorie et par besoin, avec les prix en FCFA.",
+};
+
+interface CataloguePageProps {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+export default async function CataloguePage({ searchParams }: CataloguePageProps) {
+  const query = parseCatalogueQuery(await searchParams);
+  const results = filterProducts(PRODUCTS, query);
+  const title = query.goal ? HEALTH_GOAL_META[query.goal].shortLabel : "Catalogue";
+
+  return (
+    <div className={`${container} flex flex-col gap-6 py-8`}>
+      {query.goal && <InterestSignal goal={query.goal} origin="catalogue" />}
+
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
+        <p className="mt-1 text-gray-800" aria-live="polite">
+          {results.length} produit{results.length > 1 ? "s" : ""}
+        </p>
+      </div>
+
+      <CatalogueFilters query={query} />
+
+      {results.length > 0 ? (
+        <ProductGrid products={results} />
+      ) : (
+        <div className="flex flex-col items-start gap-3 rounded-2xl border border-gray-200 bg-white p-6">
+          <p className="text-lg font-semibold text-gray-900">
+            {query.goal ? "Nous préparons la sélection pour ce besoin." : "Aucun produit ne correspond à votre recherche."}
+          </p>
+          <p className="max-w-prose text-gray-800">
+            Écrivez-nous sur WhatsApp : un distributeur vous recommande les bons produits.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <a
+              href={buildWhatsAppUrl(query.goal ? buildNeedAdviceMessage(query.goal) : buildAdviceMessage())}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={btnWhatsApp}
+            >
+              Demander conseil sur WhatsApp
+            </a>
+            <Link href="/catalogue" className={`inline-flex min-h-12 items-center rounded-xl px-4 font-semibold text-emerald-800 underline ${focusRing}`}>
+              Voir tout le catalogue
+            </Link>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+
+=== src/app/confidentialite/page.tsx ===
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Politique de confidentialité | Yekola Shop',
+  description: 'Découvrez comment Yekola Shop protège vos données personnelles lors de votre commande.',
+};
+
+export default function ConfidentialitePage() {
+  return (
+    <main className="bg-[#F9FAFB] min-h-screen">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-8">
+          Politique de confidentialité
+        </h1>
+
+        <div className="prose prose-lg max-w-none text-gray-700 space-y-6">
+          <p className="text-lg leading-relaxed">
+            Chez <strong>Yekola Shop</strong>, nous nous engageons à protéger vos données personnelles. 
+            Cette politique explique quelles informations nous collectons, pourquoi nous les collectons 
+            et comment nous les utilisons.
+          </p>
+
+          <section className="space-y-4">
+            <h2 className="text-2xl font-bold text-gray-900 pt-4">1. Données collectées</h2>
+            <p>
+              Nous collectons uniquement les informations nécessaires au traitement de votre commande :
+            </p>
+            <ul className="list-disc pl-6 space-y-2">
+              <li><strong>Numéro de téléphone</strong> : pour vous contacter concernant votre commande et vous envoyer des informations sur nos produits</li>
+              <li><strong>Nom</strong> (facultatif) : pour personnaliser notre communication</li>
+              <li><strong>Ville</strong> : pour adapter nos informations de livraison</li>
+            </ul>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-2xl font-bold text-gray-900 pt-4">2. Utilisation des données</h2>
+            <p>Vos données sont utilisées pour :</p>
+            <ul className="list-disc pl-6 space-y-2">
+              <li>Traiter votre commande et vous contacter par WhatsApp</li>
+              <li>Vous informer de nos offres et promotions (uniquement si vous le souhaitez)</li>
+              <li>Améliorer notre service et notre sélection de produits</li>
+            </ul>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-2xl font-bold text-gray-900 pt-4">3. Partage des données</h2>
+            <p>
+              <strong>Nous ne vendons ni ne louons jamais vos données à des tiers.</strong> Vos informations 
+              sont conservées de manière sécurisée et ne sont accessibles qu'aux personnes autorisées de 
+              Yekola Shop.
+            </p>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-2xl font-bold text-gray-900 pt-4">4. Conservation des données</h2>
+            <p>
+              Vos données sont conservées aussi longtemps que nécessaire pour vous fournir notre service. 
+              Vous pouvez à tout moment demander leur suppression en nous contactant par WhatsApp.
+            </p>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-2xl font-bold text-gray-900 pt-4">5. Vos droits</h2>
+            <p>Conformément à la réglementation en vigueur, vous disposez des droits suivants :</p>
+            <ul className="list-disc pl-6 space-y-2">
+              <li><strong>Droit d'accès</strong> : vous pouvez demander une copie de vos données</li>
+              <li><strong>Droit de rectification</strong> : vous pouvez corriger vos informations</li>
+              <li><strong>Droit à l'oubli</strong> : vous pouvez demander la suppression de vos données</li>
+              <li><strong>Droit d'opposition</strong> : vous pouvez refuser l'utilisation de vos données à des fins commerciales</li>
+            </ul>
+            <p>
+              Pour exercer ces droits, contactez-nous simplement par WhatsApp au numéro indiqué sur notre site.
+            </p>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-2xl font-bold text-gray-900 pt-4">6. Cookies</h2>
+            <p>
+              Notre site utilise uniquement des cookies techniques nécessaires à son fonctionnement 
+              (panier, session utilisateur). Nous n'utilisons pas de cookies de suivi publicitaire.
+            </p>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-2xl font-bold text-gray-900 pt-4">7. Modifications</h2>
+            <p>
+              Nous pouvons mettre à jour cette politique. Toute modification sera publiée sur cette page 
+              avec la date de mise à jour.
+            </p>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-2xl font-bold text-gray-900 pt-4">8. Contact</h2>
+            <p>
+              Pour toute question concernant cette politique ou vos données personnelles, contactez-nous 
+              par WhatsApp au numéro affiché sur notre site.
+            </p>
+          </section>
+
+          <div className="mt-8 pt-6 border-t border-gray-200">
+            <p className="text-sm text-gray-500">
+              Dernière mise à jour : 1er novembre 2026
+            </p>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+
+=== src/app/globals.css ===
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+
+
+=== src/app/layout.tsx ===
+import type { Metadata, Viewport } from "next";
+import { Plus_Jakarta_Sans } from "next/font/google";
+import type { ReactNode } from "react";
+import { CartDrawer } from "@/components/cart/CartDrawer";
+import { AnnouncementBar } from "@/components/layout/AnnouncementBar";
+import { FloatingWhatsAppButton } from "@/components/layout/FloatingWhatsAppButton";
+import { Footer } from "@/components/layout/Footer";
+import { Header } from "@/components/layout/Header";
+import { InterestTracker } from "@/components/lead/InterestTracker";
+import { LeadCaptureModal } from "@/components/lead/LeadCaptureModal";
+import { CartHydrator } from "@/components/providers/CartHydrator";
+import { SITE_NAME, SITE_URL } from "@/lib/config";
+import "./globals.css";
+
+const font = Plus_Jakarta_Sans({ subsets: ["latin"], display: "swap" });
+
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  title: { default: `${SITE_NAME} : bien-être naturel au Congo`, template: `%s · ${SITE_NAME}` },
+  description:
+    "Produits Forever Living originaux et scellés, livrés à Brazzaville et Pointe-Noire sous 24 h. Commande sur WhatsApp, paiement mobile accepté.",
+  openGraph: { type: "website", siteName: SITE_NAME, locale: "fr_FR" },
+};
+
+export const viewport: Viewport = { themeColor: "#059669" };
+
+export default function RootLayout({ children }: { children: ReactNode }) {
+  return (
+    <html lang="fr">
+      <body className={`${font.className} flex min-h-dvh flex-col bg-gray-50 text-gray-900 antialiased`}>
+        <a href="#contenu" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-white focus:p-3">
+          Aller au contenu
+        </a>
+        <AnnouncementBar />
+        <Header />
+        <main id="contenu" className="flex-1">{children}</main>
+        <Footer />
+        <CartDrawer />
+        <FloatingWhatsAppButton />
+        <LeadCaptureModal />
+        <CartHydrator />
+        <InterestTracker />
+      </body>
+    </html>
+  );
+}
+
+
+
+=== src/app/livraison-paiement/page.tsx ===
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Livraison et paiement | Yekola Shop',
+  description: 'Livraison express 24h à Brazzaville et Pointe-Noire. Paiement mobile accepté (MTN, Airtel, espèces).',
+};
+
+export default function LivraisonPaiementPage() {
+  return (
+    <main className="bg-[#F9FAFB] min-h-screen">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-8">
+          Livraison et paiement
+        </h1>
+
+        <div className="prose prose-lg max-w-none text-gray-700 space-y-6">
+          <section className="space-y-4">
+            <h2 className="text-2xl font-bold text-gray-900 pt-4">Modes de livraison</h2>
+            <p>
+              Nous proposons plusieurs options de livraison adaptées à votre localisation :
+            </p>
+            
+            <div className="grid gap-6 sm:grid-cols-2 not-prose">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 className="text-xl font-bold text-[#059669] mb-3">
+                  Brazzaville et Pointe-Noire
+                </h3>
+                <p className="text-gray-700 mb-4">
+                  <strong>Livraison express en 24 heures</strong> à votre domicile ou lieu de travail.
+                </p>
+                <p className="text-sm text-gray-600">
+                  Livraison gratuite à partir de 100 000 F d'achat
+                </p>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 className="text-xl font-bold text-[#059669] mb-3">
+                  Autres villes et provinces
+                </h3>
+                <p className="text-gray-700 mb-4">
+                  Expédition via les agences de transport partenaires. Délai de 2 à 5 jours ouvrés.
+                </p>
+                <p className="text-sm text-gray-600">
+                  Frais de transport calculés selon la destination
+                </p>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sm:col-span-2">
+                <h3 className="text-xl font-bold text-[#059669] mb-3">
+                  Retrait sur rendez-vous
+                </h3>
+                <p className="text-gray-700">
+                  Vous préférez récupérer votre commande en personne ? Contactez-nous par WhatsApp 
+                  pour convenir d'un rendez-vous à notre point de retrait.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-2xl font-bold text-gray-900 pt-4">Modes de paiement</h2>
+            <p className="flex items-center gap-2 text-lg">
+              <span className="inline-block w-3 h-3 bg-[#059669] rounded-full"></span>
+              <strong>Paiement mobile accepté</strong>
+            </p>
+            <p>
+              Nous acceptons plusieurs modes de paiement pour votre commodité :
+            </p>
+
+            <div className="grid gap-4 sm:grid-cols-3 not-prose">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+                <h3 className="font-bold text-gray-900 mb-2">Espèces</h3>
+                <p className="text-sm text-gray-700">
+                  Paiement en espèces à la livraison de votre commande
+                </p>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+                <h3 className="font-bold text-gray-900 mb-2">MTN Mobile Money</h3>
+                <p className="text-sm text-gray-700">
+                  Transfert via MTN MoMo avant ou après livraison
+                </p>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+                <h3 className="font-bold text-gray-900 mb-2">Airtel Money</h3>
+                <p className="text-sm text-gray-700">
+                  Transfert via Airtel Money avant ou après livraison
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-2xl font-bold text-gray-900 pt-4">Comment passer commande</h2>
+            <ol className="list-decimal pl-6 space-y-3">
+              <li>
+                <strong>Choisissez vos produits</strong> dans notre catalogue et ajoutez-les à votre panier
+              </li>
+              <li>
+                <strong>Validez votre panier</strong> en cliquant sur le bouton de commande
+              </li>
+              <li>
+                <strong>WhatsApp s'ouvre automatiquement</strong> avec le récapitulatif de votre commande
+              </li>
+              <li>
+                <strong>Envoyez le message</strong> pour confirmer votre commande
+              </li>
+              <li>
+                <strong>Nous vous contactons</strong> pour confirmer les détails de livraison et le mode de paiement
+              </li>
+            </ol>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-2xl font-bold text-gray-900 pt-4">Questions fréquentes</h2>
+            
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Puis-je payer à la livraison ?
+                </h3>
+                <p>
+                  Oui, vous pouvez payer en espèces ou par Mobile Money au moment de la livraison.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Y a-t-il des frais de livraison ?
+                </h3>
+                <p>
+                  La livraison est gratuite à Brazzaville et Pointe-Noire pour les commandes supérieures 
+                  à 100 000 F. Pour les autres villes, les frais sont calculés selon la destination.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Que faire si je ne suis pas disponible pour la livraison ?
+                </h3>
+                <p>
+                  Contactez-nous par WhatsApp pour reprogrammer la livraison à un moment qui vous convient.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <div className="mt-8 pt-6 border-t border-gray-200 not-prose">
+            <p className="text-center">
+              <strong className="text-[#059669]">Entrepreneur Forever Indépendant Agréé</strong>
+            </p>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+
+=== src/app/not-found.tsx ===
+import Link from 'next/link';
+import { MessageCircle } from 'lucide-react';
+
+export default function NotFound() {
+  return (
+    <main className="bg-[#F9FAFB] min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
+      <div className="max-w-2xl mx-auto text-center py-16">
+        <h1 className="text-6xl sm:text-8xl font-extrabold text-[#059669] mb-4">
+          404
+        </h1>
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
+          Page introuvable
+        </h2>
+        <p className="text-lg text-gray-700 mb-8 max-w-md mx-auto">
+          Désolé, la page que vous recherchez n'existe pas ou a été déplacée.
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Link
+            href="/"
+            className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-[#059669] hover:bg-[#047857] transition-colors min-h-[44px]"
+          >
+            Retour à l'accueil
+          </Link>
+          
+          <Link
+            href="/catalogue"
+            className="inline-flex items-center justify-center px-6 py-3 border-2 border-[#059669] text-base font-medium rounded-lg text-[#059669] bg-white hover:bg-[#F9FAFB] transition-colors min-h-[44px]"
+          >
+            Voir le catalogue
+          </Link>
+        </div>
+
+        <div className="mt-12 pt-8 border-t border-gray-200">
+          <p className="text-gray-600 mb-4">
+            Besoin d'aide ? Contactez-nous sur WhatsApp
+          </p>
+          <a
+            href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '242061234567'}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-medium rounded-lg text-white bg-[#25D366] hover:bg-[#1DA851] transition-colors min-h-[44px]"
+          >
+            <MessageCircle className="w-5 h-5" />
+            Nous contacter
+          </a>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+
+=== src/app/page.tsx ===
+import { ProductGrid } from "@/components/catalogue/ProductGrid";
+import { DualConversion } from "@/components/home/DualConversion";
+import { HealthGoalPicker } from "@/components/home/HealthGoalPicker";
+import { Hero } from "@/components/home/Hero";
+import { PackSolutions } from "@/components/home/PackSolutions";
+import { Testimonials } from "@/components/home/Testimonials";
+import { TrustBand } from "@/components/home/TrustBand";
+import { container } from "@/components/ui/styles";
+import { PRODUCTS } from "@/data/products";
+
+export default function HomePage() {
+  const bestSellers = PRODUCTS.filter((product) => product.isBestSeller && !product.isPackSolution);
+
+  return (
+    <>
+      <Hero />
+      <TrustBand />
+      <HealthGoalPicker />
+      {bestSellers.length > 0 && (
+        <section className={`${container} pb-12`}>
+          <h2 className="mb-5 text-2xl font-bold text-gray-900">Meilleures ventes</h2>
+          <ProductGrid products={bestSellers} />
+        </section>
+      )}
+      <PackSolutions />
+      <Testimonials />
+      <DualConversion />
+    </>
+  );
+}
+
+
+
+=== src/app/produit/[slug]/page.tsx ===
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { ProductGrid } from "@/components/catalogue/ProductGrid";
+import { ProductViewSignal } from "@/components/lead/ProductViewSignal";
+import { ProductDetail } from "@/components/product/ProductDetail";
+import { container } from "@/components/ui/styles";
+import { PRODUCTS, getProductBySlug } from "@/data/products";
+import { SITE_URL } from "@/lib/config";
+
+interface ProductPageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export function generateStaticParams() {
+  return PRODUCTS.map((product) => ({ slug: product.slug }));
+}
+
+export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
+  const product = getProductBySlug((await params).slug);
+  if (!product) return {};
+  return {
+    title: product.name,
+    description: product.shortDesc,
+    openGraph: { title: product.name, description: product.shortDesc, images: product.images.slice(0, 1) },
+  };
+}
+
+export default async function ProductPage({ params }: ProductPageProps) {
+  const { slug } = await params;
+  const product = getProductBySlug(slug);
+  if (!product) notFound();
+
+  const related = PRODUCTS.filter(
+    (other) =>
+      other.code !== product.code &&
+      (other.category === product.category || other.healthGoals.some((goal) => product.healthGoals.includes(goal))),
+  ).slice(0, 4);
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description: product.shortDesc,
+    sku: product.code,
+    image: product.images.map((src) => new URL(src, SITE_URL).toString()),
+    offers: {
+      "@type": "Offer",
+      priceCurrency: "XAF",
+      price: product.pricePublic,
+      availability: "https://schema.org/InStock",
+      url: `${SITE_URL}/produit/${product.slug}`,
+    },
+  };
+
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
+      <ProductViewSignal code={product.code} goals={product.healthGoals} />
+
+      <nav aria-label="Fil d'Ariane" className={`${container} pt-6 text-sm text-gray-800`}>
+        <Link href="/" className="hover:underline">Accueil</Link> / <Link href="/catalogue" className="hover:underline">Catalogue</Link> /{" "}
+        <span aria-current="page" className="font-medium text-gray-900">{product.name}</span>
+      </nav>
+
+      <ProductDetail product={product} />
+
+      {related.length > 0 && (
+        <section className={`${container} pb-8`}>
+          <h2 className="mb-5 text-2xl font-bold text-gray-900">Vous pourriez aussi aimer</h2>
+          <ProductGrid products={related} />
+        </section>
+      )}
+    </>
+  );
+}
+
+
+
+=== src/app/robots.ts ===
+import { MetadataRoute } from 'next';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001';
+
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: [
+      {
+        userAgent: '*',
+        allow: '/',
+        disallow: ['/admin', '/api/', '/hors-ligne'],
+      },
+    ],
+    sitemap: `${SITE_URL}/sitemap.xml`,
+  };
+}
+
+
+=== src/app/sitemap.ts ===
+import { MetadataRoute } from 'next';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001';
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const routes = [
+    '',
+    '/catalogue',
+    '/confidentialite',
+    '/livraison-paiement',
+  ].map((route) => ({
+    url: `${SITE_URL}${route}`,
+    lastModified: new Date(),
+    changeFrequency: route === '' ? 'daily' as const : 'weekly' as const,
+    priority: route === '' ? 1 : route === '/catalogue' ? 0.9 : 0.7,
+  }));
+
+  // TODO Phase 1 : Ajouter les pages produits dynamiquement depuis Supabase
+  // const products = await getProducts();
+  // const productRoutes = products.map((product) => ({
+  //   url: `${SITE_URL}/produit/${product.slug}`,
+  //   lastModified: product.updated_at,
+  //   changeFrequency: 'weekly' as const,
+  //   priority: 0.8,
+  // }));
+
+  return routes; // .concat(productRoutes);
+}
+
+
+=== src/components/cart/CartButton.tsx ===
+"use client";
+
+import { ShoppingCart } from "lucide-react";
+import { useCartHydrated, useCartStore, useCartTotals } from "@/store/useCartStore";
+
+/** Bouton panier du header : ouvre le tiroir, badge visible seulement après hydratation. */
+export function CartButton() {
+  const openCart = useCartStore((state) => state.openCart);
+  const hydrated = useCartHydrated();
+  const { itemCount } = useCartTotals();
+  const showBadge = hydrated && itemCount > 0;
+
+  return (
+    <button
+      type="button"
+      onClick={openCart}
+      aria-label={
+        showBadge
+          ? `Ouvrir le panier, ${itemCount} article${itemCount > 1 ? "s" : ""}`
+          : "Ouvrir le panier"
+      }
+      className="relative inline-flex size-11 items-center justify-center rounded-full text-gray-900 hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-emerald-700"
+    >
+      <ShoppingCart aria-hidden className="size-6" />
+      {showBadge && (
+        <span
+          aria-hidden
+          className="absolute -right-0.5 -top-0.5 inline-flex min-w-5 items-center justify-center rounded-full bg-amber-700 px-1 text-xs font-semibold text-white"
+        >
+          {itemCount}
+        </span>
+      )}
+    </button>
+  );
+}
+
+
+
+=== src/components/cart/CartDrawer.tsx ===
+"use client";
+
+import { ShoppingBag, X } from "lucide-react";
+import { useEffect, useId, useRef } from "react";
+import { formatFCFA } from "@/lib/pricing";
+import {
+  useCartHydrated,
+  useCartItems,
+  useCartStore,
+  useCartTotals,
+} from "@/store/useCartStore";
+import { CartLineItem } from "./CartLineItem";
+import { CheckoutForm } from "./CheckoutForm";
+import { VipProgressBar } from "./VipProgressBar";
+
+/** Tiroir du panier basé sur <dialog> : focus piégé, Échap et clic sur le fond ferment. À monter une fois dans app/layout.tsx. */
+export function CartDrawer() {
+  const titleId = useId();
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const isOpen = useCartStore((state) => state.isOpen);
+  const closeCart = useCartStore((state) => state.closeCart);
+  const clear = useCartStore((state) => state.clear);
+  const hydrated = useCartHydrated();
+  const items = useCartItems();
+  const totals = useCartTotals();
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (isOpen && !dialog.open) dialog.showModal();
+    if (!isOpen && dialog.open) dialog.close();
+
+    document.body.style.overflow = isOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  return (
+    <dialog
+      ref={dialogRef}
+      aria-labelledby={titleId}
+      onClose={closeCart}
+      onClick={(event) => {
+        if (event.target === dialogRef.current) closeCart();
+      }}
+      className="m-0 ml-auto h-dvh max-h-none w-full max-w-md bg-gray-50 p-0 text-gray-900 backdrop:bg-black/50 open:flex open:flex-col"
+    >
+      <header className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3">
+        <h2 id={titleId} className="text-lg font-bold">
+          Mon panier{hydrated && totals.itemCount > 0 ? ` (${totals.itemCount})` : ""}
+        </h2>
+        <button
+          type="button"
+          onClick={closeCart}
+          aria-label="Fermer le panier"
+          className="inline-flex size-11 items-center justify-center rounded-full hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-emerald-700"
+        >
+          <X aria-hidden className="size-5" />
+        </button>
+      </header>
+
+      <div className="flex flex-1 flex-col gap-5 overflow-y-auto p-4">
+        {!hydrated ? (
+          <div aria-hidden className="h-24 animate-pulse rounded-2xl bg-gray-200" />
+        ) : items.length === 0 ? (
+          <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
+            <ShoppingBag aria-hidden className="size-10 text-emerald-700" />
+            <p className="font-semibold">Votre panier est vide</p>
+            <p className="max-w-xs text-sm text-gray-800">
+              Ajoutez un produit ou un pack pour commander sur WhatsApp.
+            </p>
+            <button
+              type="button"
+              onClick={closeCart}
+              className="min-h-11 rounded-xl border border-emerald-700 px-5 font-semibold text-emerald-800 hover:bg-emerald-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
+            >
+              Voir les produits
+            </button>
+          </div>
+        ) : (
+          <>
+            <VipProgressBar totals={totals} />
+
+            <ul className="flex flex-col gap-3">
+              {items.map((item) => (
+                <CartLineItem key={item.product.code} item={item} vipUnlocked={totals.vipUnlocked} />
+              ))}
+            </ul>
+
+            <dl className="flex flex-col gap-1 rounded-2xl border border-gray-200 bg-white p-4 text-sm">
+              <div className="flex justify-between">
+                <dt>Sous-total</dt>
+                <dd>{formatFCFA(totals.subtotalPublic)}</dd>
+              </div>
+              {totals.vipUnlocked && (
+                <div className="flex justify-between text-emerald-800">
+                  <dt>Remise VIP (−5 %)</dt>
+                  <dd>−{formatFCFA(totals.vipDiscount)}</dd>
+                </div>
+              )}
+              <div className="mt-1 flex justify-between border-t border-gray-200 pt-2 text-lg font-bold">
+                <dt>Total</dt>
+                <dd>{formatFCFA(totals.total)}</dd>
+              </div>
+            </dl>
+
+            <CheckoutForm items={items} totals={totals} />
+
+            <button
+              type="button"
+              onClick={clear}
+              className="min-h-11 self-center text-sm text-gray-700 underline hover:text-gray-900 focus-visible:outline-2 focus-visible:outline-emerald-700"
+            >
+              Vider le panier
+            </button>
+          </>
+        )}
+      </div>
+    </dialog>
+  );
+}
+
+
+
+=== src/components/cart/CartLineItem.tsx ===
+"use client";
+
+import { ImageOff, Minus, Plus, Trash2 } from "lucide-react";
+import { SafeImage } from "@/components/ui/SafeImage";
+import { formatFCFA, getUnitPrice } from "@/lib/pricing";
+import type { CartItem } from "@/lib/types";
+import { useCartStore } from "@/store/useCartStore";
+
+const stepperButton =
+  "inline-flex size-11 items-center justify-center rounded-lg border border-gray-400 bg-white text-gray-900 hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-emerald-700";
+
+interface CartLineItemProps {
+  item: CartItem;
+  vipUnlocked: boolean;
+}
+
+export function CartLineItem({ item, vipUnlocked }: CartLineItemProps) {
+  const { product, quantity } = item;
+  const setQuantity = useCartStore((state) => state.setQuantity);
+  const removeItem = useCartStore((state) => state.removeItem);
+  const unitPrice = getUnitPrice(product, vipUnlocked);
+  const photo = product.images[0];
+
+  return (
+    <li className="flex gap-3 rounded-2xl border border-gray-200 bg-white p-3">
+      <div className="relative size-20 shrink-0 overflow-hidden rounded-xl bg-emerald-50">
+        {photo ? (
+          <SafeImage src={photo} alt="" fill sizes="80px" className="object-cover" />
+        ) : (
+          <ImageOff aria-hidden className="absolute inset-0 m-auto size-6 text-emerald-800" />
+        )}
+      </div>
+
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <p className="font-semibold text-gray-900">{product.name}</p>
+            <p className="text-sm text-gray-800">
+              {formatFCFA(unitPrice)}
+              {vipUnlocked && (
+                <s className="ml-2 text-xs text-gray-700">{formatFCFA(product.pricePublic)}</s>
+              )}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => removeItem(product.code)}
+            aria-label={`Retirer ${product.name} du panier`}
+            className="inline-flex size-11 shrink-0 items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-emerald-700"
+          >
+            <Trash2 aria-hidden className="size-5" />
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between gap-2">
+          <div role="group" aria-label={`Quantité de ${product.name}`} className="flex items-center gap-2">
+            <button
+              type="button"
+              className={stepperButton}
+              aria-label="Diminuer la quantité"
+              onClick={() => setQuantity(product.code, quantity - 1)}
+            >
+              <Minus aria-hidden className="size-4" />
+            </button>
+            <span aria-live="polite" className="w-8 text-center font-semibold">
+              {quantity}
+            </span>
+            <button
+              type="button"
+              className={stepperButton}
+              aria-label="Augmenter la quantité"
+              onClick={() => setQuantity(product.code, quantity + 1)}
+            >
+              <Plus aria-hidden className="size-4" />
+            </button>
+          </div>
+          <p className="font-bold text-gray-900">{formatFCFA(unitPrice * quantity)}</p>
+        </div>
+      </div>
+    </li>
+  );
+}
+
+
+
+=== src/components/cart/CheckoutForm.tsx ===
+"use client";
+
+import { MessageCircle } from "lucide-react";
+import {
+  useId,
+  useRef,
+  useState,
+  type FormEvent,
+  type InputHTMLAttributes,
+  type RefObject,
+} from "react";
+import { COPY } from "@/lib/config";
+import { normalizeCongoPhone } from "@/lib/phone";
+import { formatFCFA } from "@/lib/pricing";
+import {
+  DELIVERY_ZONES,
+  PAYMENT_METHODS,
+  type CartItem,
+  type CartTotals,
+  type CustomerInfo,
+} from "@/lib/types";
+import { buildCartOrderMessage, buildWhatsAppUrl } from "@/lib/whatsapp";
+
+type TextField = "fullName" | "phone" | "neighborhood";
+type FormErrors = Partial<Record<TextField, string>>;
+
+const INITIAL_VALUES: CustomerInfo = {
+  fullName: "",
+  phone: "",
+  zone: DELIVERY_ZONES[0],
+  neighborhood: "",
+  payment: PAYMENT_METHODS[1], // MTN Mobile Money, modifiable par le client
+};
+
+function validate(values: CustomerInfo): FormErrors {
+  const errors: FormErrors = {};
+  if (values.fullName.trim().length < 2) errors.fullName = "Indiquez votre prénom et votre nom.";
+  if (!normalizeCongoPhone(values.phone)) {
+    errors.phone = "Entrez un numéro WhatsApp valide, par exemple 06 123 4567.";
+  }
+  if (values.neighborhood.trim().length < 3) {
+    errors.neighborhood = "Indiquez votre quartier ou un repère précis pour la livraison.";
+  }
+  return errors;
+}
+
+const controlClass =
+  "min-h-12 w-full rounded-lg border bg-white px-3 text-base text-gray-900 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-emerald-700";
+
+interface FieldProps extends InputHTMLAttributes<HTMLInputElement> {
+  label: string;
+  error?: string;
+  inputRef: RefObject<HTMLInputElement | null>;
+}
+
+function Field({ label, error, inputRef, id, ...inputProps }: FieldProps) {
+  const errorId = `${id}-error`;
+  return (
+    <div className="flex flex-col gap-1">
+      <label htmlFor={id} className="text-sm font-semibold text-gray-900">
+        {label}
+      </label>
+      <input
+        {...inputProps}
+        id={id}
+        ref={inputRef}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? errorId : undefined}
+        className={`${controlClass} ${error ? "border-red-700" : "border-gray-400"}`}
+      />
+      {error && (
+        <p id={errorId} className="text-sm text-red-700">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+interface CheckoutFormProps {
+  items: readonly CartItem[];
+  totals: CartTotals;
+}
+
+/** Formulaire de commande express : valide les champs, puis ouvre WhatsApp avec le récapitulatif. */
+export function CheckoutForm({ items, totals }: CheckoutFormProps) {
+  const uid = useId();
+  const [values, setValues] = useState<CustomerInfo>(INITIAL_VALUES);
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [sent, setSent] = useState(false);
+
+  const fieldRefs: Record<TextField, RefObject<HTMLInputElement | null>> = {
+    fullName: useRef<HTMLInputElement>(null),
+    phone: useRef<HTMLInputElement>(null),
+    neighborhood: useRef<HTMLInputElement>(null),
+  };
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const nextErrors = validate(values);
+    setErrors(nextErrors);
+
+    const firstInvalid = (["fullName", "phone", "neighborhood"] as const).find(
+      (field) => nextErrors[field],
+    );
+    if (firstInvalid) {
+      fieldRefs[firstInvalid].current?.focus();
+      return;
+    }
+
+    const url = buildWhatsAppUrl(buildCartOrderMessage(items, values));
+    const popup = window.open(url, "_blank");
+    if (popup) popup.opener = null;
+    else window.location.assign(url); // pop-up bloqué : on ouvre WhatsApp dans l'onglet courant
+    setSent(true);
+  }
+
+  return (
+    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+      <h3 className="text-lg font-bold text-gray-900">Vos informations de livraison</h3>
+
+      <Field
+        id={`${uid}-name`}
+        label="Prénom et nom"
+        autoComplete="name"
+        value={values.fullName}
+        onChange={(event) => setValues({ ...values, fullName: event.target.value })}
+        error={errors.fullName}
+        inputRef={fieldRefs.fullName}
+      />
+      <Field
+        id={`${uid}-phone`}
+        label="Téléphone WhatsApp"
+        type="tel"
+        inputMode="tel"
+        autoComplete="tel"
+        placeholder="06 123 4567"
+        value={values.phone}
+        onChange={(event) => setValues({ ...values, phone: event.target.value })}
+        error={errors.phone}
+        inputRef={fieldRefs.phone}
+      />
+
+      <div className="flex flex-col gap-1">
+        <label htmlFor={`${uid}-zone`} className="text-sm font-semibold text-gray-900">
+          Ville
+        </label>
+        <select
+          id={`${uid}-zone`}
+          value={values.zone}
+          onChange={(event) =>
+            setValues({ ...values, zone: event.target.value as CustomerInfo["zone"] })
+          }
+          className={`${controlClass} border-gray-400`}
+        >
+          {DELIVERY_ZONES.map((zone) => (
+            <option key={zone} value={zone}>
+              {zone}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <Field
+        id={`${uid}-area`}
+        label="Quartier / repère précis"
+        value={values.neighborhood}
+        onChange={(event) => setValues({ ...values, neighborhood: event.target.value })}
+        error={errors.neighborhood}
+        inputRef={fieldRefs.neighborhood}
+      />
+
+      <fieldset className="flex flex-col gap-2">
+        <legend className="mb-1 text-sm font-semibold text-gray-900">Mode de règlement</legend>
+        {PAYMENT_METHODS.map((method) => (
+          <label
+            key={method}
+            className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-gray-300 bg-white px-3 text-sm has-[:checked]:border-emerald-600 has-[:checked]:bg-emerald-50"
+          >
+            <input
+              type="radio"
+              name={`${uid}-payment`}
+              value={method}
+              checked={values.payment === method}
+              onChange={() => setValues({ ...values, payment: method })}
+              className="size-4 accent-emerald-700"
+            />
+            {method}
+          </label>
+        ))}
+      </fieldset>
+
+      <p className="text-sm text-gray-800">{COPY.cartNote}</p>
+
+      <button
+        type="submit"
+        disabled={items.length === 0}
+        className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#075E54] px-5 font-semibold text-white hover:bg-[#064c44] disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
+      >
+        <MessageCircle aria-hidden className="size-5" />
+        Confirmer ma commande sur WhatsApp ({formatFCFA(totals.total)})
+      </button>
+
+      {sent && (
+        <p role="status" className="rounded-xl bg-emerald-50 p-3 text-sm text-emerald-900">
+          Votre message est prêt dans WhatsApp. Envoyez-le pour valider votre commande.
+        </p>
+      )}
+    </form>
+  );
+}
+
+
+
+=== src/components/cart/VipProgressBar.tsx ===
+import { CheckCircle2, Gift } from "lucide-react";
+import { VIP_DISCOUNT_PERCENT, VIP_THRESHOLD } from "@/lib/config";
+import { formatFCFA } from "@/lib/pricing";
+import type { CartTotals } from "@/lib/types";
+
+interface VipProgressBarProps {
+  totals: CartTotals;
+}
+
+/** Jauge vers le palier VIP : montant restant en dessous de 65 000 F, message de succès au-dessus. */
+export function VipProgressBar({ totals }: VipProgressBarProps) {
+  const { vipUnlocked, amountToVip, progressPercent, vipDiscount, subtotalPublic, itemCount } =
+    totals;
+
+  const message = vipUnlocked
+    ? `Remise VIP de ${VIP_DISCOUNT_PERCENT} % activée : vous économisez ${formatFCFA(vipDiscount)}.`
+    : itemCount === 0
+      ? `Dès ${formatFCFA(VIP_THRESHOLD)} d'achats, profitez de ${VIP_DISCOUNT_PERCENT} % de remise VIP sur tous vos articles.`
+      : `Plus que ${formatFCFA(amountToVip)} pour débloquer ${VIP_DISCOUNT_PERCENT} % de remise VIP sur tous vos articles.`;
+
+  const Icon = vipUnlocked ? CheckCircle2 : Gift;
+
+  return (
+    <div
+      className={`rounded-xl border p-3 ${
+        vipUnlocked
+          ? "border-emerald-600 bg-emerald-50 text-emerald-900"
+          : "border-gray-200 bg-white text-gray-900"
+      }`}
+    >
+      <div className="flex items-start gap-3">
+        <Icon
+          aria-hidden
+          className={`mt-0.5 size-5 shrink-0 ${vipUnlocked ? "text-emerald-700" : "text-amber-700"}`}
+        />
+        <p role="status" className="text-sm font-semibold">
+          {message}
+        </p>
+      </div>
+
+      <div
+        role="progressbar"
+        aria-label="Progression vers la remise VIP"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={progressPercent}
+        className="mt-3 h-2.5 overflow-hidden rounded-full bg-gray-200"
+      >
+        <div
+          className={`h-full rounded-full transition-[width] duration-500 ease-out motion-reduce:transition-none ${
+            vipUnlocked ? "bg-emerald-600" : "bg-amber-600"
+          }`}
+          style={{ width: `${progressPercent}%` }}
+        />
+      </div>
+
+      <p className="mt-1.5 text-xs text-gray-700">
+        {formatFCFA(subtotalPublic)} sur {formatFCFA(VIP_THRESHOLD)}
+      </p>
+    </div>
+  );
+}
+
+
+
+=== src/components/catalogue/AddToCartButton.tsx ===
+"use client";
+
+import { ShoppingCart } from "lucide-react";
+import { focusRing } from "@/components/ui/styles";
+import type { Product } from "@/lib/types";
+import { useCartStore } from "@/store/useCartStore";
+
+export function AddToCartButton({ product }: { product: Product }) {
+  const addItem = useCartStore((state) => state.addItem);
+  return (
+    <button
+      type="button"
+      onClick={() => addItem(product)}
+      aria-label={`Ajouter ${product.name} au panier`}
+      className={`inline-flex size-11 shrink-0 items-center justify-center rounded-xl bg-emerald-700 text-white hover:bg-emerald-800 ${focusRing}`}
+    >
+      <ShoppingCart aria-hidden className="size-5" />
+    </button>
+  );
+}
+
+
+
+=== src/components/catalogue/CatalogueFilters.tsx ===
+import Link from "next/link";
+import { focusRing } from "@/components/ui/styles";
+import { buildCatalogueHref, type CatalogueQuery } from "@/lib/catalogue";
+import { CATEGORY_SLUGS, HEALTH_GOAL_META, HEALTH_GOAL_SLUGS } from "@/lib/config";
+import { CATEGORIES, HEALTH_GOALS } from "@/lib/types";
+
+const pill = (active: boolean) =>
+  `inline-flex min-h-11 items-center whitespace-nowrap rounded-full border px-4 text-sm font-medium ${focusRing} ${
+    active ? "border-emerald-700 bg-emerald-700 text-white" : "border-gray-300 bg-white text-gray-900 hover:bg-gray-100"
+  }`;
+
+/** Filtres en liens : fonctionnent sans JavaScript, se partagent par URL et se branchent sur les publicités. */
+export function CatalogueFilters({ query }: { query: CatalogueQuery }) {
+  return (
+    <div className="flex flex-col gap-4">
+      <form action="/catalogue" role="search" className="flex gap-2">
+        {query.category && <input type="hidden" name="categorie" value={CATEGORY_SLUGS[query.category]} />}
+        {query.goal && <input type="hidden" name="besoin" value={HEALTH_GOAL_SLUGS[query.goal]} />}
+        <label htmlFor="catalogue-search" className="sr-only">Rechercher dans le catalogue</label>
+        <input
+          id="catalogue-search"
+          name="q"
+          type="search"
+          defaultValue={query.q}
+          placeholder="Rechercher un produit"
+          className={`min-h-11 w-full max-w-md rounded-xl border border-gray-400 bg-white px-3 text-base ${focusRing}`}
+        />
+        <button type="submit" className={`min-h-11 rounded-xl bg-emerald-700 px-5 font-semibold text-white hover:bg-emerald-800 ${focusRing}`}>
+          Rechercher
+        </button>
+      </form>
+
+      <nav aria-label="Catégories">
+        <p className="mb-2 text-sm font-semibold text-gray-900">Catégories</p>
+        <ul className="flex gap-2 overflow-x-auto pb-1">
+          <li>
+            <Link href={buildCatalogueHref({ ...query, category: undefined })} aria-current={!query.category ? "true" : undefined} className={pill(!query.category)}>
+              Tout
+            </Link>
+          </li>
+          {CATEGORIES.map((category) => (
+            <li key={category}>
+              <Link href={buildCatalogueHref({ ...query, category })} aria-current={query.category === category ? "true" : undefined} className={pill(query.category === category)}>
+                {category}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <nav aria-label="Besoins santé">
+        <p className="mb-2 text-sm font-semibold text-gray-900">Votre besoin</p>
+        <ul className="flex gap-2 overflow-x-auto pb-1">
+          <li>
+            <Link href={buildCatalogueHref({ ...query, goal: undefined })} aria-current={!query.goal ? "true" : undefined} className={pill(!query.goal)}>
+              Tous les besoins
+            </Link>
+          </li>
+          {HEALTH_GOALS.map((goal) => (
+            <li key={goal}>
+              <Link href={buildCatalogueHref({ ...query, goal })} aria-current={query.goal === goal ? "true" : undefined} className={pill(query.goal === goal)}>
+                {HEALTH_GOAL_META[goal].shortLabel}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </div>
+  );
+}
+
+
+
+=== src/components/catalogue/ProductCard.tsx ===
+import { ImageOff } from "lucide-react";
+import Link from "next/link";
+import { SafeImage } from "@/components/ui/SafeImage";
+import { card, focusRing } from "@/components/ui/styles";
+import { COPY, VIP_THRESHOLD } from "@/lib/config";
+import { formatFCFA } from "@/lib/pricing";
+import type { Product } from "@/lib/types";
+import { AddToCartButton } from "./AddToCartButton";
+
+interface ProductCardProps {
+  product: Product;
+  /** Affiche le badge « ce pack active votre remise VIP » (section des packs). */
+  highlightVip?: boolean;
+}
+
+export function ProductCard({ product, highlightVip = false }: ProductCardProps) {
+  const vipImmediate = product.pricePublic >= VIP_THRESHOLD;
+  const photo = product.images[0];
+
+  return (
+    <li className={`${card} flex flex-col gap-3 p-3`}>
+      <Link href={`/produit/${product.slug}`} className={`group flex flex-col gap-3 rounded-xl ${focusRing}`}>
+        <div className="relative aspect-square overflow-hidden rounded-xl bg-emerald-50">
+          {photo ? (
+            <SafeImage src={photo} alt="" fill sizes="(min-width: 1024px) 280px, 50vw" className="object-cover" />
+          ) : (
+            <ImageOff aria-hidden className="absolute inset-0 m-auto size-8 text-emerald-800" />
+          )}
+          {product.isBestSeller && (
+            <span className="absolute left-2 top-2 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-900">
+              Meilleure vente
+            </span>
+          )}
+        </div>
+        <div>
+          <p className="text-xs text-gray-700">{product.category}</p>
+          <h3 className="font-semibold text-gray-900 group-hover:underline">{product.name}</h3>
+        </div>
+      </Link>
+
+      {highlightVip && vipImmediate && (
+        <p className="w-fit rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900">{COPY.vipBadge}</p>
+      )}
+
+      <div className="mt-auto flex items-end justify-between gap-2">
+        {vipImmediate ? (
+          <div>
+            <p className="text-lg font-bold text-emerald-800">{formatFCFA(product.priceVip)}</p>
+            <p className="text-xs text-gray-700">
+              Prix VIP au lieu de <s>{formatFCFA(product.pricePublic)}</s>
+            </p>
+          </div>
+        ) : (
+          <div>
+            <p className="text-lg font-bold text-gray-900">{formatFCFA(product.pricePublic)}</p>
+            <p className="text-xs text-gray-700">
+              VIP : {formatFCFA(product.priceVip)} dès {formatFCFA(VIP_THRESHOLD)} d&apos;achats
+            </p>
+          </div>
+        )}
+        <AddToCartButton product={product} />
+      </div>
+    </li>
+  );
+}
+
+
+
+=== src/components/catalogue/ProductGrid.tsx ===
+import type { Product } from "@/lib/types";
+import { ProductCard } from "./ProductCard";
+
+export function ProductGrid({ products, highlightVip = false }: { products: readonly Product[]; highlightVip?: boolean }) {
+  return (
+    <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+      {products.map((product) => (
+        <ProductCard key={product.code} product={product} highlightVip={highlightVip} />
+      ))}
+    </ul>
+  );
+}
+
+
+
+=== src/components/home/DualConversion.tsx ===
+import { btn, container } from "@/components/ui/styles";
+import { VIP_THRESHOLD } from "@/lib/config";
+import { formatFCFA } from "@/lib/pricing";
+import { buildDistributorMessage, buildVipInfoMessage, buildWhatsAppUrl } from "@/lib/whatsapp";
+
+export function DualConversion() {
+  return (
+    <section className={`${container} grid gap-4 py-12 md:grid-cols-2`}>
+      <div className="flex flex-col items-start gap-3 rounded-3xl bg-emerald-950 p-7 text-white">
+        <h2 className="text-2xl font-bold">Client VIP : 5 % de remise dès {formatFCFA(VIP_THRESHOLD)}</h2>
+        <p className="text-emerald-100">
+          Chaque commande qui atteint le palier bénéficie de la remise sur tous les articles, appliquée automatiquement dans votre panier.
+        </p>
+        <a href={buildWhatsAppUrl(buildVipInfoMessage())} target="_blank" rel="noopener noreferrer" className={`${btn} mt-2 bg-white text-emerald-950 hover:bg-emerald-50`}>
+          Profiter de la remise VIP
+        </a>
+      </div>
+      <div className="flex flex-col items-start gap-3 rounded-3xl bg-amber-100 p-7 text-amber-950">
+        <h2 className="text-2xl font-bold">Devenez distributeur Forever indépendant</h2>
+        <p>Créez votre activité au Congo, avec un accompagnement pas à pas pour démarrer.</p>
+        <a href={buildWhatsAppUrl(buildDistributorMessage())} target="_blank" rel="noopener noreferrer" className={`${btn} mt-2 bg-amber-900 text-white hover:bg-amber-950`}>
+          Parler à un distributeur
+        </a>
+      </div>
+    </section>
+  );
+}
+
+
+
+=== src/components/home/HealthGoalPicker.tsx ===
+import { Bone, Leaf, Salad, ShieldCheck, Sparkles, Zap, type LucideIcon } from "lucide-react";
+import Link from "next/link";
+import { card, container, focusRing } from "@/components/ui/styles";
+import { buildCatalogueHref } from "@/lib/catalogue";
+import { HEALTH_GOAL_META, type HealthGoalIcon } from "@/lib/config";
+import { HEALTH_GOALS } from "@/lib/types";
+
+const ICONS: Record<HealthGoalIcon, LucideIcon> = { Salad, Bone, Zap, Sparkles, Leaf, ShieldCheck };
+
+/** Chaque carte mène à /catalogue?besoin=… : les produits adaptés s'affichent aussitôt, et le besoin est mémorisé. */
+export function HealthGoalPicker() {
+  return (
+    <section id="besoins" className={`${container} scroll-mt-24 py-12`}>
+      <h2 className="text-2xl font-bold text-gray-900">Que recherchez-vous ?</h2>
+      <p className="mt-1 text-gray-800">Choisissez votre besoin, nous affichons les produits adaptés.</p>
+      <ul className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
+        {HEALTH_GOALS.map((goal) => {
+          const { shortLabel, icon } = HEALTH_GOAL_META[goal];
+          const Icon = ICONS[icon];
+          return (
+            <li key={goal}>
+              <Link
+                href={buildCatalogueHref({ goal })}
+                className={`${card} flex h-full min-h-28 flex-col items-center justify-center gap-3 p-4 text-center font-semibold text-gray-900 hover:border-emerald-600 hover:bg-emerald-50 ${focusRing}`}
+              >
+                <span className="inline-flex size-14 items-center justify-center rounded-full bg-emerald-50">
+                  <Icon aria-hidden className="size-7 text-emerald-700" />
+                </span>
+                {shortLabel}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
+
+
+=== src/components/home/Hero.tsx ===
+import Link from "next/link";
+import { ImageOff } from "lucide-react";
+import { SafeImage } from "@/components/ui/SafeImage";
+import { btn, container } from "@/components/ui/styles";
+import { PRODUCTS } from "@/data/products";
+import { COPY, DISTRIBUTOR_MENTION, VIP_THRESHOLD } from "@/lib/config";
+import { formatFCFA } from "@/lib/pricing";
+import { buildAdviceMessage, buildWhatsAppUrl } from "@/lib/whatsapp";
+
+export function Hero() {
+  const featured = PRODUCTS.find((product) => product.isPackSolution && product.isBestSeller) ?? PRODUCTS[0];
+  const photo = featured?.images[0];
+  const vipImmediate = featured ? featured.pricePublic >= VIP_THRESHOLD : false;
+
+  return (
+    <section className="bg-emerald-950 text-white">
+      <div className={`${container} grid gap-8 py-12 lg:grid-cols-2 lg:items-center lg:py-16`}>
+        <div className="flex flex-col gap-5">
+          <h1 className="text-4xl font-extrabold leading-tight sm:text-5xl">
+            Le bien-être naturel, livré chez vous en 24 h
+          </h1>
+          <p className="max-w-lg text-lg text-emerald-100">{COPY.heroSubtitle}</p>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/catalogue" className={`${btn} bg-white text-emerald-950 hover:bg-emerald-50`}>
+              Voir le catalogue
+            </Link>
+            <a
+              href={buildWhatsAppUrl(buildAdviceMessage())}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${btn} border border-white/60 text-white hover:bg-white/10`}
+            >
+              Commander sur WhatsApp
+            </a>
+          </div>
+          <p className="text-sm text-emerald-200">{DISTRIBUTOR_MENTION}</p>
+        </div>
+
+        {featured && (
+          <Link
+            href={`/produit/${featured.slug}`}
+            className="group flex gap-4 rounded-2xl bg-white p-4 text-gray-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          >
+            <div className="relative size-32 shrink-0 overflow-hidden rounded-xl bg-emerald-50 sm:size-40">
+              {photo ? (
+                <SafeImage src={photo} alt="" fill sizes="160px" className="object-cover" />
+              ) : (
+                <ImageOff aria-hidden className="absolute inset-0 m-auto size-8 text-emerald-800" />
+              )}
+            </div>
+            <div className="flex flex-col justify-center gap-1">
+              <p className="text-sm font-medium text-emerald-800">Pack du moment</p>
+              <p className="text-xl font-bold group-hover:underline">{featured.name}</p>
+              <p className="text-sm text-gray-800">{featured.shortDesc}</p>
+              <p className="mt-1 text-lg font-bold text-emerald-800">
+                {formatFCFA(vipImmediate ? featured.priceVip : featured.pricePublic)}
+                {vipImmediate && <span className="ml-2 text-sm font-medium text-gray-700">prix VIP</span>}
+              </p>
+            </div>
+          </Link>
+        )}
+      </div>
+    </section>
+  );
+}
+
+
+
+=== src/components/home/PackSolutions.tsx ===
+import { ProductGrid } from "@/components/catalogue/ProductGrid";
+import { container } from "@/components/ui/styles";
+import { PRODUCTS } from "@/data/products";
+import { formatFCFA } from "@/lib/pricing";
+import { VIP_THRESHOLD } from "@/lib/config";
+
+/** Packs calibrés au-dessus du palier : la remise VIP s'applique dès le premier pack. */
+export function PackSolutions() {
+  const packs = PRODUCTS.filter((product) => product.isPackSolution);
+  if (packs.length === 0) return null;
+
+  return (
+    <section id="packs" className={`${container} scroll-mt-24 py-12`}>
+      <h2 className="text-2xl font-bold text-gray-900">Packs solutions clé en main</h2>
+      <p className="mb-5 mt-1 text-gray-800">
+        Dès {formatFCFA(VIP_THRESHOLD)} d&apos;achats, votre remise VIP de 5 % s&apos;applique automatiquement.
+      </p>
+      <ProductGrid products={packs} highlightVip />
+    </section>
+  );
+}
+
+
+
+=== src/components/home/Testimonials.tsx ===
+import { SafeImage } from "@/components/ui/SafeImage";
+import { card, container } from "@/components/ui/styles";
+import { TESTIMONIALS } from "@/data/testimonials";
+
+export function Testimonials() {
+  if (TESTIMONIALS.length === 0) return null;
+
+  return (
+    <section className={`${container} py-12`}>
+      <h2 className="text-2xl font-bold text-gray-900">Ils ont reçu leur commande</h2>
+      <ul className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {TESTIMONIALS.map((item) => (
+          <li key={item.image} className={`${card} flex flex-col gap-3 p-4`}>
+            <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-emerald-50">
+              <SafeImage src={item.image} alt={`Capture WhatsApp d'un message de ${item.name}`} fill sizes="(min-width: 1024px) 360px, 100vw" className="object-cover" />
+            </div>
+            <p className="text-sm text-gray-800">
+              <strong>{item.name}</strong>, {item.city}
+              {item.caption && <span className="block">{item.caption}</span>}
+            </p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+
+
+=== src/components/home/TrustBand.tsx ===
+import { ShieldCheck, Smartphone, Store, Truck } from "lucide-react";
+import { card, container } from "@/components/ui/styles";
+import { COPY } from "@/lib/config";
+
+const ITEMS = [
+  { icon: ShieldCheck, title: "Produits 100 % originaux", detail: "Scellés, avec label IASC" },
+  { icon: Smartphone, title: COPY.paymentTrust.title, detail: COPY.paymentTrust.detail },
+  { icon: Truck, title: "Livraison sous 24 h", detail: "Brazzaville et Pointe-Noire. Province par agences de transport" },
+  { icon: Store, title: "Retrait physique", detail: "Possible sur rendez-vous" },
+] as const;
+
+export function TrustBand() {
+  return (
+    <section aria-label="Nos garanties" className={`${container} -mt-6`}>
+      <ul className={`${card} grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-4`}>
+        {ITEMS.map(({ icon: Icon, title, detail }) => (
+          <li key={title} className="flex items-start gap-3">
+            <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-emerald-50">
+              <Icon aria-hidden className="size-5 text-emerald-700" />
+            </span>
+            <p className="text-sm">
+              <strong className="block text-gray-900">{title}</strong>
+              <span className="text-gray-800">{detail}</span>
+            </p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+
+
+=== src/components/layout/AnnouncementBar.tsx ===
+import { COPY } from "@/lib/config";
+
+export function AnnouncementBar() {
+  return (
+    <div className="bg-emerald-950 text-sm font-medium text-white">
+      <ul className="mx-auto flex max-w-6xl flex-wrap justify-center gap-x-8 gap-y-1 px-4 py-2 text-center">
+        {COPY.announcement.map((message) => (
+          <li key={message}>{message}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+
+
+=== src/components/layout/FloatingWhatsAppButton.tsx ===
+"use client";
+
+import { MessageCircle, Mic, X } from "lucide-react";
+import { useState } from "react";
+import { COPY } from "@/lib/config";
+import { buildAdviceMessage, buildWhatsAppUrl } from "@/lib/whatsapp";
+
+/** Bouton WhatsApp persistant (bas droite) avec bulle d'accroche fermable. À monter dans app/layout.tsx. */
+export function FloatingWhatsAppButton() {
+  const [bubbleOpen, setBubbleOpen] = useState(true);
+
+  return (
+    <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-40 flex items-end gap-2">
+      {bubbleOpen && (
+        <div className="relative max-w-60 rounded-2xl rounded-br-sm border border-gray-200 bg-white p-3 pr-10 text-sm text-gray-900 shadow-lg">
+          <p>{COPY.advicePrompt}</p>
+          <button
+            type="button"
+            onClick={() => setBubbleOpen(false)}
+            aria-label="Fermer la bulle d'aide"
+            className="absolute right-0.5 top-0.5 inline-flex size-9 items-center justify-center rounded-full text-gray-700 hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-emerald-700"
+          >
+            <X aria-hidden className="size-4" />
+          </button>
+        </div>
+      )}
+
+      <a
+        href={buildWhatsAppUrl(buildAdviceMessage())}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Écrire sur WhatsApp : message ou note vocale"
+        className="relative inline-flex size-14 shrink-0 items-center justify-center rounded-full bg-[#075E54] text-white shadow-lg hover:bg-[#064c44] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
+      >
+        <MessageCircle aria-hidden className="size-7" />
+        <span
+          aria-hidden
+          className="absolute -right-1 -top-1 inline-flex size-6 items-center justify-center rounded-full bg-amber-700 ring-2 ring-white"
+        >
+          <Mic className="size-3.5" />
+        </span>
+      </a>
+    </div>
+  );
+}
+
+
+
+=== src/components/layout/Footer.tsx ===
+"use client";
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { MessageCircle } from 'lucide-react';
+import { COPY, DISTRIBUTOR_MENTION, SITE_NAME, WHATSAPP_NUMBER } from '@/lib/config';
+
+export function Footer() {
+  const [currentYear, setCurrentYear] = useState(2026);
+
+  useEffect(() => {
+    setCurrentYear(new Date().getFullYear());
+  }, []);
+
+  return (
+    <footer className="bg-[#059669] text-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Colonne 1 : À propos */}
+          <div>
+            <h3 className="text-lg font-bold mb-4">{SITE_NAME}</h3>
+            <p className="text-sm text-green-50 mb-4">{COPY.footer.about}</p>
+            <p className="text-sm text-green-50 font-semibold">
+              {DISTRIBUTOR_MENTION}
+            </p>
+          </div>
+
+          {/* Colonne 2 : Liens utiles */}
+          <div>
+            <h3 className="text-lg font-bold mb-4">Informations</h3>
+            <ul className="space-y-3">
+              <li>
+                <Link
+                  href="/catalogue"
+                  className="text-sm text-green-50 hover:text-white transition-colors inline-flex items-center min-h-[44px]"
+                >
+                  Catalogue complet
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/livraison-paiement"
+                  className="text-sm text-green-50 hover:text-white transition-colors inline-flex items-center min-h-[44px]"
+                >
+                  {COPY.legal.footerDelivery}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/confidentialite"
+                  className="text-sm text-green-50 hover:text-white transition-colors inline-flex items-center min-h-[44px]"
+                >
+                  {COPY.legal.footerPrivacy}
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Colonne 3 : Contact */}
+          <div>
+            <h3 className="text-lg font-bold mb-4">Contact</h3>
+            <p className="text-sm text-green-50 mb-4">{COPY.footer.contact}</p>
+            <a
+              href={`https://wa.me/${WHATSAPP_NUMBER}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-[#059669] font-medium rounded-lg hover:bg-green-50 transition-colors min-h-[44px]"
+            >
+              <MessageCircle className="w-5 h-5" aria-hidden="true" />
+              Nous contacter
+            </a>
+          </div>
+        </div>
+
+        {/* Barre de copyright */}
+        <div className="mt-12 pt-8 border-t border-green-600">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-green-50">
+              © {currentYear} {SITE_NAME}. Tous droits réservés.
+            </p>
+            <p className="text-xs text-green-100">{COPY.footer.tagline}</p>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+
+=== src/components/layout/Header.tsx ===
+import Link from "next/link";
+import { CartButton } from "@/components/cart/CartButton";
+import { container, focusRing } from "@/components/ui/styles";
+import { SITE_NAME } from "@/lib/config";
+import { buildDistributorMessage, buildWhatsAppUrl } from "@/lib/whatsapp";
+
+const LINKS = [
+  { label: "Catalogue", href: "/catalogue" },
+  { label: "Packs solutions", href: "/#packs" },
+  { label: "Besoins santé", href: "/#besoins" },
+] as const;
+
+const linkClass = `rounded-md py-2 text-sm font-medium text-gray-900 hover:text-emerald-800 ${focusRing}`;
+
+export function Header() {
+  const distributorUrl = buildWhatsAppUrl(buildDistributorMessage());
+
+  return (
+    <header className="sticky top-0 z-30 border-b border-gray-200 bg-white">
+      <div className={`${container} flex h-16 items-center gap-4`}>
+        <Link href="/" className={`text-lg font-extrabold text-emerald-900 ${focusRing}`}>
+          {SITE_NAME}
+        </Link>
+
+        <nav aria-label="Navigation principale" className="hidden items-center gap-5 md:flex">
+          {LINKS.map((link) => (
+            <Link key={link.href} href={link.href} className={linkClass}>
+              {link.label}
+            </Link>
+          ))}
+          <a href={distributorUrl} target="_blank" rel="noopener noreferrer" className={linkClass}>
+            Devenir distributeur
+          </a>
+        </nav>
+
+        <form action="/catalogue" role="search" className="mx-auto hidden w-full max-w-sm lg:block">
+          <label htmlFor="header-search" className="sr-only">
+            Rechercher un produit
+          </label>
+          <input
+            id="header-search"
+            name="q"
+            type="search"
+            placeholder="Rechercher un produit ou un besoin"
+            className={`min-h-11 w-full rounded-full border border-gray-300 bg-gray-100 px-4 text-sm ${focusRing}`}
+          />
+        </form>
+
+        <div className="ml-auto">
+          <CartButton />
+        </div>
+      </div>
+
+      <nav
+        aria-label="Navigation mobile"
+        className="flex gap-4 overflow-x-auto border-t border-gray-100 px-4 md:hidden"
+      >
+        {LINKS.map((link) => (
+          <Link key={link.href} href={link.href} className={`${linkClass} min-h-11 whitespace-nowrap`}>
+            {link.label}
+          </Link>
+        ))}
+        <a href={distributorUrl} target="_blank" rel="noopener noreferrer" className={`${linkClass} min-h-11 whitespace-nowrap`}>
+          Devenir distributeur
+        </a>
+      </nav>
+    </header>
+  );
+}
+
+
+
+=== src/components/lead/InterestSignal.tsx ===
+"use client";
+
+import { useEffect, useRef } from "react";
+import type { SignalOrigin } from "@/lib/interest";
+import type { HealthGoal } from "@/lib/types";
+import { useInterestStore } from "@/store/useInterestStore";
+
+/** Enregistre un besoin quand le visiteur filtre le catalogue. Ne rend rien. */
+export function InterestSignal({ goal, origin }: { goal: HealthGoal; origin: SignalOrigin }): null {
+  const sent = useRef(false);
+  useEffect(() => {
+    if (sent.current) return;
+    sent.current = true;
+    useInterestStore.getState().addSignal(goal, origin);
+  }, [goal, origin]);
+  return null;
+}
+
+
+
+=== src/components/lead/InterestTracker.tsx ===
+"use client";
+
+import { useEffect } from "react";
+import { useInterestStore } from "@/store/useInterestStore";
+
+/** Lit ?besoin=…&utm_… à l'arrivée du visiteur : le besoin est connu avant même qu'il ne clique. */
+export function InterestTracker(): null {
+  useEffect(() => {
+    let referrer = "";
+    try {
+      const url = new URL(document.referrer);
+      if (url.host !== window.location.host) referrer = url.hostname;
+    } catch {
+      /* pas de référent */
+    }
+    useInterestStore.getState().captureArrival({
+      search: window.location.search,
+      pathname: window.location.pathname,
+      referrer,
+    });
+  }, []);
+  return null;
+}
+
+
+
+=== src/components/lead/LeadCaptureModal.tsx ===
+"use client";
+
+import { Check, MessageCircle, X } from "lucide-react";
+import { useEffect, useId, useRef, useState, type FormEvent } from "react";
+import { focusRing } from "@/components/ui/styles";
+import { getProductByCode } from "@/data/products";
+import { COPY, HEALTH_GOAL_META, LEAD_MODAL_DELAY_MS } from "@/lib/config";
+import { buildNeedProfile, ORIGIN_LABELS } from "@/lib/interest";
+import { readLeadStatus, retryPendingLead, sendLead, writeLeadStatus } from "@/lib/leadClient";
+import { normalizeCongoPhone } from "@/lib/phone";
+import { computeCartTotals } from "@/lib/pricing";
+import { HEALTH_GOALS, type HealthGoal, type LeadPayload } from "@/lib/types";
+import { buildLeadMessage, buildWhatsAppUrl } from "@/lib/whatsapp";
+import { getCartItems, useCartStore } from "@/store/useCartStore";
+import { useInterestStore } from "@/store/useInterestStore";
+
+const fieldClass = `min-h-12 w-full rounded-lg border bg-white px-3 text-base text-gray-900 ${focusRing}`;
+
+function isTyping(): boolean {
+  const element = document.activeElement;
+  return (
+    element instanceof HTMLInputElement ||
+    element instanceof HTMLTextAreaElement ||
+    element instanceof HTMLSelectElement
+  );
+}
+
+const cartGoals = (): HealthGoal[] => getCartItems().flatMap((item) => item.product.healthGoals);
+
+/**
+ * Pop-up de capture : prénom + numéro WhatsApp, rien d'autre d'obligatoire.
+ * Le besoin est déduit du parcours (publicité, filtres, fiches, panier) ; le visiteur peut le corriger en un geste.
+ */
+export function LeadCaptureModal() {
+  const titleId = useId();
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
+  const phoneRef = useRef<HTMLInputElement>(null);
+  const submitted = useRef(false);
+
+  const [open, setOpen] = useState(false);
+  const [done, setDone] = useState(false);
+  const [firstName, setFirstName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [honeypot, setHoneypot] = useState("");
+  const [need, setNeed] = useState<HealthGoal | null>(null);
+  const [inferred, setInferred] = useState(false);
+  const [editingNeed, setEditingNeed] = useState(false);
+  const [touched, setTouched] = useState(false);
+  const [errors, setErrors] = useState<{ firstName?: string; phone?: string }>({});
+
+  // Ouverture après 7 s, sans jamais gêner : onglet masqué, panier ouvert ou saisie en cours => on attend.
+  useEffect(() => {
+    retryPendingLead();
+    if (readLeadStatus() !== null) return;
+
+    let timer = 0;
+    let attempts = 0;
+    const tryOpen = () => {
+      const busy = document.hidden || useCartStore.getState().isOpen || isTyping();
+      if (busy) {
+        if (attempts < 8) {
+          attempts += 1;
+          timer = window.setTimeout(tryOpen, 4000);
+        }
+        return;
+      }
+      const interest = useInterestStore.getState();
+      const profile = buildNeedProfile({
+        scores: interest.scores,
+        origins: interest.origins,
+        chosen: null,
+        cartGoals: cartGoals(),
+      });
+      setNeed(profile.need);
+      setInferred(profile.need !== null);
+      setOpen(true);
+    };
+    timer = window.setTimeout(tryOpen, LEAD_MODAL_DELAY_MS);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (open && dialog && !dialog.open) dialog.showModal();
+  }, [open]);
+
+  function handleClose() {
+    setOpen(false);
+    if (!submitted.current) writeLeadStatus("dismissed");
+  }
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const normalized = normalizeCongoPhone(phone);
+    const nextErrors = {
+      firstName: firstName.trim().length < 2 ? "Indiquez votre prénom." : undefined,
+      phone: normalized ? undefined : "Entrez un numéro WhatsApp valide, par exemple 06 123 4567.",
+    };
+    setErrors(nextErrors);
+    if (nextErrors.firstName) return nameRef.current?.focus();
+    if (nextErrors.phone || !normalized) return phoneRef.current?.focus();
+
+    const interest = useInterestStore.getState();
+    const items = getCartItems();
+    const profile = buildNeedProfile({
+      scores: interest.scores,
+      origins: interest.origins,
+      chosen: touched ? need : null,
+      cartGoals: items.flatMap((item) => item.product.healthGoals),
+    });
+    const payload: LeadPayload = {
+      firstName: firstName.trim(),
+      phone: normalized,
+      need: profile.need,
+      needOrigin: profile.origins.map((origin) => ORIGIN_LABELS[origin]).join(", "),
+      otherNeeds: profile.others,
+      viewedProducts: interest.viewedProducts.map((code) => getProductByCode(code)?.name ?? code),
+      cartTotal: computeCartTotals(items).total,
+      campaign: interest.campaign ?? "",
+      source: interest.source ?? "",
+      referrer: interest.referrer ?? "",
+      landingPath: interest.landingPath ?? "",
+      pagePath: window.location.pathname,
+    };
+
+    // 1) Le lead part vers Google Sheets sans attendre (copie locale en cas d'échec). 2) WhatsApp s'ouvre aussitôt.
+    sendLead(payload, honeypot);
+    submitted.current = true;
+    writeLeadStatus("submitted");
+
+    const url = buildWhatsAppUrl(buildLeadMessage(payload.firstName, payload.phone, profile.need ?? undefined));
+    const popup = window.open(url, "_blank");
+    if (popup) popup.opener = null;
+    else window.location.assign(url);
+    setDone(true);
+  }
+
+  const chips = (
+    <fieldset className="flex flex-col gap-2">
+      <legend className="mb-1 text-sm font-semibold text-gray-900">Votre besoin (facultatif)</legend>
+      <div className="flex flex-wrap gap-2">
+        {HEALTH_GOALS.map((goal) => (
+          <label
+            key={goal}
+            className="inline-flex min-h-11 cursor-pointer items-center rounded-full border border-gray-300 bg-white px-4 text-sm has-[:checked]:border-emerald-700 has-[:checked]:bg-emerald-700 has-[:checked]:text-white has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-emerald-700"
+          >
+            <input
+              type="radio"
+              name={`${titleId}-need`}
+              value={goal}
+              checked={need === goal}
+              onChange={() => {
+                setNeed(goal);
+                setTouched(true);
+              }}
+              className="sr-only"
+            />
+            {HEALTH_GOAL_META[goal].shortLabel}
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+
+  return (
+    <dialog
+      ref={dialogRef}
+      aria-labelledby={titleId}
+      onClose={handleClose}
+      onClick={(event) => {
+        if (event.target === dialogRef.current) dialogRef.current?.close();
+      }}
+      className="m-0 mt-auto max-h-[92dvh] w-full max-w-none overflow-y-auto rounded-t-3xl bg-white p-0 text-gray-900 backdrop:bg-black/50 sm:m-auto sm:max-w-md sm:rounded-3xl"
+    >
+      <div className="relative flex flex-col gap-4 p-5">
+        <button
+          type="button"
+          onClick={() => dialogRef.current?.close()}
+          aria-label="Fermer"
+          className={`absolute right-2 top-2 inline-flex size-11 items-center justify-center rounded-full hover:bg-gray-100 ${focusRing}`}
+        >
+          <X aria-hidden className="size-5" />
+        </button>
+
+        {done ? (
+          <div role="status" className="flex flex-col items-center gap-3 py-4 text-center">
+            <Check aria-hidden className="size-12 rounded-full bg-emerald-100 p-2.5 text-emerald-800" />
+            <h2 id={titleId} className="text-xl font-bold">Merci {firstName.trim()} !</h2>
+            <p className="text-gray-800">WhatsApp s&apos;ouvre avec votre demande. Envoyez le message pour recevoir le catalogue.</p>
+            <button type="button" onClick={() => dialogRef.current?.close()} className={`min-h-12 rounded-xl border border-emerald-700 px-6 font-semibold text-emerald-800 hover:bg-emerald-50 ${focusRing}`}>
+              Fermer
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} noValidate className="relative flex flex-col gap-4">
+            <h2 id={titleId} className="pr-10 text-xl font-bold">
+              Téléchargez le catalogue officiel Forever avec les tarifs en FCFA sur WhatsApp
+            </h2>
+
+            <div className="flex flex-col gap-1">
+              <label htmlFor={`${titleId}-name`} className="text-sm font-semibold">Prénom</label>
+              <input
+                id={`${titleId}-name`}
+                ref={nameRef}
+                value={firstName}
+                onChange={(event) => setFirstName(event.target.value)}
+                autoComplete="given-name"
+                aria-invalid={errors.firstName ? true : undefined}
+                aria-describedby={errors.firstName ? `${titleId}-name-error` : undefined}
+                className={`${fieldClass} ${errors.firstName ? "border-red-700" : "border-gray-400"}`}
+              />
+              {errors.firstName && <p id={`${titleId}-name-error`} className="text-sm text-red-700">{errors.firstName}</p>}
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label htmlFor={`${titleId}-phone`} className="text-sm font-semibold">Numéro WhatsApp</label>
+              <input
+                id={`${titleId}-phone`}
+                ref={phoneRef}
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                placeholder="06 123 4567"
+                value={phone}
+                onChange={(event) => setPhone(event.target.value)}
+                aria-invalid={errors.phone ? true : undefined}
+                aria-describedby={errors.phone ? `${titleId}-phone-error` : undefined}
+                className={`${fieldClass} ${errors.phone ? "border-red-700" : "border-gray-400"}`}
+              />
+              {errors.phone && <p id={`${titleId}-phone-error`} className="text-sm text-red-700">{errors.phone}</p>}
+            </div>
+
+            {inferred && need && !editingNeed ? (
+              <p className="text-sm text-gray-800">
+                Catalogue adapté à : <strong>{HEALTH_GOAL_META[need].shortLabel}</strong>{" "}
+                <button type="button" onClick={() => setEditingNeed(true)} className={`rounded font-medium text-emerald-800 underline ${focusRing}`}>
+                  Changer
+                </button>
+              </p>
+            ) : (
+              chips
+            )}
+
+            {/* Champ piège : invisible pour les humains, rempli par les robots. */}
+            <input
+              type="text"
+              name="website"
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              value={honeypot}
+              onChange={(event) => setHoneypot(event.target.value)}
+              className="absolute -left-[9999px] size-px opacity-0"
+            />
+
+            <button type="submit" className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#075E54] px-5 font-semibold text-white hover:bg-[#064c44] ${focusRing}`}>
+              <MessageCircle aria-hidden className="size-5" />
+              Recevoir le catalogue sur WhatsApp
+            </button>
+
+            <p className="text-center text-xs text-gray-700">
+              {COPY.leadReassurance} En continuant, vous acceptez d&apos;être contacté sur WhatsApp au sujet de ce catalogue.
+            </p>
+          </form>
+        )}
+      </div>
+    </dialog>
+  );
+}
+
+
+
+=== src/components/lead/ProductViewSignal.tsx ===
+"use client";
+
+import { useEffect, useRef } from "react";
+import type { HealthGoal } from "@/lib/types";
+import { useInterestStore } from "@/store/useInterestStore";
+
+/** Enregistre la fiche consultée et les besoins qu'elle couvre. Ne rend rien. */
+export function ProductViewSignal({ code, goals }: { code: string; goals: readonly HealthGoal[] }): null {
+  const sent = useRef(false);
+  useEffect(() => {
+    if (sent.current) return;
+    sent.current = true;
+    useInterestStore.getState().viewProduct({ code, healthGoals: goals });
+  }, [code, goals]);
+  return null;
+}
+
+
+
+=== src/components/product/ProductAccordion.tsx ===
+import { ChevronDown } from "lucide-react";
+import type { ReactNode } from "react";
+import type { Product } from "@/lib/types";
+
+interface Section {
+  title: string;
+  body: ReactNode;
+}
+
+/** Accordéon natif (<details>) : accessible au clavier, sans JavaScript. N'affiche que les infos renseignées. */
+export function ProductAccordion({ product }: { product: Product }) {
+  const sections: Section[] = [];
+
+  if (product.duration) {
+    sections.push({ title: "Durée de la cure", body: <p>{product.duration}</p> });
+  }
+  if (product.usageAdvice) {
+    sections.push({ title: "Conseils de prise / Posologie", body: <p>{product.usageAdvice}</p> });
+  }
+  if (product.benefits.length > 0) {
+    sections.push({
+      title: "Bienfaits clés",
+      body: (
+        <ul className="list-disc space-y-1 pl-5">
+          {product.benefits.map((benefit) => (
+            <li key={benefit}>{benefit}</li>
+          ))}
+        </ul>
+      ),
+    });
+  }
+
+  if (sections.length === 0) return null;
+
+  return (
+    <div className="divide-y divide-gray-200 rounded-2xl border border-gray-200 bg-white">
+      {sections.map((section, index) => (
+        <details key={section.title} open={index === 0} className="group px-4">
+          <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 py-3 font-semibold text-gray-900 focus-visible:outline-2 focus-visible:outline-emerald-700 [&::-webkit-details-marker]:hidden">
+            {section.title}
+            <ChevronDown
+              aria-hidden
+              className="size-5 shrink-0 text-gray-700 transition-transform group-open:rotate-180 motion-reduce:transition-none"
+            />
+          </summary>
+          <div className="pb-4 text-sm leading-relaxed text-gray-800">{section.body}</div>
+        </details>
+      ))}
+    </div>
+  );
+}
+
+
+
+=== src/components/product/ProductActions.tsx ===
+"use client";
+
+import { MessageCircle, Minus, Plus, ShoppingCart } from "lucide-react";
+import { useState } from "react";
+import { clampQuantity, computeCartTotals, formatFCFA } from "@/lib/pricing";
+import type { Product } from "@/lib/types";
+import { buildSingleProductMessage, buildWhatsAppUrl } from "@/lib/whatsapp";
+import { useCartStore } from "@/store/useCartStore";
+
+const stepperButton =
+  "inline-flex size-11 items-center justify-center rounded-xl border border-gray-400 bg-white text-gray-900 hover:bg-gray-100 disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-emerald-700";
+
+/** Double bouton d'achat : « Ajouter au panier » et « Commander en 1 clic via WhatsApp » (sans passer par le panier). */
+export function ProductActions({ product }: { product: Product }) {
+  const [quantity, setQuantity] = useState(1);
+  const addItem = useCartStore((state) => state.addItem);
+
+  const totals = computeCartTotals([{ product, quantity }]);
+  const whatsappUrl = buildWhatsAppUrl(buildSingleProductMessage(product, quantity));
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <div role="group" aria-label="Quantité" className="flex items-center gap-2">
+          <button
+            type="button"
+            className={stepperButton}
+            aria-label="Diminuer la quantité"
+            disabled={quantity <= 1}
+            onClick={() => setQuantity((current) => clampQuantity(current - 1))}
+          >
+            <Minus aria-hidden className="size-4" />
+          </button>
+          <span aria-live="polite" className="w-10 text-center text-lg font-semibold">
+            {quantity}
+          </span>
+          <button
+            type="button"
+            className={stepperButton}
+            aria-label="Augmenter la quantité"
+            onClick={() => setQuantity((current) => clampQuantity(current + 1))}
+          >
+            <Plus aria-hidden className="size-4" />
+          </button>
+        </div>
+        <p className="text-sm text-gray-800">
+          Total : <strong>{formatFCFA(totals.total)}</strong>
+          {totals.vipUnlocked && " (prix VIP appliqué)"}
+        </p>
+      </div>
+
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <button
+          type="button"
+          onClick={() => addItem(product, quantity)}
+          className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 font-semibold text-white hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
+        >
+          <ShoppingCart aria-hidden className="size-5" />
+          Ajouter au panier
+        </button>
+        <a
+          href={whatsappUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#075E54] px-5 text-center font-semibold text-white hover:bg-[#064c44] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
+        >
+          <MessageCircle aria-hidden className="size-5" />
+          Commander en 1 clic via WhatsApp
+        </a>
+      </div>
+    </div>
+  );
+}
+
+
+
+=== src/components/product/ProductDetail.tsx ===
+import { ShieldCheck, Smartphone, Truck } from "lucide-react";
+import { COPY, DISTRIBUTOR_MENTION, VIP_THRESHOLD } from "@/lib/config";
+import { formatFCFA } from "@/lib/pricing";
+import type { Product } from "@/lib/types";
+import { ProductAccordion } from "./ProductAccordion";
+import { ProductActions } from "./ProductActions";
+import { ProductImageGallery } from "./ProductImageGallery";
+
+/** Fiche produit complète : galerie, prix public / VIP, accordéon, double bouton d'achat, réassurance. */
+export function ProductDetail({ product }: { product: Product }) {
+  // Un produit ou un pack déjà au-dessus du palier déclenche la remise VIP dès le premier exemplaire.
+  const vipImmediate = product.pricePublic >= VIP_THRESHOLD;
+
+  return (
+    <article className="mx-auto grid max-w-6xl gap-8 px-4 py-8 lg:grid-cols-2 lg:gap-12">
+      <ProductImageGallery key={product.slug} images={product.images} alt={product.name} />
+
+      <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-2">
+          <p className="text-sm font-medium text-emerald-800">{product.category}</p>
+          <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
+          <p className="max-w-prose text-gray-800">{product.shortDesc}</p>
+        </div>
+
+        <div className="flex flex-col gap-2 rounded-2xl border border-gray-200 bg-white p-4">
+          {vipImmediate ? (
+            <>
+              <p className="flex flex-wrap items-baseline gap-x-3">
+                <span className="text-3xl font-bold text-emerald-800">{formatFCFA(product.priceVip)}</span>
+                <span className="text-sm font-medium text-gray-800">Prix VIP</span>
+              </p>
+              <p className="text-sm text-gray-700">
+                Prix public : <s>{formatFCFA(product.pricePublic)}</s>
+              </p>
+              <p className="w-fit rounded-full bg-amber-100 px-3 py-1.5 text-sm font-semibold text-amber-900">
+                {COPY.vipBadge}
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="flex flex-wrap items-baseline gap-x-3">
+                <span className="text-3xl font-bold text-gray-900">{formatFCFA(product.pricePublic)}</span>
+                <span className="text-sm font-medium text-gray-800">Prix public</span>
+              </p>
+              <p className="text-sm text-emerald-800">
+                <strong>{formatFCFA(product.priceVip)}</strong> en prix VIP, dès {formatFCFA(VIP_THRESHOLD)} d&apos;achats
+              </p>
+            </>
+          )}
+        </div>
+
+        <ProductAccordion product={product} />
+        <ProductActions product={product} />
+
+        <ul className="grid gap-3 text-sm text-gray-800 sm:grid-cols-3">
+          <li className="flex items-start gap-2">
+            <ShieldCheck aria-hidden className="mt-0.5 size-5 shrink-0 text-emerald-700" />
+            Produit original et scellé, label IASC
+          </li>
+          <li className="flex items-start gap-2">
+            <Smartphone aria-hidden className="mt-0.5 size-5 shrink-0 text-emerald-700" />
+            {COPY.paymentTrust.title} : {COPY.paymentTrust.detail}
+          </li>
+          <li className="flex items-start gap-2">
+            <Truck aria-hidden className="mt-0.5 size-5 shrink-0 text-emerald-700" />
+            Livraison sous 24 h à Brazzaville et Pointe-Noire
+          </li>
+        </ul>
+
+        <p className="text-xs text-gray-700">{DISTRIBUTOR_MENTION}</p>
+      </div>
+    </article>
+  );
+}
+
+
+
+=== src/components/product/ProductImageGallery.tsx ===
+"use client";
+
+import { ImageOff } from "lucide-react";
+import { SafeImage } from "@/components/ui/SafeImage";
+import { useState } from "react";
+
+interface ProductImageGalleryProps {
+  images: readonly string[];
+  /** Nom du produit, utilisé comme texte alternatif. */
+  alt: string;
+}
+
+/** Grande photo active + miniatures cliquables. Monter avec `key={product.slug}` pour repartir de la 1re photo. */
+export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const active = images[activeIndex];
+
+  if (!active) {
+    return (
+      <div
+        role="img"
+        aria-label={`Photo de ${alt} bientôt disponible`}
+        className="flex aspect-square items-center justify-center rounded-2xl border border-dashed border-emerald-600 bg-emerald-50 text-emerald-800"
+      >
+        <ImageOff aria-hidden className="size-10" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="relative aspect-square overflow-hidden rounded-2xl border border-gray-200 bg-white">
+        <SafeImage
+          key={active}
+          src={active}
+          alt={alt}
+          fill
+          priority={activeIndex === 0}
+          sizes="(min-width: 1024px) 560px, 100vw"
+          className="object-cover"
+        />
+      </div>
+
+      {images.length > 1 && (
+        <ul aria-label="Photos du produit" className="flex gap-2 overflow-x-auto pb-1">
+          {images.map((src, index) => (
+            <li key={src} className="shrink-0">
+              <button
+                type="button"
+                onClick={() => setActiveIndex(index)}
+                aria-label={`Voir la photo ${index + 1} sur ${images.length}`}
+                aria-current={index === activeIndex ? "true" : undefined}
+                className={`relative block size-20 overflow-hidden rounded-xl border-2 bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 ${
+                  index === activeIndex
+                    ? "border-emerald-600"
+                    : "border-gray-200 hover:border-gray-400"
+                }`}
+              >
+                <SafeImage src={src} alt="" fill sizes="80px" className="object-cover" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+
+
+=== src/components/providers/CartHydrator.tsx ===
+"use client";
+
+import { useEffect } from "react";
+import { useCartStore } from "@/store/useCartStore";
+
+/** À monter une seule fois dans app/layout.tsx : relit le panier depuis localStorage après l'hydratation. */
+export function CartHydrator(): null {
+  useEffect(() => {
+    void useCartStore.persist.rehydrate();
+  }, []);
+  return null;
+}
+
+
+
+=== src/components/ui/SafeImage.tsx ===
+"use client";
+
+import { ImageOff } from "lucide-react";
+import Image, { type ImageProps } from "next/image";
+import { useState } from "react";
+
+/** next/image avec repli : si la photo est absente ou cassée, on affiche un emplacement neutre au lieu d'une image brisée. */
+export function SafeImage(props: ImageProps) {
+  const [failed, setFailed] = useState(false);
+
+  if (failed) {
+    return (
+      <div
+        role={props.alt ? "img" : undefined}
+        aria-label={props.alt || undefined}
+        aria-hidden={props.alt ? undefined : true}
+        className="absolute inset-0 flex items-center justify-center bg-emerald-50 text-emerald-800"
+      >
+        <ImageOff aria-hidden className="size-6" />
+      </div>
+    );
+  }
+  return <Image {...props} onError={() => setFailed(true)} />;
+}
+
+
+
+=== src/components/ui/styles.ts ===
+export const focusRing =
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700";
+const base = `inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 text-center font-semibold ${focusRing}`;
+export const btn = base;
+export const btnPrimary = `${base} bg-emerald-700 text-white hover:bg-emerald-800`;
+export const btnOutline = `${base} border border-emerald-700 bg-white text-emerald-800 hover:bg-emerald-50`;
+export const btnWhatsApp = `${base} bg-[#075E54] text-white hover:bg-[#064c44]`;
+export const card = "rounded-2xl border border-gray-200 bg-white";
+export const container = "mx-auto w-full max-w-6xl px-4";
+
+
+
+=== src/data/products.ts ===
+import { computeVipPrice } from "@/lib/pricing";
+import type { Product } from "@/lib/types";
+
+/**
+ * Jeu de départ : seuls les deux packs dont le prix public est confirmé.
+ * TODO : remplacer par l'import de la liste de prix FLP nettoyée (JSON),
+ * en gardant `priceVip: computeVipPrice(pricePublic)` pour rester cohérent.
+ */
+export const PRODUCTS: readonly Product[] = [
+  {
+    code: "PACK-ARTICULAIRE",
+    name: "Pack Confort Articulaire",
+    slug: "pack-confort-articulaire",
+    category: "Combo / Packs",
+    healthGoals: ["Articulations & Mobilité"],
+    pricePublic: 68_543,
+    priceVip: computeVipPrice(68_543),
+    images: ["/images/products/pack-articulaire-1.jpg"],
+    shortDesc: "Forever Freedom + Active HA + Aloe Heat Lotion, pour le confort au quotidien.",
+    // TODO : duration et usageAdvice à compléter d'après les fiches Forever.
+    benefits: [
+      "Trois produits complémentaires réunis dans un seul pack",
+      "Accompagne le confort articulaire au quotidien",
+      "Active automatiquement la remise VIP de 5 %",
+    ],
+    isBestSeller: true,
+    isPackSolution: true,
+  },
+  {
+    code: "PACK-C9",
+    name: "Pack Détox Minceur C9",
+    slug: "pack-detox-minceur-c9",
+    category: "Combo / Packs",
+    healthGoals: ["Détox & Perte de Poids"],
+    pricePublic: 97_166,
+    priceVip: computeVipPrice(97_166),
+    images: ["/images/products/pack-c9-1.jpg"],
+    shortDesc: "Programme Clean 9, au choix Vanille ou Chocolat.",
+    duration: "Programme de 9 jours (Clean 9)",
+    benefits: [
+      "Programme structuré pour repartir sur de bonnes habitudes",
+      "Saveur au choix : Vanille ou Chocolat",
+      "Active automatiquement la remise VIP de 5 %",
+    ],
+    isPackSolution: true,
+  },
+];
+
+const byCode = new Map(PRODUCTS.map((product) => [product.code, product]));
+const bySlug = new Map(PRODUCTS.map((product) => [product.slug, product]));
+
+export function getProductByCode(code: string): Product | undefined {
+  return byCode.get(code);
+}
+
+export function getProductBySlug(slug: string): Product | undefined {
+  return bySlug.get(slug);
+}
+
+
+
+=== src/data/testimonials.ts ===
+export interface Testimonial {
+  name: string;
+  city: string;
+  /** Capture WhatsApp réelle, dans /public/images/testimonials/ (avec l'accord du client). */
+  image: string;
+  caption?: string;
+}
+
+/** Laissez vide tant que vous n'avez pas de captures réelles : la section ne s'affiche pas. */
+export const TESTIMONIALS: readonly Testimonial[] = [];
+
+
+
+=== src/lib/catalogue.ts ===
+import { CATEGORY_SLUGS, HEALTH_GOAL_SLUGS } from "./config";
+import { CATEGORIES, HEALTH_GOALS, type Category, type HealthGoal, type Product } from "./types";
+
+export interface CatalogueQuery {
+  category?: Category;
+  goal?: HealthGoal;
+  q?: string;
+}
+
+type RawParams = Record<string, string | string[] | undefined>;
+
+const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
+const fold = (text: string) => text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+/** Lit ?categorie=…&besoin=…&q=… ; les valeurs inconnues sont ignorées. */
+export function parseCatalogueQuery(params: RawParams): CatalogueQuery {
+  const q = first(params.q)?.trim().slice(0, 80);
+  return {
+    category: CATEGORIES.find((category) => CATEGORY_SLUGS[category] === first(params.categorie)),
+    goal: HEALTH_GOALS.find((goal) => HEALTH_GOAL_SLUGS[goal] === first(params.besoin)),
+    q: q || undefined,
+  };
+}
+
+/** Filtre et trie dans l'ordre officiel de la grille tarifaire. */
+export function filterProducts(products: readonly Product[], query: CatalogueQuery): Product[] {
+  const needle = query.q ? fold(query.q) : null;
+  return products
+    .filter((product) => !query.category || product.category === query.category)
+    .filter((product) => !query.goal || product.healthGoals.includes(query.goal))
+    .filter(
+      (product) =>
+        !needle || fold(`${product.name} ${product.shortDesc} ${product.category}`).includes(needle),
+    )
+    .sort((a, b) => CATEGORIES.indexOf(a.category) - CATEGORIES.indexOf(b.category));
+}
+
+export function buildCatalogueHref(query: CatalogueQuery): string {
+  const params = new URLSearchParams();
+  if (query.category) params.set("categorie", CATEGORY_SLUGS[query.category]);
+  if (query.goal) params.set("besoin", HEALTH_GOAL_SLUGS[query.goal]);
+  if (query.q) params.set("q", query.q);
+  const search = params.toString();
+  return search ? `/catalogue?${search}` : "/catalogue";
+}
+
+
+
+=== src/lib/config.ts ===
+import type { Category, HealthGoal } from "./types";
+
+/** Palier (en FCFA) à partir duquel la remise VIP s'applique à toute la commande. */
+export const VIP_THRESHOLD = 65_000;
+/** Remise VIP en pourcentage entier (calcul en entiers, pas de flottants). */
+export const VIP_DISCOUNT_PERCENT = 5;
+export const MAX_LINE_QUANTITY = 99;
+export const DISTRIBUTOR_MENTION = "Entrepreneur Forever Indépendant Agréé";
+
+/** Numéro WhatsApp du distributeur, format international sans "+" (ex. 242061234567). */
+export const WHATSAPP_NUMBER: string = (
+  process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? ""
+).replace(/\D/g, "");
+
+/** Textes réutilisés partout : une seule modification suffit pour tout le site. */
+export const COPY = {
+  announcement: [
+    "Livraison express 24 h à Brazzaville et Pointe-Noire",
+    "Paiement mobile accepté : MTN Mobile Money, Airtel Money",
+    "Remise VIP de 5 % dès 65 000 F d'achats",
+  ],
+  paymentTrust: {
+    title: "Paiement mobile accepté",
+    detail: "MTN Mobile Money et Airtel Money",
+  },
+  heroSubtitle:
+    "Produits originaux et scellés. Vous commandez sur WhatsApp et vous réglez par Mobile Money.",
+  cartNote: "Paiement mobile accepté : MTN Mobile Money et Airtel Money",
+  vipBadge: "Ce pack active automatiquement votre remise VIP de 5 %",
+  leadReassurance:
+    "Garanti sans spam. Distributeur disponible à Brazzaville et Pointe-Noire.",
+  advicePrompt:
+    "Besoin d'un conseil ? Posez votre question par message ou note vocale",
+  
+  // Pages légales
+  legal: {
+    privacyTitle: "Politique de confidentialité",
+    deliveryTitle: "Livraison et paiement",
+    footerPrivacy: "Politique de confidentialité",
+    footerDelivery: "Livraison et paiement",
+  },
+  
+  // Footer
+  footer: {
+    about: "Votre boutique de produits Forever Living Products à Brazzaville, Pointe-Noire et dans toute la République du Congo.",
+    entrepreneurStatus: "Entrepreneur Forever Indépendant Agréé",
+    contact: "Commandez facilement par WhatsApp",
+    tagline: "Livraison express 24h • Paiement mobile accepté",
+  },
+} as const;
+
+export type HealthGoalIcon =
+  | "Salad"
+  | "Bone"
+  | "Zap"
+  | "Sparkles"
+  | "Leaf"
+  | "ShieldCheck";
+
+/** Libellés courts des cartes d'accueil + nom de l'icône lucide-react. */
+export const HEALTH_GOAL_META: Record<
+  HealthGoal,
+  { shortLabel: string; icon: HealthGoalIcon }
+> = {
+  "Digestion & Ventre plat": { shortLabel: "Digestion & Ventre plat", icon: "Salad" },
+  "Articulations & Mobilité": { shortLabel: "Articulations & Dos", icon: "Bone" },
+  "Vitalité & Forme Masculine": { shortLabel: "Vitalité masculine", icon: "Zap" },
+  "Peau & Teint Éclatant": { shortLabel: "Beauté de la peau", icon: "Sparkles" },
+  "Détox & Perte de Poids": { shortLabel: "Détox & Minceur", icon: "Leaf" },
+  "Défenses Immunitaires": { shortLabel: "Immunité & Tonus", icon: "ShieldCheck" },
+};
+
+export const SITE_NAME = "Yekola Shop";
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3001";
+
+/** Délai avant le pop-up de capture de lead, et durée de silence après une fermeture. */
+export const LEAD_MODAL_DELAY_MS = 7_000;
+export const LEAD_DISMISS_DAYS = 7;
+
+/** Slugs d'URL : /catalogue?besoin=digestion&categorie=packs (liens publicitaires compris). */
+export const HEALTH_GOAL_SLUGS: Record<HealthGoal, string> = {
+  "Digestion & Ventre plat": "digestion",
+  "Articulations & Mobilité": "articulations",
+  "Vitalité & Forme Masculine": "vitalite",
+  "Peau & Teint Éclatant": "peau",
+  "Détox & Perte de Poids": "detox",
+  "Défenses Immunitaires": "immunite",
+};
+
+export const CATEGORY_SLUGS: Record<Category, string> = {
+  "Combo / Packs": "packs",
+  Boissons: "boissons",
+  "Produits de la Ruche": "ruche",
+  "Compléments Alimentaires": "complements",
+  "Gestion du Poids": "poids",
+  "Soins Personnels": "soins-personnels",
+  "Soins de la Peau": "soins-peau",
+};
+
+
+=== src/lib/interest.ts ===
+import { HEALTH_GOAL_SLUGS } from "./config";
+import { HEALTH_GOALS, type HealthGoal } from "./types";
+
+/** D'où vient le signal de besoin : plus il est explicite, plus il pèse. */
+export type SignalOrigin = "choix" | "pub" | "catalogue" | "panier" | "produit";
+export type GoalScores = Partial<Record<HealthGoal, number>>;
+export type GoalOrigins = Partial<Record<HealthGoal, SignalOrigin[]>>;
+
+export const SIGNAL_WEIGHTS: Record<SignalOrigin, number> = {
+  choix: 100,
+  pub: 5,
+  catalogue: 3,
+  panier: 2,
+  produit: 1,
+};
+
+export const ORIGIN_LABELS: Record<SignalOrigin, string> = {
+  choix: "choisi dans le pop-up",
+  pub: "publicité",
+  catalogue: "filtre catalogue",
+  panier: "panier",
+  produit: "fiche produit",
+};
+
+const KEYWORDS: ReadonlyArray<readonly [HealthGoal, RegExp]> = [
+  ["Digestion & Ventre plat", /digest|ventre|intestin|transit/],
+  ["Articulations & Mobilité", /articul|mobilit|\bdos\b|genou/],
+  ["Vitalité & Forme Masculine", /vitalit|masculin|homme|energie|énergie/],
+  ["Peau & Teint Éclatant", /peau|teint|beaut/],
+  ["Détox & Perte de Poids", /detox|détox|minceur|poids|\bc9\b|clean ?9/],
+  ["Défenses Immunitaires", /immun|defense|défense|tonus/],
+];
+
+/** Reconnaît un besoin dans un slug (?besoin=digestion) ou un nom de campagne (utm_campaign=digestion-30-jours). */
+export function goalFromText(text: string | null | undefined): HealthGoal | null {
+  if (!text) return null;
+  const value = text.toLowerCase();
+  const bySlug = HEALTH_GOALS.find((goal) => HEALTH_GOAL_SLUGS[goal] === value);
+  if (bySlug) return bySlug;
+  return KEYWORDS.find(([, pattern]) => pattern.test(value))?.[0] ?? null;
+}
+
+export function applySignal(
+  scores: GoalScores,
+  origins: GoalOrigins,
+  goal: HealthGoal,
+  origin: SignalOrigin,
+): { scores: GoalScores; origins: GoalOrigins } {
+  const known = origins[goal] ?? [];
+  return {
+    scores: { ...scores, [goal]: (scores[goal] ?? 0) + SIGNAL_WEIGHTS[origin] },
+    origins: { ...origins, [goal]: known.includes(origin) ? known : [...known, origin] },
+  };
+}
+
+/** Besoins classés du plus au moins probable (à égalité : ordre officiel). */
+export function rankGoals(scores: GoalScores): HealthGoal[] {
+  return HEALTH_GOALS.filter((goal) => (scores[goal] ?? 0) > 0).sort(
+    (a, b) => (scores[b] ?? 0) - (scores[a] ?? 0),
+  );
+}
+
+export interface NeedProfile {
+  need: HealthGoal | null;
+  origins: SignalOrigin[];
+  others: HealthGoal[];
+}
+
+/** Synthèse au moment du lead : parcours du visiteur + panier + choix explicite éventuel. */
+export function buildNeedProfile(input: {
+  scores: GoalScores;
+  origins: GoalOrigins;
+  chosen: HealthGoal | null;
+  cartGoals: readonly HealthGoal[];
+}): NeedProfile {
+  let state = { scores: input.scores, origins: input.origins };
+  for (const goal of input.cartGoals) state = applySignal(state.scores, state.origins, goal, "panier");
+  if (input.chosen) state = applySignal(state.scores, state.origins, input.chosen, "choix");
+
+  const [need = null, ...others] = rankGoals(state.scores);
+  return { need, origins: need ? (state.origins[need] ?? []) : [], others: others.slice(0, 3) };
+}
+
+
+
+=== src/lib/leadClient.ts ===
+import { LEAD_DISMISS_DAYS } from "./config";
+import { parseLeadPayload } from "./leads";
+import type { LeadPayload } from "./types";
+
+const PENDING_KEY = "forever-lead-pending-v1";
+const STATUS_KEY = "forever-lead-status-v1";
+type LeadStatus = "submitted" | "dismissed";
+
+function safeGet(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function safeSet(key: string, value: string): void {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    /* navigation privée : on continue sans mémoire */
+  }
+}
+
+/** « submitted » pour toujours, « dismissed » pendant LEAD_DISMISS_DAYS jours : ensuite le pop-up peut revenir une fois. */
+export function readLeadStatus(): LeadStatus | null {
+  const raw = safeGet(STATUS_KEY);
+  if (!raw) return null;
+  try {
+    const { status, at } = JSON.parse(raw) as { status?: unknown; at?: unknown };
+    if (status === "submitted") return "submitted";
+    if (status === "dismissed" && typeof at === "number") {
+      return Date.now() - at < LEAD_DISMISS_DAYS * 86_400_000 ? "dismissed" : null;
+    }
+  } catch {
+    /* valeur corrompue : ignorée */
+  }
+  return null;
+}
+
+export function writeLeadStatus(status: LeadStatus): void {
+  if (readLeadStatus() === "submitted") return;
+  safeSet(STATUS_KEY, JSON.stringify({ status, at: Date.now() }));
+}
+
+async function post(payload: LeadPayload, honeypot = ""): Promise<void> {
+  try {
+    const response = await fetch("/api/leads", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...payload, website: honeypot }),
+      keepalive: true, // la requête aboutit même si WhatsApp prend le dessus sur l'onglet
+    });
+    if (response.ok) localStorage.removeItem(PENDING_KEY);
+  } catch {
+    /* réseau coupé : le lead reste en attente et repart à la prochaine visite */
+  }
+}
+
+/** Envoie le lead sans jamais bloquer le visiteur ; garde une copie locale jusqu'à confirmation. */
+export function sendLead(payload: LeadPayload, honeypot = ""): void {
+  safeSet(PENDING_KEY, JSON.stringify(payload));
+  void post(payload, honeypot);
+}
+
+export function retryPendingLead(): void {
+  const raw = safeGet(PENDING_KEY);
+  if (!raw) return;
+  try {
+    const payload = parseLeadPayload(JSON.parse(raw));
+    if (payload) void post(payload);
+  } catch {
+    /* ignoré */
+  }
+}
+
+
+
+=== src/lib/leads.ts ===
+import { normalizeCongoPhone } from "./phone";
+import { HEALTH_GOALS, type HealthGoal, type LeadPayload } from "./types";
+
+export function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+const text = (value: unknown, max: number): string =>
+  typeof value === "string" ? value.trim().slice(0, max) : "";
+
+const isGoal = (value: unknown): value is HealthGoal =>
+  typeof value === "string" && (HEALTH_GOALS as readonly string[]).includes(value);
+
+/** Validation côté serveur : tout ce qui vient du navigateur est non fiable. */
+export function parseLeadPayload(input: unknown): LeadPayload | null {
+  if (!isRecord(input)) return null;
+  const firstName = text(input.firstName, 60);
+  const phone = typeof input.phone === "string" ? normalizeCongoPhone(input.phone) : null;
+  if (firstName.length < 2 || !phone) return null;
+
+  return {
+    firstName,
+    phone,
+    need: isGoal(input.need) ? input.need : null,
+    needOrigin: text(input.needOrigin, 80),
+    otherNeeds: Array.isArray(input.otherNeeds) ? input.otherNeeds.filter(isGoal).slice(0, 5) : [],
+    viewedProducts: Array.isArray(input.viewedProducts)
+      ? input.viewedProducts.map((name) => text(name, 80)).filter(Boolean).slice(0, 8)
+      : [],
+    cartTotal:
+      typeof input.cartTotal === "number" && Number.isFinite(input.cartTotal)
+        ? Math.max(0, Math.round(input.cartTotal))
+        : 0,
+    campaign: text(input.campaign, 120),
+    source: text(input.source, 120),
+    referrer: text(input.referrer, 120),
+    landingPath: text(input.landingPath, 200),
+    pagePath: text(input.pagePath, 200),
+  };
+}
+
+
+
+=== src/lib/phone.ts ===
+/**
+ * Numéros congolais : 9 chiffres (avec le 0 initial) après l'indicatif 242.
+ * Accepte "06 123 4567", "+242 06 123 4567", "00242061234567".
+ * Retourne "242061234567" ou null si le numéro est invalide.
+ */
+export function normalizeCongoPhone(input: string): string | null {
+  let digits = input.replace(/\D/g, "");
+  if (digits.startsWith("00")) digits = digits.slice(2);
+  if (digits.length === 9) digits = `242${digits}`;
+  return /^242\d{9}$/.test(digits) ? digits : null;
+}
+
+
+
+=== src/lib/pricing.ts ===
+import {
+  MAX_LINE_QUANTITY,
+  VIP_DISCOUNT_PERCENT,
+  VIP_THRESHOLD,
+} from "./config";
+import type { CartItem, CartTotals, Product } from "./types";
+
+const numberFormatter = new Intl.NumberFormat("fr-FR", {
+  maximumFractionDigits: 0,
+});
+
+/** 65000 -> "65 000 F" (espaces insécables : le montant ne se coupe jamais en fin de ligne). */
+export function formatFCFA(amount: number): string {
+  const grouped = numberFormatter.format(Math.round(amount)).replace(/\u202f/g, "\u00a0");
+  return `${grouped}\u00a0F`;
+}
+
+/** Prix VIP = prix public -5 %, calculé en entiers puis arrondi au franc. */
+export function computeVipPrice(pricePublic: number): number {
+  return Math.round((pricePublic * (100 - VIP_DISCOUNT_PERCENT)) / 100);
+}
+
+export function getUnitPrice(product: Product, vipUnlocked: boolean): number {
+  return vipUnlocked ? product.priceVip : product.pricePublic;
+}
+
+export function clampQuantity(quantity: number): number {
+  if (!Number.isFinite(quantity)) return 1;
+  return Math.min(MAX_LINE_QUANTITY, Math.max(1, Math.trunc(quantity)));
+}
+
+/**
+ * Règle stricte : la remise VIP s'applique à TOUTE la commande si, et seulement si,
+ * le total au prix public atteint ou dépasse 65 000 F. En dessous : prix public.
+ */
+export function computeCartTotals(items: readonly CartItem[]): CartTotals {
+  let itemCount = 0;
+  let subtotalPublic = 0;
+  let subtotalVip = 0;
+
+  for (const { product, quantity } of items) {
+    itemCount += quantity;
+    subtotalPublic += product.pricePublic * quantity;
+    subtotalVip += product.priceVip * quantity;
+  }
+
+  const vipUnlocked = subtotalPublic >= VIP_THRESHOLD;
+  const total = vipUnlocked ? subtotalVip : subtotalPublic;
+
+  return {
+    itemCount,
+    subtotalPublic,
+    vipUnlocked,
+    vipDiscount: subtotalPublic - total,
+    total,
+    amountToVip: Math.max(0, VIP_THRESHOLD - subtotalPublic),
+    progressPercent: Math.min(100, Math.floor((subtotalPublic * 100) / VIP_THRESHOLD)),
+  };
+}
+
+
+
+=== src/lib/types.ts ===
+/**
+ * Source de vérité des catégories et besoins santé.
+ * Les tableaux `as const` donnent l'ordre officiel de la grille tarifaire
+ * au runtime ET les unions de types au compile-time.
+ */
+export const CATEGORIES = [
+  "Combo / Packs",
+  "Boissons",
+  "Produits de la Ruche",
+  "Compléments Alimentaires",
+  "Gestion du Poids",
+  "Soins Personnels",
+  "Soins de la Peau",
+] as const;
+export type Category = (typeof CATEGORIES)[number];
+
+export const HEALTH_GOALS = [
+  "Digestion & Ventre plat",
+  "Articulations & Mobilité",
+  "Vitalité & Forme Masculine",
+  "Peau & Teint Éclatant",
+  "Détox & Perte de Poids",
+  "Défenses Immunitaires",
+] as const;
+export type HealthGoal = (typeof HEALTH_GOALS)[number];
+
+export interface Product {
+  code: string;
+  name: string;
+  slug: string;
+  category: Category;
+  healthGoals: HealthGoal[];
+  pricePublic: number; // en FCFA, entier
+  priceVip: number; // en FCFA, entier (-5 %)
+  images: string[];
+  shortDesc: string;
+  duration?: string; // Ex : "Cure de 30 jours (60 comprimés)"
+  usageAdvice?: string; // Conseils d'utilisation / posologie
+  benefits: string[];
+  isBestSeller?: boolean;
+  isPackSolution?: boolean; // Pack calibré > 65 000 F
+}
+
+export const PAYMENT_METHODS = [
+  "Espèces à la livraison",
+  "MTN Mobile Money",
+  "Airtel Money",
+] as const;
+export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
+
+export const DELIVERY_ZONES = ["Brazzaville", "Pointe-Noire", "Province"] as const;
+export type DeliveryZone = (typeof DELIVERY_ZONES)[number];
+
+/** Ligne persistée : on ne stocke que le code, jamais le prix (évite les prix périmés). */
+export interface CartLine {
+  code: string;
+  quantity: number;
+}
+
+/** Ligne résolue contre le catalogue courant. */
+export interface CartItem {
+  product: Product;
+  quantity: number;
+}
+
+export interface CartTotals {
+  itemCount: number;
+  /** Total au prix public, avant remise : c'est lui qui est comparé au palier. */
+  subtotalPublic: number;
+  vipUnlocked: boolean;
+  vipDiscount: number;
+  /** Montant à régler : prix VIP si le palier est atteint, prix public sinon. */
+  total: number;
+  /** FCFA manquants pour débloquer la remise (0 si débloquée). */
+  amountToVip: number;
+  /** 0 à 100, arrondi à l'inférieur : 64 999 F n'affiche jamais 100 %. */
+  progressPercent: number;
+}
+
+export interface CustomerInfo {
+  fullName: string;
+  phone: string;
+  zone: DeliveryZone;
+  neighborhood: string;
+  payment: PaymentMethod;
+}
+
+/** Lead envoyé vers Google Sheets : coordonnées + besoin déduit du parcours du visiteur. */
+export interface LeadPayload {
+  firstName: string;
+  phone: string; // normalisé, ex. "242061234567"
+  need: HealthGoal | null;
+  needOrigin: string; // ex. "publicité, filtre catalogue"
+  otherNeeds: HealthGoal[];
+  viewedProducts: string[];
+  cartTotal: number;
+  campaign: string;
+  source: string;
+  referrer: string;
+  landingPath: string;
+  pagePath: string;
+}
+
+
+
+=== src/lib/whatsapp.ts ===
+import { VIP_DISCOUNT_PERCENT, VIP_THRESHOLD, WHATSAPP_NUMBER } from "./config";
+import { normalizeCongoPhone } from "./phone";
+import {
+  computeCartTotals,
+  formatFCFA,
+  getUnitPrice,
+} from "./pricing";
+import type { CartItem, CartTotals, CustomerInfo, HealthGoal, Product } from "./types";
+
+/** Lien wa.me avec message pré-rempli et correctement encodé. */
+export function buildWhatsAppUrl(
+  message: string,
+  number: string = WHATSAPP_NUMBER,
+): string {
+  return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+}
+
+function itemLines(items: readonly CartItem[], vipUnlocked: boolean): string[] {
+  return items.map(
+    ({ product, quantity }) =>
+      `• ${quantity} × ${product.name} : ${formatFCFA(getUnitPrice(product, vipUnlocked) * quantity)}`,
+  );
+}
+
+function totalsLines(totals: CartTotals): string[] {
+  const lines = [`Sous-total : ${formatFCFA(totals.subtotalPublic)}`];
+  if (totals.vipUnlocked) {
+    lines.push(
+      `Remise VIP (−${VIP_DISCOUNT_PERCENT} %) : −${formatFCFA(totals.vipDiscount)}`,
+    );
+  }
+  lines.push(`*Total : ${formatFCFA(totals.total)}*`);
+  return lines;
+}
+
+/** Commande complète depuis le panier. */
+export function buildCartOrderMessage(
+  items: readonly CartItem[],
+  customer: CustomerInfo,
+): string {
+  const totals = computeCartTotals(items);
+  const phone = normalizeCongoPhone(customer.phone);
+  return [
+    "Bonjour, je souhaite passer commande :",
+    "",
+    "*Articles*",
+    ...itemLines(items, totals.vipUnlocked),
+    "",
+    ...totalsLines(totals),
+    "",
+    "*Livraison*",
+    `Nom : ${customer.fullName.trim()}`,
+    `WhatsApp : ${phone ? `+${phone}` : customer.phone.trim()}`,
+    `Ville : ${customer.zone}`,
+    `Quartier / repère : ${customer.neighborhood.trim()}`,
+    `Règlement : ${customer.payment}`,
+  ].join("\n");
+}
+
+/** Commande en 1 clic depuis une fiche produit, sans passer par le panier. */
+export function buildSingleProductMessage(product: Product, quantity = 1): string {
+  const items: CartItem[] = [{ product, quantity }];
+  const totals = computeCartTotals(items);
+  const lines = [
+    "Bonjour, je souhaite commander :",
+    "",
+    ...itemLines(items, totals.vipUnlocked),
+    "",
+    ...totalsLines(totals),
+  ];
+  if (!totals.vipUnlocked) {
+    lines.push(`(Remise VIP de ${VIP_DISCOUNT_PERCENT} % dès ${formatFCFA(VIP_THRESHOLD)} d'achats)`);
+  }
+  lines.push("", "Pouvez-vous me confirmer la disponibilité et la livraison ?");
+  return lines.join("\n");
+}
+
+/** Demande du catalogue officiel (pop-up de capture), avec le besoin si on le connaît. */
+export function buildLeadMessage(firstName: string, phone: string, need?: HealthGoal): string {
+  const normalized = normalizeCongoPhone(phone);
+  return [
+    `Bonjour, je suis ${firstName.trim()}.`,
+    "Je souhaite recevoir le catalogue officiel Forever avec les tarifs en FCFA.",
+    ...(need ? [`Ce qui m'intéresse : ${need}`] : []),
+    `Mon numéro : ${normalized ? `+${normalized}` : phone.trim()}`,
+  ].join("\n");
+}
+
+/** Bouton flottant : question libre, par message ou note vocale. */
+export function buildAdviceMessage(): string {
+  return "Bonjour, j'ai une question sur les produits Forever. Je peux vous écrire ou vous envoyer une note vocale ?";
+}
+
+export function buildVipInfoMessage(): string {
+  return `Bonjour, je souhaite profiter de la remise VIP de ${VIP_DISCOUNT_PERCENT} % dès ${formatFCFA(VIP_THRESHOLD)} d'achats. Pouvez-vous m'expliquer comment faire ?`;
+}
+
+export function buildDistributorMessage(): string {
+  return "Bonjour, je souhaite en savoir plus sur l'opportunité de devenir distributeur Forever indépendant au Congo.";
+}
+
+export function buildNeedAdviceMessage(goal: HealthGoal): string {
+  return `Bonjour, je cherche des conseils pour : ${goal}. Que me recommandez-vous ?`;
+}
+
+
+
+=== src/lib/__tests__/pricing.test.ts ===
+import { describe, expect, it } from "vitest";
+import { normalizeCongoPhone } from "../phone";
+import { computeCartTotals, computeVipPrice, formatFCFA } from "../pricing";
+import type { CartItem, Product } from "../types";
+import { buildSingleProductMessage, buildWhatsAppUrl } from "../whatsapp";
+
+function makeProduct(pricePublic: number, code = "T1"): Product {
+  return {
+    code,
+    name: `Produit ${code}`,
+    slug: code.toLowerCase(),
+    category: "Boissons",
+    healthGoals: [],
+    pricePublic,
+    priceVip: computeVipPrice(pricePublic),
+    images: [],
+    shortDesc: "",
+    benefits: [],
+  };
+}
+
+const item = (price: number, quantity = 1, code = "T1"): CartItem => ({
+  product: makeProduct(price, code),
+  quantity,
+});
+
+const plain = (text: string) => text.replace(/\u00a0/g, " ");
+
+describe("prix VIP", () => {
+  it("calcule -5 % arrondi au franc", () => {
+    expect(computeVipPrice(68_543)).toBe(65_116);
+    expect(computeVipPrice(97_166)).toBe(92_308);
+  });
+});
+
+describe("palier de 65 000 F", () => {
+  it("garde le prix public à 64 999 F", () => {
+    const totals = computeCartTotals([item(64_999)]);
+    expect(totals.vipUnlocked).toBe(false);
+    expect(totals.total).toBe(64_999);
+    expect(totals.vipDiscount).toBe(0);
+    expect(totals.amountToVip).toBe(1);
+    expect(totals.progressPercent).toBe(99);
+  });
+
+  it("active la remise dès 65 000 F pile", () => {
+    const totals = computeCartTotals([item(65_000)]);
+    expect(totals.vipUnlocked).toBe(true);
+    expect(totals.total).toBe(61_750);
+    expect(totals.vipDiscount).toBe(3_250);
+    expect(totals.amountToVip).toBe(0);
+    expect(totals.progressPercent).toBe(100);
+  });
+
+  it("applique la remise à toutes les lignes quand le total cumulé atteint le palier", () => {
+    const totals = computeCartTotals([item(40_000, 1, "A"), item(30_000, 1, "B")]);
+    expect(totals.subtotalPublic).toBe(70_000);
+    expect(totals.total).toBe(38_000 + 28_500);
+  });
+
+  it("gère le panier vide", () => {
+    const totals = computeCartTotals([]);
+    expect(totals.total).toBe(0);
+    expect(totals.amountToVip).toBe(65_000);
+    expect(totals.progressPercent).toBe(0);
+  });
+});
+
+describe("formatage et téléphone", () => {
+  it("formate en FCFA", () => {
+    expect(plain(formatFCFA(65_000))).toBe("65 000 F");
+  });
+
+  it("normalise les numéros congolais", () => {
+    expect(normalizeCongoPhone("06 123 4567")).toBe("242061234567");
+    expect(normalizeCongoPhone("+242 06 123 4567")).toBe("242061234567");
+    expect(normalizeCongoPhone("123")).toBeNull();
+  });
+});
+
+describe("WhatsApp", () => {
+  it("construit un lien wa.me encodé", () => {
+    const url = buildWhatsAppUrl("Bonjour & merci", "242061234567");
+    expect(url).toBe("https://wa.me/242061234567?text=Bonjour%20%26%20merci");
+  });
+
+  it("applique le prix VIP dans la commande 1 clic d'un pack > 65 000 F", () => {
+    const message = plain(buildSingleProductMessage(makeProduct(68_543)));
+    expect(message).toContain("65 116 F");
+    expect(message).toContain("Remise VIP");
+  });
+});
+
+
+
+=== src/lib/__tests__/step3.test.ts ===
+import { describe, expect, it } from "vitest";
+import { filterProducts, buildCatalogueHref, parseCatalogueQuery } from "../catalogue";
+import { applySignal, buildNeedProfile, goalFromText, rankGoals } from "../interest";
+import { parseLeadPayload } from "../leads";
+import { computeVipPrice } from "../pricing";
+import type { Product } from "../types";
+
+const product = (code: string, over: Partial<Product> = {}): Product => ({
+  code,
+  name: `Produit ${code}`,
+  slug: code.toLowerCase(),
+  category: "Boissons",
+  healthGoals: [],
+  pricePublic: 10_000,
+  priceVip: computeVipPrice(10_000),
+  images: [],
+  shortDesc: "Boisson à base d'aloès",
+  benefits: [],
+  ...over,
+});
+
+describe("besoin déduit de l'arrivée", () => {
+  it("reconnaît les slugs et les noms de campagne", () => {
+    expect(goalFromText("digestion")).toBe("Digestion & Ventre plat");
+    expect(goalFromText("campagne-digestion-30-jours")).toBe("Digestion & Ventre plat");
+    expect(goalFromText("C9-minceur")).toBe("Détox & Perte de Poids");
+    expect(goalFromText("promo-noel")).toBeNull();
+  });
+
+  it("classe par poids des signaux", () => {
+    let s = applySignal({}, {}, "Peau & Teint Éclatant", "produit");
+    s = applySignal(s.scores, s.origins, "Digestion & Ventre plat", "pub");
+    expect(rankGoals(s.scores)[0]).toBe("Digestion & Ventre plat");
+  });
+
+  it("un choix explicite l'emporte sur la déduction", () => {
+    const ad = applySignal({}, {}, "Digestion & Ventre plat", "pub");
+    const profile = buildNeedProfile({ ...ad, chosen: "Défenses Immunitaires", cartGoals: [] });
+    expect(profile.need).toBe("Défenses Immunitaires");
+    expect(profile.origins).toEqual(["choix"]);
+    expect(profile.others).toEqual(["Digestion & Ventre plat"]);
+  });
+
+  it("retourne null sans aucun signal", () => {
+    expect(buildNeedProfile({ scores: {}, origins: {}, chosen: null, cartGoals: [] }).need).toBeNull();
+  });
+});
+
+describe("catalogue", () => {
+  const list = [
+    product("A", { category: "Soins de la Peau", healthGoals: ["Peau & Teint Éclatant"] }),
+    product("B", { category: "Combo / Packs", healthGoals: ["Digestion & Ventre plat"] }),
+  ];
+
+  it("filtre par catégorie et besoin, dans l'ordre officiel", () => {
+    expect(filterProducts(list, {}).map((p) => p.code)).toEqual(["B", "A"]);
+    expect(filterProducts(list, { goal: "Peau & Teint Éclatant" }).map((p) => p.code)).toEqual(["A"]);
+    expect(filterProducts(list, { category: "Combo / Packs" }).map((p) => p.code)).toEqual(["B"]);
+  });
+
+  it("cherche sans tenir compte des accents", () => {
+    expect(filterProducts(list, { q: "aloes" })).toHaveLength(2);
+  });
+
+  it("lit et reconstruit l'URL", () => {
+    const query = parseCatalogueQuery({ besoin: "digestion", categorie: ["packs"], q: " gel " });
+    expect(query).toEqual({ category: "Combo / Packs", goal: "Digestion & Ventre plat", q: "gel" });
+    expect(buildCatalogueHref(query)).toBe("/catalogue?categorie=packs&besoin=digestion&q=gel");
+    expect(parseCatalogueQuery({ besoin: "inconnu" }).goal).toBeUndefined();
+  });
+});
+
+describe("validation des leads", () => {
+  it("accepte un lead valide et normalise le numéro", () => {
+    const lead = parseLeadPayload({ firstName: " Marie ", phone: "06 123 4567", need: "Peau & Teint Éclatant" });
+    expect(lead?.phone).toBe("242061234567");
+    expect(lead?.firstName).toBe("Marie");
+  });
+
+  it("rejette un numéro invalide, un prénom vide et un besoin inconnu", () => {
+    expect(parseLeadPayload({ firstName: "Marie", phone: "123" })).toBeNull();
+    expect(parseLeadPayload({ firstName: "", phone: "061234567" })).toBeNull();
+    expect(parseLeadPayload({ firstName: "Marie", phone: "061234567", need: "Autre" })?.need).toBeNull();
+  });
+});
+
+
+
+=== src/store/useCartStore.ts ===
+"use client";
+
+import { useMemo } from "react";
+import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
+import { getProductByCode } from "@/data/products";
+import { clampQuantity, computeCartTotals } from "@/lib/pricing";
+import type { CartItem, CartLine, CartTotals, Product } from "@/lib/types";
+
+interface CartState {
+  lines: CartLine[];
+  isOpen: boolean;
+  /** Vrai une fois le panier relu depuis localStorage (évite les erreurs d'hydratation). */
+  hydrated: boolean;
+  addItem: (product: Product, quantity?: number) => void;
+  setQuantity: (code: string, quantity: number) => void;
+  removeItem: (code: string) => void;
+  clear: () => void;
+  openCart: () => void;
+  closeCart: () => void;
+  setHydrated: () => void;
+}
+
+interface PersistedCart {
+  lines: CartLine[];
+}
+
+/** Relecture défensive : ignore les données corrompues et les produits retirés du catalogue. */
+function sanitizeLines(value: unknown): CartLine[] {
+  if (!Array.isArray(value)) return [];
+  const lines: CartLine[] = [];
+  for (const entry of value) {
+    if (typeof entry !== "object" || entry === null) continue;
+    const { code, quantity } = entry as Record<string, unknown>;
+    if (typeof code !== "string" || typeof quantity !== "number") continue;
+    if (!getProductByCode(code)) continue;
+    lines.push({ code, quantity: clampQuantity(quantity) });
+  }
+  return lines;
+}
+
+export const useCartStore = create<CartState>()(
+  persist(
+    (set) => ({
+      lines: [],
+      isOpen: false,
+      hydrated: false,
+
+      addItem: (product, quantity = 1) =>
+        set((state) => {
+          const existing = state.lines.find((line) => line.code === product.code);
+          const lines = existing
+            ? state.lines.map((line) =>
+                line.code === product.code
+                  ? { ...line, quantity: clampQuantity(line.quantity + quantity) }
+                  : line,
+              )
+            : [...state.lines, { code: product.code, quantity: clampQuantity(quantity) }];
+          return { lines, isOpen: true };
+        }),
+
+      setQuantity: (code, quantity) =>
+        set((state) => ({
+          lines:
+            quantity <= 0
+              ? state.lines.filter((line) => line.code !== code)
+              : state.lines.map((line) =>
+                  line.code === code ? { ...line, quantity: clampQuantity(quantity) } : line,
+                ),
+        })),
+
+      removeItem: (code) =>
+        set((state) => ({ lines: state.lines.filter((line) => line.code !== code) })),
+
+      clear: () => set({ lines: [] }),
+      openCart: () => set({ isOpen: true }),
+      closeCart: () => set({ isOpen: false }),
+      setHydrated: () => set({ hydrated: true }),
+    }),
+    {
+      name: "forever-cart-v1",
+      version: 1,
+      storage: createJSONStorage<PersistedCart>(() => localStorage),
+      // Hydratation manuelle (voir CartHydrator) : le rendu serveur et le premier rendu client restent identiques.
+      skipHydration: true,
+      partialize: (state): PersistedCart => ({ lines: state.lines }),
+      merge: (persisted, current) => ({
+        ...current,
+        lines: sanitizeLines((persisted as Partial<PersistedCart> | undefined)?.lines),
+      }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHydrated();
+      },
+    },
+  ),
+);
+
+function resolveLines(lines: readonly CartLine[]): CartItem[] {
+  return lines.flatMap((line) => {
+    const product = getProductByCode(line.code);
+    return product ? [{ product, quantity: line.quantity }] : [];
+  });
+}
+
+/** Lignes du panier avec les prix courants du catalogue. */
+export function useCartItems(): CartItem[] {
+  const lines = useCartStore((state) => state.lines);
+  return useMemo(() => resolveLines(lines), [lines]);
+}
+
+/** Totaux avec la règle stricte du palier de 65 000 F. */
+export function useCartTotals(): CartTotals {
+  const items = useCartItems();
+  return useMemo(() => computeCartTotals(items), [items]);
+}
+
+export function useCartHydrated(): boolean {
+  return useCartStore((state) => state.hydrated);
+}
+
+/** Pour les gestionnaires d'événements (ex. confirmer la commande), hors rendu React. */
+export function getCartItems(): CartItem[] {
+  return resolveLines(useCartStore.getState().lines);
+}
+
+
+
+=== src/store/useInterestStore.ts ===
+"use client";
+
+import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
+import {
+  applySignal,
+  goalFromText,
+  type GoalOrigins,
+  type GoalScores,
+  type SignalOrigin,
+} from "@/lib/interest";
+import type { HealthGoal } from "@/lib/types";
+
+const MAX_VIEWED = 8;
+
+interface ArrivalInput {
+  search: string;
+  pathname: string;
+  referrer: string;
+}
+
+interface InterestState {
+  firstSeenAt: string | null;
+  landingPath: string | null;
+  campaign: string | null;
+  source: string | null;
+  referrer: string | null;
+  lastAdKey: string | null;
+  scores: GoalScores;
+  origins: GoalOrigins;
+  viewedProducts: string[];
+  captureArrival: (input: ArrivalInput) => void;
+  addSignal: (goal: HealthGoal, origin: SignalOrigin) => void;
+  viewProduct: (product: { code: string; healthGoals: readonly HealthGoal[] }) => void;
+}
+
+/**
+ * Mémoire silencieuse du parcours : d'où vient le visiteur et ce qu'il regarde.
+ * Rien n'est demandé au visiteur ; ces signaux servent à deviner son besoin au moment du lead.
+ */
+export const useInterestStore = create<InterestState>()(
+  persist(
+    (set) => ({
+      firstSeenAt: null,
+      landingPath: null,
+      campaign: null,
+      source: null,
+      referrer: null,
+      lastAdKey: null,
+      scores: {},
+      origins: {},
+      viewedProducts: [],
+
+      captureArrival: ({ search, pathname, referrer }) =>
+        set((state) => {
+          const params = new URLSearchParams(search);
+          const besoin = params.get("besoin");
+          const campaign = params.get("utm_campaign");
+          const content = params.get("utm_content");
+          const source =
+            [params.get("utm_source"), params.get("utm_medium")].filter(Boolean).join(" / ") || null;
+          const adGoal = goalFromText(besoin) ?? goalFromText(campaign) ?? goalFromText(content);
+          const adKey = [besoin, campaign, content].filter(Boolean).join("|") || null;
+
+          const base = {
+            firstSeenAt: state.firstSeenAt ?? new Date().toISOString(),
+            landingPath: state.landingPath ?? pathname,
+            referrer: state.referrer ?? (referrer || null),
+            campaign: campaign ?? state.campaign,
+            source: source ?? state.source,
+          };
+          if (adGoal && adKey !== state.lastAdKey) {
+            return { ...base, lastAdKey: adKey, ...applySignal(state.scores, state.origins, adGoal, "pub") };
+          }
+          return base;
+        }),
+
+      addSignal: (goal, origin) =>
+        set((state) => applySignal(state.scores, state.origins, goal, origin)),
+
+      viewProduct: ({ code, healthGoals }) =>
+        set((state) => {
+          let next = { scores: state.scores, origins: state.origins };
+          for (const goal of healthGoals) next = applySignal(next.scores, next.origins, goal, "produit");
+          return {
+            ...next,
+            viewedProducts: [code, ...state.viewedProducts.filter((item) => item !== code)].slice(0, MAX_VIEWED),
+          };
+        }),
+    }),
+    { name: "forever-interest-v1", version: 1, storage: createJSONStorage(() => localStorage) },
+  ),
+);
+
+
+

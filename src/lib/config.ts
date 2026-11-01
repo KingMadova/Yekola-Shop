@@ -1,6 +1,6 @@
 import type { Category, HealthGoal } from "./types";
 
-/** Palier (en FCFA) à partir duquel la remise VIP s'applique à toute la commande. */
+/** Palier (en FCFA) à partir duquel les prix client privilégié s'appliquent à toute la commande. */
 export const VIP_THRESHOLD = 65_000;
 export const MAX_LINE_QUANTITY = 99;
 export const DISTRIBUTOR_MENTION = "Entrepreneur Forever Indépendant Agréé";

@@ -53,7 +53,7 @@ describe("promotions", () => {
   });
 });
 
-describe("palier VIP avec promos (hypothèse A1 : le palier se mesure aux prix de vente)", () => {
+describe("palier client privilégié avec promos (mesuré aux prix de vente)", () => {
   it("applique le VIP sur les prix promo quand le total promo atteint 65 000 F", () => {
     const items = buildCatalog(rows([product("a", 50_000)], [promo("a", { percent_off: 30 })]), NOW);
     const totals = computeCartTotals([{ product: items[0]!, quantity: 2 }]); // 2 x 35 000 = 70 000

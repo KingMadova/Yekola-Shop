@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ProductSearch } from "./ProductSearch";
 import { focusRing } from "@/components/ui/styles";
 import { buildCatalogueHref, type CatalogueQuery } from "@/lib/catalogue";
 import { CATEGORY_SLUGS, HEALTH_GOAL_META, HEALTH_GOAL_SLUGS } from "@/lib/config";
@@ -13,22 +14,11 @@ const pill = (active: boolean) =>
 export function CatalogueFilters({ query }: { query: CatalogueQuery }) {
   return (
     <div className="flex flex-col gap-4">
-      <form action="/catalogue" role="search" className="flex gap-2">
-        {query.category && <input type="hidden" name="categorie" value={CATEGORY_SLUGS[query.category]} />}
-        {query.goal && <input type="hidden" name="besoin" value={HEALTH_GOAL_SLUGS[query.goal]} />}
-        <label htmlFor="catalogue-search" className="sr-only">Rechercher dans le catalogue</label>
-        <input
-          id="catalogue-search"
-          name="q"
-          type="search"
-          defaultValue={query.q}
-          placeholder="Rechercher un produit"
-          className={`min-h-11 w-full max-w-md rounded-xl border border-gray-400 bg-white px-3 text-base ${focusRing}`}
-        />
-        <button type="submit" className={`min-h-11 rounded-xl bg-emerald-700 px-5 font-semibold text-white hover:bg-emerald-800 ${focusRing}`}>
-          Rechercher
-        </button>
-      </form>
+      <ProductSearch
+        initialQuery={query.q}
+        categorySlug={query.category ? CATEGORY_SLUGS[query.category] : undefined}
+        goalSlug={query.goal ? HEALTH_GOAL_SLUGS[query.goal] : undefined}
+      />
 
       <nav aria-label="Catégories">
         <p className="mb-2 text-sm font-semibold text-gray-900">Catégories</p>

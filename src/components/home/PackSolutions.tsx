@@ -15,7 +15,7 @@ export async function PackSolutions() {
         <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#9a7b40]">Des choix simples</p>
         <h2 className="text-xl font-bold tracking-tight text-[#20382d] sm:text-2xl">Nos packs à découvrir</h2>
         <p className="mt-1 text-sm text-[#68756c]">
-          Dès {formatFCFA(VIP_THRESHOLD)} d&apos;achats, votre remise VIP de 5 % s&apos;applique automatiquement.
+          Dès {formatFCFA(VIP_THRESHOLD)} d&apos;achats, les tarifs client privilégié de la grille officielle s&apos;appliquent à la commande.
         </p>
       </div>
       <ProductGrid products={packs} highlightVip />

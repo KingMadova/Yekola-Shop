@@ -32,7 +32,7 @@ Direction visuelle (références fournies : NovaTrend, NimbleCart) : bandeau d'a
 | R7 | 7 catégories, dans cet ordre : Combo / Packs, Boissons, Produits de la Ruche, Compléments Alimentaires, Gestion du Poids, Soins Personnels, Soins de la Peau. 6 besoins santé (voir `src/lib/types.ts`). |
 | R8 | Livraison express 24 h à Brazzaville et Pointe-Noire ; province via agences de transport ; retrait sur rendez-vous. |
 | R9 | **Slugs d'URL figés** (utilisés par les publicités) : `digestion`, `articulations`, `vitalite`, `peau`, `detox`, `immunite`. Ne pas les renommer. |
-| R10 | **Une boutique par partenaire**, mêmes produits, mêmes prix, mêmes promos, même règle VIP. Ces données sont gérées **uniquement par l'admin**. |
+| R10 | **Une boutique par partenaire**, mêmes produits, mêmes tarifs officiels, mêmes promos et même seuil client privilégié. Ces données sont gérées **uniquement par l'admin**. |
 | R11 | Chaque boutique envoie ses messages WhatsApp **uniquement au numéro de son partenaire**. Aucun numéro par défaut implicite. |
 | R12 | Un partenaire ne voit **que ses propres** leads et commandes. Jamais ceux d'un autre. |
 | R13 | *(Hypothèse à confirmer, Q-P2)* Un partenaire est un FBO Forever agréé ; son numéro FBO est affiché et la mention « Entrepreneur Forever Indépendant Agréé » s'applique à lui. |
@@ -64,7 +64,7 @@ Variables d'environnement actuelles (`.env.example`) :
 | Bloc | Contenu | Fichiers clés |
 |---|---|---|
 | Types et règles | Catégories, besoins, produit, lignes de panier, totaux, lead | `src/lib/types.ts`, `src/lib/config.ts` |
-| Moteur de prix | Prix VIP, palier strict, formatage FCFA, bornes de quantité | `src/lib/pricing.ts` |
+| Moteur de prix | Tarifs client privilégié officiels, seuil strict, formatage FCFA, bornes de quantité | `src/lib/pricing.ts` |
 | Panier | Zustand persistant, ne stocke que `code` + `quantité`, hydratation manuelle | `src/store/useCartStore.ts`, `components/providers/CartHydrator.tsx` |
 | WhatsApp | Commande panier, commande 1 clic, demande de catalogue, conseil, VIP, distributeur | `src/lib/whatsapp.ts`, `src/lib/phone.ts` |
 | Composants | Galerie, barre VIP, bouton WhatsApp flottant, fiche produit à double bouton, tiroir panier + formulaire | `src/components/product/*`, `cart/*`, `layout/FloatingWhatsAppButton.tsx` |
@@ -285,7 +285,7 @@ Ordre conseillé : 0, 1, **2, 3, 4, 5, 6, 7, 8, 9**. La phase 8 (PWA) est indép
 2. Routes : `/admin/login`, `/admin`, `/admin/produits`, `/admin/produits/nouveau`, `/admin/produits/[id]`, **`/admin/partenaires`** (liste, invitation par e-mail, activation/suspension, parrain, numéro WhatsApp, n° FBO, lien de la boutique, aperçu des leads).
    - Ajouter `/admin/leads` : liste filtrable, détail, dates/heures de première visite et de soumission, statut, notes, filtres par partenaire/période/besoin/source ; export CSV propre et PDF lisible, réservé à l'admin.
 3. **Protection à deux niveaux :** `proxy.ts` (renouvelle la session, redirige) **et** `requireAdmin()` au début de **chaque** Server Action. L'interface seule ne suffit jamais. `/admin` en `noindex`. Les clients Supabase `server`/`browser` (cookies) sont créés ici.
-4. Formulaire produit (validation `zod`) : nom, slug, catégorie, besoins, prix public, textes, bienfaits, visible/masqué, meilleure vente. **Prix VIP en lecture seule.** Aperçu de la carte.
+4. Formulaire produit (validation `zod`) : nom, slug, catégorie, besoins, prix public, textes, bienfaits, visible/masqué, meilleure vente. **Prix client privilégié en lecture seule, saisi selon la grille officielle.** Aperçu de la carte.
 5. **Images :** compression dans le navigateur (annexe D), envoi direct vers Supabase Storage par URL signée, réordonner, supprimer.
 6. Après chaque enregistrement : `updateTag("catalog")` (ou `partner:{slug}`).
 - **Fait quand :** l'admin crée un produit avec photos et invite un partenaire ; le site public change en moins d'une minute.
@@ -645,7 +645,7 @@ Réviser aussi les titres de sections, descriptions des besoins, cartes produits
 - aucune allégation de guérison, de prévention ou de traitement médical ;
 - ne pas présenter un complément comme substitut à un avis médical ;
 - ne pas inventer de résultats, d'avis clients, de certifications, de délais ou de zones de livraison ;
-- conserver les règles de prix VIP, promotions, commande WhatsApp et paiement définies en section 2 ;
+- conserver les règles de prix client privilégié, promotions, commande WhatsApp et paiement définies en section 2 ;
 - conserver la mention légale « Entrepreneur Forever Indépendant Agréé » au bon endroit ;
 - textes partagés et réutilisés centralisés dans `COPY` de `src/lib/config.ts` lorsque pertinent.
 
@@ -654,7 +654,7 @@ Réviser aussi les titres de sections, descriptions des besoins, cartes produits
 1. **En-tête compact :** une seule ligne utile, marque, panier et accès recherche/navigation ; supprimer la double rangée mobile actuelle si elle encombre le premier écran. Prévoir une navigation basse uniquement si elle améliore réellement l'accès aux destinations principales et ne masque pas le contenu.
 2. **Accueil :** Hero complet au premier écran, puis réassurance, besoins/catégories, meilleures ventes, packs, témoignages authentiques (section masquée si aucune preuve réelle), conseil et pied de page.
 3. **Catalogue :** recherche facilement accessible, filtres mobiles compacts (panneau ou tiroir si nécessaire), nombre de résultats lisible et grille adaptée aux petits écrans.
-4. **Cartes produits :** photo cohérente, nom lisible, prix public/promo/VIP sans ambiguïté, action tactile claire ; pas de densité excessive.
+4. **Cartes produits :** photo cohérente, nom lisible, prix public/promo/client privilégié sans ambiguïté, action tactile claire ; pas de densité excessive.
 5. **Fiche produit :** galerie adaptée au mobile, informations et prix hiérarchisés, contenu scannable, quantité simple, CTA d'achat accessible sans masquer les informations.
 6. **Panier/commande :** récapitulatif clair, contrôle des quantités facile, formulaire lisible et CTA WhatsApp évident ; respecter les règles métier existantes.
 7. **Éléments flottants :** WhatsApp, tiroirs, modales et éventuelle navigation fixe ne doivent jamais recouvrir les actions, champs ou contenus importants.

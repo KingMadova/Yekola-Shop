@@ -99,6 +99,8 @@ export interface LeadLocation {
 
 /** Données du prospect envoyées à l'API serveur Supabase. */
 export interface LeadPayload {
+  /** Slug de la boutique visitée ; le lead est toujours rattaché à ce partenaire. */
+  partnerSlug: string;
   firstName: string;
   phone: string; // normalisé, ex. "242061234567"
   need: HealthGoal | null;

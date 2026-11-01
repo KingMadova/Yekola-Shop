@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { MessageCircle, Users, BookOpen, BriefcaseBusiness } from "lucide-react";
+import { MessageCircle, Users, BookOpen, Briefcase } from "lucide-react";
 import { container } from "@/components/ui/styles";
 import { DISTRIBUTOR_MENTION } from "@/lib/config";
 import { buildDistributorMessage, buildWhatsAppUrl } from "@/lib/whatsapp";

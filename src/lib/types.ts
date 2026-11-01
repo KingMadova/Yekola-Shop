@@ -31,7 +31,7 @@ export interface Product {
   category: Category;
   healthGoals: HealthGoal[];
   pricePublic: number; // en FCFA, entier
-  priceVip: number; // en FCFA, entier (-5 %)
+  priceVip: number; // en FCFA, entier (tarif client privilégié officiel)
   images: string[];
   shortDesc: string;
   duration?: string; // Ex : "Cure de 30 jours (60 comprimés)"
@@ -74,7 +74,7 @@ export interface CartTotals {
   subtotalPublic: number;
   vipUnlocked: boolean;
   vipDiscount: number;
-  /** Montant à régler : prix VIP si le palier est atteint, prix public sinon. */
+  /** Montant à régler : tarif client privilégié si le palier est atteint, prix public sinon. */
   total: number;
   /** FCFA manquants pour débloquer la remise (0 si débloquée). */
   amountToVip: number;

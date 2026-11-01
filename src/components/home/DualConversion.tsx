@@ -9,9 +9,9 @@ export function DualConversion() {
     <section className={`${container} grid gap-3 py-9 sm:grid-cols-2 sm:gap-4 sm:py-12`}>
       <div className="flex flex-col items-start gap-3 rounded-3xl bg-[#173f35] p-5 text-white sm:p-7">
         <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#e4d2a8]">Avantage client</p>
-        <h2 className="text-xl font-bold leading-tight sm:text-2xl">Votre remise VIP dès {formatFCFA(VIP_THRESHOLD)}</h2>
+        <h2 className="text-xl font-bold leading-tight sm:text-2xl">Les prix client privilégié dès {formatFCFA(VIP_THRESHOLD)}</h2>
         <p className="text-sm leading-relaxed text-[#e0e9e2]">
-          À partir de ce montant, profitez de 5 % de remise sur toute votre commande. Le calcul se fait automatiquement dans le panier.
+          À partir de ce montant, les tarifs client privilégié de la grille officielle s'appliquent automatiquement à votre commande.
         </p>
         <a href={buildWhatsAppUrl(buildVipInfoMessage())} target="_blank" rel="noopener noreferrer" className={`${btn} mt-1 min-h-11 bg-[#f7f6f0] text-sm text-[#173f35] hover:bg-white`}>
           En savoir plus <ArrowRight aria-hidden className="size-4" />

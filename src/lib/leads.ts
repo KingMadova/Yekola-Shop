@@ -1,3 +1,4 @@
+import { HOUSE_PARTNER_SLUG } from "./config";
 import { normalizeCongoPhone } from "./phone";
 import { HEALTH_GOALS, type HealthGoal, type LeadPayload, type LeadLocation } from "./types";
 
@@ -51,6 +52,9 @@ function parseLocation(value: unknown): LeadLocation | null {
 export function parseLeadPayload(input: unknown): LeadPayload | null {
   if (!isRecord(input)) return null;
 
+  const partnerSlug = text(input.partnerSlug, 30) || HOUSE_PARTNER_SLUG;
+  if (!/^[a-z0-9][a-z0-9-]{1,28}[a-z0-9]$/.test(partnerSlug)) return null;
+
   const firstName = text(input.firstName, 60);
   const phone = typeof input.phone === "string" ? normalizeCongoPhone(input.phone) : null;
   if (firstName.length < 2 || !phone) return null;
@@ -58,6 +62,7 @@ export function parseLeadPayload(input: unknown): LeadPayload | null {
   const location = parseLocation(input.location);
 
   return {
+    partnerSlug,
     firstName,
     phone,
     need: isGoal(input.need) ? input.need : null,

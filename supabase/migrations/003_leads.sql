@@ -55,6 +55,7 @@ as $$
   limit 1
 $$;
 
+revoke all on function public.current_partner_id() from public, anon;
 grant execute on function public.current_partner_id() to authenticated;
 
 create policy "leads: admin read all" on public.leads

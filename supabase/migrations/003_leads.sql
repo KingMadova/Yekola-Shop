@@ -40,6 +40,7 @@ create index leads_status_idx on public.leads (status);
 
 alter table public.leads enable row level security;
 revoke all on public.leads from anon, authenticated;
+grant all on public.leads to service_role;
 grant select on public.leads to authenticated;
 grant update (status, note) on public.leads to authenticated;
 

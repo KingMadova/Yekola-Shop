@@ -9,7 +9,9 @@ import { Header } from "@/components/layout/Header";
 import { InterestTracker } from "@/components/lead/InterestTracker";
 import { LeadCaptureModal } from "@/components/lead/LeadCaptureModal";
 import { CartHydrator } from "@/components/providers/CartHydrator";
+import { CatalogProvider } from "@/components/providers/CatalogProvider";
 import { SITE_NAME, SITE_URL } from "@/lib/config";
+import { getCatalog } from "@/lib/data/catalog";
 import "./globals.css";
 
 const font = Plus_Jakarta_Sans({ subsets: ["latin"], display: "swap" });
@@ -24,22 +26,26 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { themeColor: "#059669" };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const products = await getCatalog();
+
   return (
     <html lang="fr">
       <body className={`${font.className} flex min-h-dvh flex-col bg-gray-50 text-gray-900 antialiased`}>
-        <a href="#contenu" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-white focus:p-3">
-          Aller au contenu
-        </a>
-        <AnnouncementBar />
-        <Header />
-        <main id="contenu" className="flex-1">{children}</main>
-        <Footer />
-        <CartDrawer />
-        <FloatingWhatsAppButton />
-        <LeadCaptureModal />
-        <CartHydrator />
-        <InterestTracker />
+        <CatalogProvider products={products}>
+          <a href="#contenu" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-white focus:p-3">
+            Aller au contenu
+          </a>
+          <AnnouncementBar />
+          <Header />
+          <main id="contenu" className="flex-1">{children}</main>
+          <Footer />
+          <CartDrawer />
+          <FloatingWhatsAppButton />
+          <LeadCaptureModal />
+          <CartHydrator />
+          <InterestTracker />
+        </CatalogProvider>
       </body>
     </html>
   );

@@ -30,7 +30,7 @@ export function ProductDetail({ product }: { product: Product }) {
                 <span className="text-sm font-medium text-gray-800">Prix VIP</span>
               </p>
               <p className="text-sm text-gray-700">
-                Prix public : <s>{formatFCFA(product.pricePublic)}</s>
+                Prix public : <s>{formatFCFA(product.compareAtPrice ?? product.pricePublic)}</s>
               </p>
               <p className="w-fit rounded-full bg-amber-100 px-3 py-1.5 text-sm font-semibold text-amber-900">
                 {COPY.vipBadge}
@@ -40,7 +40,13 @@ export function ProductDetail({ product }: { product: Product }) {
             <>
               <p className="flex flex-wrap items-baseline gap-x-3">
                 <span className="text-3xl font-bold text-gray-900">{formatFCFA(product.pricePublic)}</span>
-                <span className="text-sm font-medium text-gray-800">Prix public</span>
+                <span className="text-sm font-medium text-gray-800">{product.compareAtPrice ? "Prix promo" : "Prix public"}</span>
+                {product.compareAtPrice && (
+                  <>
+                    <s className="text-base text-gray-700">{formatFCFA(product.compareAtPrice)}</s>
+                    <span className="rounded-full bg-amber-700 px-2.5 py-1 text-xs font-bold text-white">{product.promoBadge}</span>
+                  </>
+                )}
               </p>
               <p className="text-sm text-emerald-800">
                 <strong>{formatFCFA(product.priceVip)}</strong> en prix VIP, dès {formatFCFA(VIP_THRESHOLD)} d&apos;achats
@@ -48,6 +54,19 @@ export function ProductDetail({ product }: { product: Product }) {
             </>
           )}
         </div>
+
+        {product.packItems && (
+          <div className="rounded-2xl border border-gray-200 bg-white p-4">
+            <p className="font-semibold text-gray-900">Ce pack contient</p>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-gray-800">
+              {product.packItems.map((item) => (
+                <li key={item.code}>
+                  {item.quantity} × {item.name}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <ProductAccordion product={product} />
         <ProductActions product={product} />

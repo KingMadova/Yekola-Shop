@@ -2,13 +2,14 @@ import Link from "next/link";
 import { ImageOff } from "lucide-react";
 import { SafeImage } from "@/components/ui/SafeImage";
 import { btn, container } from "@/components/ui/styles";
-import { PRODUCTS } from "@/data/products";
+import { getCatalog } from "@/lib/data/catalog";
 import { COPY, DISTRIBUTOR_MENTION, VIP_THRESHOLD } from "@/lib/config";
 import { formatFCFA } from "@/lib/pricing";
 import { buildAdviceMessage, buildWhatsAppUrl } from "@/lib/whatsapp";
 
-export function Hero() {
-  const featured = PRODUCTS.find((product) => product.isPackSolution && product.isBestSeller) ?? PRODUCTS[0];
+export async function Hero() {
+  const products = await getCatalog();
+  const featured = products.find((product) => product.isPackSolution && product.isBestSeller) ?? products[0];
   const photo = featured?.images[0];
   const vipImmediate = featured ? featured.pricePublic >= VIP_THRESHOLD : false;
 

@@ -2,11 +2,10 @@ import { computeVipPrice } from "@/lib/pricing";
 import type { Product } from "@/lib/types";
 
 /**
- * Jeu de départ : seuls les deux packs dont le prix public est confirmé.
- * TODO : remplacer par l'import de la liste de prix FLP nettoyée (JSON),
- * en gardant `priceVip: computeVipPrice(pricePublic)` pour rester cohérent.
+ * Catalogue de secours pour le développement local sans Supabase.
+ * Les vrais produits vivent en base (voir supabase/seed.sql et scripts/import-products.mjs).
  */
-export const PRODUCTS: readonly Product[] = [
+export const SEED_PRODUCTS: readonly Product[] = [
   {
     code: "PACK-ARTICULAIRE",
     name: "Pack Confort Articulaire",
@@ -15,9 +14,8 @@ export const PRODUCTS: readonly Product[] = [
     healthGoals: ["Articulations & Mobilité"],
     pricePublic: 68_543,
     priceVip: computeVipPrice(68_543),
-    images: ["/images/products/pack-articulaire-1.jpg"],
+    images: [],
     shortDesc: "Forever Freedom + Active HA + Aloe Heat Lotion, pour le confort au quotidien.",
-    // TODO : duration et usageAdvice à compléter d'après les fiches Forever.
     benefits: [
       "Trois produits complémentaires réunis dans un seul pack",
       "Accompagne le confort articulaire au quotidien",
@@ -34,7 +32,7 @@ export const PRODUCTS: readonly Product[] = [
     healthGoals: ["Détox & Perte de Poids"],
     pricePublic: 97_166,
     priceVip: computeVipPrice(97_166),
-    images: ["/images/products/pack-c9-1.jpg"],
+    images: [],
     shortDesc: "Programme Clean 9, au choix Vanille ou Chocolat.",
     duration: "Programme de 9 jours (Clean 9)",
     benefits: [
@@ -45,14 +43,3 @@ export const PRODUCTS: readonly Product[] = [
     isPackSolution: true,
   },
 ];
-
-const byCode = new Map(PRODUCTS.map((product) => [product.code, product]));
-const bySlug = new Map(PRODUCTS.map((product) => [product.slug, product]));
-
-export function getProductByCode(code: string): Product | undefined {
-  return byCode.get(code);
-}
-
-export function getProductBySlug(slug: string): Product | undefined {
-  return bySlug.get(slug);
-}

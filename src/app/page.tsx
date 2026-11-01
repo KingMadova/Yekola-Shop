@@ -6,10 +6,11 @@ import { PackSolutions } from "@/components/home/PackSolutions";
 import { Testimonials } from "@/components/home/Testimonials";
 import { TrustBand } from "@/components/home/TrustBand";
 import { container } from "@/components/ui/styles";
-import { PRODUCTS } from "@/data/products";
+import { getCatalog } from "@/lib/data/catalog";
 
-export default function HomePage() {
-  const bestSellers = PRODUCTS.filter((product) => product.isBestSeller && !product.isPackSolution);
+export default async function HomePage() {
+  const products = await getCatalog();
+  const bestSellers = products.filter((product) => product.isBestSeller && !product.isPackSolution);
 
   return (
     <>

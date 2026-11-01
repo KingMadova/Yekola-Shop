@@ -31,6 +31,11 @@ export function ProductCard({ product, highlightVip = false }: ProductCardProps)
               Meilleure vente
             </span>
           )}
+          {product.promoBadge && (
+            <span className="absolute right-2 top-2 rounded-full bg-amber-700 px-2.5 py-1 text-xs font-bold text-white">
+              {product.promoBadge}
+            </span>
+          )}
         </div>
         <div>
           <p className="text-xs text-gray-700">{product.category}</p>
@@ -47,12 +52,17 @@ export function ProductCard({ product, highlightVip = false }: ProductCardProps)
           <div>
             <p className="text-lg font-bold text-emerald-800">{formatFCFA(product.priceVip)}</p>
             <p className="text-xs text-gray-700">
-              Prix VIP au lieu de <s>{formatFCFA(product.pricePublic)}</s>
+              Prix VIP au lieu de <s>{formatFCFA(product.compareAtPrice ?? product.pricePublic)}</s>
             </p>
           </div>
         ) : (
           <div>
-            <p className="text-lg font-bold text-gray-900">{formatFCFA(product.pricePublic)}</p>
+            <p className="text-lg font-bold text-gray-900">
+              {formatFCFA(product.pricePublic)}
+              {product.compareAtPrice && (
+                <s className="ml-2 text-sm font-normal text-gray-700">{formatFCFA(product.compareAtPrice)}</s>
+              )}
+            </p>
             <p className="text-xs text-gray-700">
               VIP : {formatFCFA(product.priceVip)} dès {formatFCFA(VIP_THRESHOLD)} d&apos;achats
             </p>

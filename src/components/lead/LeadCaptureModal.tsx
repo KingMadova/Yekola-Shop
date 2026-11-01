@@ -3,7 +3,7 @@
 import { Check, MessageCircle, X } from "lucide-react";
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { focusRing } from "@/components/ui/styles";
-import { getProductByCode } from "@/data/products";
+import { useCatalog } from "@/components/providers/CatalogContext";
 import { COPY, HEALTH_GOAL_META, LEAD_MODAL_DELAY_MS } from "@/lib/config";
 import { buildNeedProfile, ORIGIN_LABELS } from "@/lib/interest";
 import { readLeadStatus, retryPendingLead, sendLead, writeLeadStatus } from "@/lib/leadClient";
@@ -11,7 +11,7 @@ import { normalizeCongoPhone } from "@/lib/phone";
 import { computeCartTotals } from "@/lib/pricing";
 import { HEALTH_GOALS, type HealthGoal, type LeadPayload } from "@/lib/types";
 import { buildLeadMessage, buildWhatsAppUrl } from "@/lib/whatsapp";
-import { getCartItems, useCartStore } from "@/store/useCartStore";
+import { useCartItems, useCartStore } from "@/store/useCartStore";
 import { useInterestStore } from "@/store/useInterestStore";
 
 const fieldClass = `min-h-12 w-full rounded-lg border bg-white px-3 text-base text-gray-900 ${focusRing}`;
@@ -25,8 +25,6 @@ function isTyping(): boolean {
   );
 }
 
-const cartGoals = (): HealthGoal[] => getCartItems().flatMap((item) => item.product.healthGoals);
-
 /**
  * Pop-up de capture : prénom + numéro WhatsApp, rien d'autre d'obligatoire.
  * Le besoin est déduit du parcours (publicité, filtres, fiches, panier) ; le visiteur peut le corriger en un geste.
@@ -37,6 +35,12 @@ export function LeadCaptureModal() {
   const nameRef = useRef<HTMLInputElement>(null);
   const phoneRef = useRef<HTMLInputElement>(null);
   const submitted = useRef(false);
+  const { getProductByCode } = useCatalog();
+  const cartItems = useCartItems();
+  const itemsRef = useRef(cartItems);
+  useEffect(() => {
+    itemsRef.current = cartItems;
+  }, [cartItems]);
 
   const [open, setOpen] = useState(false);
   const [done, setDone] = useState(false);
@@ -70,7 +74,7 @@ export function LeadCaptureModal() {
         scores: interest.scores,
         origins: interest.origins,
         chosen: null,
-        cartGoals: cartGoals(),
+        cartGoals: itemsRef.current.flatMap((item) => item.product.healthGoals),
       });
       setNeed(profile.need);
       setInferred(profile.need !== null);
@@ -102,7 +106,7 @@ export function LeadCaptureModal() {
     if (nextErrors.phone || !normalized) return phoneRef.current?.focus();
 
     const interest = useInterestStore.getState();
-    const items = getCartItems();
+    const items = itemsRef.current;
     const profile = buildNeedProfile({
       scores: interest.scores,
       origins: interest.origins,

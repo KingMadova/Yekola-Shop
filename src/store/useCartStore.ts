@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { getProductByCode } from "@/data/products";
+import { useCatalog } from "@/components/providers/CatalogContext";
 import { clampQuantity, computeCartTotals } from "@/lib/pricing";
 import type { CartItem, CartLine, CartTotals, Product } from "@/lib/types";
 
@@ -15,6 +15,8 @@ interface CartState {
   addItem: (product: Product, quantity?: number) => void;
   setQuantity: (code: string, quantity: number) => void;
   removeItem: (code: string) => void;
+  /** Retire les lignes dont le produit n'existe plus au catalogue. */
+  prune: (validCodes: readonly string[]) => void;
   clear: () => void;
   openCart: () => void;
   closeCart: () => void;
@@ -25,7 +27,7 @@ interface PersistedCart {
   lines: CartLine[];
 }
 
-/** Relecture défensive : ignore les données corrompues et les produits retirés du catalogue. */
+/** Relecture défensive : ignore les données corrompues. Les produits disparus sont retirés par `prune`. */
 function sanitizeLines(value: unknown): CartLine[] {
   if (!Array.isArray(value)) return [];
   const lines: CartLine[] = [];
@@ -33,7 +35,6 @@ function sanitizeLines(value: unknown): CartLine[] {
     if (typeof entry !== "object" || entry === null) continue;
     const { code, quantity } = entry as Record<string, unknown>;
     if (typeof code !== "string" || typeof quantity !== "number") continue;
-    if (!getProductByCode(code)) continue;
     lines.push({ code, quantity: clampQuantity(quantity) });
   }
   return lines;
@@ -72,6 +73,12 @@ export const useCartStore = create<CartState>()(
       removeItem: (code) =>
         set((state) => ({ lines: state.lines.filter((line) => line.code !== code) })),
 
+      prune: (validCodes) =>
+        set((state) => {
+          const lines = state.lines.filter((line) => validCodes.includes(line.code));
+          return lines.length === state.lines.length ? state : { lines };
+        }),
+
       clear: () => set({ lines: [] }),
       openCart: () => set({ isOpen: true }),
       closeCart: () => set({ isOpen: false }),
@@ -95,17 +102,18 @@ export const useCartStore = create<CartState>()(
   ),
 );
 
-function resolveLines(lines: readonly CartLine[]): CartItem[] {
-  return lines.flatMap((line) => {
-    const product = getProductByCode(line.code);
-    return product ? [{ product, quantity: line.quantity }] : [];
-  });
-}
-
-/** Lignes du panier avec les prix courants du catalogue. */
+/** Lignes du panier avec les prix courants du catalogue (promos comprises). */
 export function useCartItems(): CartItem[] {
   const lines = useCartStore((state) => state.lines);
-  return useMemo(() => resolveLines(lines), [lines]);
+  const { getProductByCode } = useCatalog();
+  return useMemo(
+    () =>
+      lines.flatMap((line) => {
+        const product = getProductByCode(line.code);
+        return product ? [{ product, quantity: line.quantity }] : [];
+      }),
+    [lines, getProductByCode],
+  );
 }
 
 /** Totaux avec la règle stricte du palier de 65 000 F. */
@@ -116,9 +124,4 @@ export function useCartTotals(): CartTotals {
 
 export function useCartHydrated(): boolean {
   return useCartStore((state) => state.hydrated);
-}
-
-/** Pour les gestionnaires d'événements (ex. confirmer la commande), hors rendu React. */
-export function getCartItems(): CartItem[] {
-  return resolveLines(useCartStore.getState().lines);
 }

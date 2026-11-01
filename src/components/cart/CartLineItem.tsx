@@ -19,6 +19,7 @@ export function CartLineItem({ item, vipUnlocked }: CartLineItemProps) {
   const setQuantity = useCartStore((state) => state.setQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
   const unitPrice = getUnitPrice(product, vipUnlocked);
+  const strike = vipUnlocked ? (product.compareAtPrice ?? product.pricePublic) : product.compareAtPrice;
   const photo = product.images[0];
 
   return (
@@ -37,9 +38,7 @@ export function CartLineItem({ item, vipUnlocked }: CartLineItemProps) {
             <p className="font-semibold text-gray-900">{product.name}</p>
             <p className="text-sm text-gray-800">
               {formatFCFA(unitPrice)}
-              {vipUnlocked && (
-                <s className="ml-2 text-xs text-gray-700">{formatFCFA(product.pricePublic)}</s>
-              )}
+              {strike && <s className="ml-2 text-xs text-gray-700">{formatFCFA(strike)}</s>}
             </p>
           </div>
           <button

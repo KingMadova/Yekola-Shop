@@ -1,12 +1,12 @@
 import { ProductGrid } from "@/components/catalogue/ProductGrid";
 import { container } from "@/components/ui/styles";
-import { PRODUCTS } from "@/data/products";
+import { getCatalog } from "@/lib/data/catalog";
 import { formatFCFA } from "@/lib/pricing";
 import { VIP_THRESHOLD } from "@/lib/config";
 
 /** Packs calibrés au-dessus du palier : la remise VIP s'applique dès le premier pack. */
-export function PackSolutions() {
-  const packs = PRODUCTS.filter((product) => product.isPackSolution);
+export async function PackSolutions() {
+  const packs = (await getCatalog()).filter((product) => product.isPackSolution);
   if (packs.length === 0) return null;
 
   return (

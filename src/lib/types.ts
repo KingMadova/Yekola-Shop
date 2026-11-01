@@ -39,6 +39,11 @@ export interface Product {
   benefits: string[];
   isBestSeller?: boolean;
   isPackSolution?: boolean; // Pack calibré > 65 000 F
+  /** Prix catalogue barré quand une promo est active (`pricePublic` est alors le prix de vente). */
+  compareAtPrice?: number;
+  promoBadge?: string;
+  /** Composition d'un pack (remplie par le catalogue). */
+  packItems?: { code: string; name: string; quantity: number }[];
 }
 
 export const PAYMENT_METHODS = [

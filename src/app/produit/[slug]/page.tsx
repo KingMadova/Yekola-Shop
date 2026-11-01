@@ -5,19 +5,19 @@ import { ProductGrid } from "@/components/catalogue/ProductGrid";
 import { ProductViewSignal } from "@/components/lead/ProductViewSignal";
 import { ProductDetail } from "@/components/product/ProductDetail";
 import { container } from "@/components/ui/styles";
-import { PRODUCTS, getProductBySlug } from "@/data/products";
+import { getCatalog, getProductBySlug } from "@/lib/data/catalog";
 import { SITE_URL } from "@/lib/config";
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>;
 }
 
-export function generateStaticParams() {
-  return PRODUCTS.map((product) => ({ slug: product.slug }));
+export async function generateStaticParams() {
+  return (await getCatalog()).map((product) => ({ slug: product.slug }));
 }
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
-  const product = getProductBySlug((await params).slug);
+  const product = await getProductBySlug((await params).slug);
   if (!product) return {};
   return {
     title: product.name,
@@ -28,10 +28,10 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await getProductBySlug(slug);
   if (!product) notFound();
 
-  const related = PRODUCTS.filter(
+  const related = (await getCatalog()).filter(
     (other) =>
       other.code !== product.code &&
       (other.category === product.category || other.healthGoals.some((goal) => product.healthGoals.includes(goal))),

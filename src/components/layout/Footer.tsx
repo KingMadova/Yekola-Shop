@@ -1,85 +1,55 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { MessageCircle } from 'lucide-react';
-import { COPY, DISTRIBUTOR_MENTION, SITE_NAME, WHATSAPP_NUMBER } from '@/lib/config';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { MessageCircle } from "lucide-react";
+import { COPY, DISTRIBUTOR_MENTION, SITE_NAME } from "@/lib/config";
+import { buildAdviceMessage, buildWhatsAppUrl } from "@/lib/whatsapp";
 
 export function Footer() {
   const [currentYear, setCurrentYear] = useState(2026);
-
-  useEffect(() => {
-    setCurrentYear(new Date().getFullYear());
-  }, []);
+  useEffect(() => setCurrentYear(new Date().getFullYear()), []);
+  const contactUrl = buildWhatsAppUrl(buildAdviceMessage());
 
   return (
-    <footer className="bg-[#059669] text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Colonne 1 : À propos */}
+    <footer className="mt-12 bg-[#123d32] text-white">
+      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
+        <div className="grid gap-9 md:grid-cols-[1.2fr_1fr_1fr]">
           <div>
-            <h3 className="text-lg font-bold mb-4">{SITE_NAME}</h3>
-            <p className="text-sm text-green-50 mb-4">{COPY.footer.about}</p>
-            <p className="text-sm text-green-50 font-semibold">
-              {DISTRIBUTOR_MENTION}
-            </p>
+            <h2 className="text-xl font-extrabold tracking-tight">{SITE_NAME}</h2>
+            <p className="mt-3 max-w-sm text-sm leading-relaxed text-[#e0e9e2]">{COPY.footer.about}</p>
+            <p className="mt-4 text-xs font-semibold text-[#e4d2a8]">{DISTRIBUTOR_MENTION}</p>
           </div>
 
-          {/* Colonne 2 : Liens utiles */}
-          <div>
-            <h3 className="text-lg font-bold mb-4">Informations</h3>
-            <ul className="space-y-3">
-              <li>
-                <Link
-                  href="/catalogue"
-                  className="text-sm text-green-50 hover:text-white transition-colors inline-flex items-center min-h-[44px]"
-                >
-                  Catalogue complet
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/livraison-paiement"
-                  className="text-sm text-green-50 hover:text-white transition-colors inline-flex items-center min-h-[44px]"
-                >
-                  {COPY.legal.footerDelivery}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/confidentialite"
-                  className="text-sm text-green-50 hover:text-white transition-colors inline-flex items-center min-h-[44px]"
-                >
-                  {COPY.legal.footerPrivacy}
-                </Link>
-              </li>
+          <nav aria-label="Liens utiles">
+            <h2 className="text-sm font-bold uppercase tracking-[0.14em] text-[#e4d2a8]">Explorer</h2>
+            <ul className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1">
+              {[
+                ["Catalogue", "/catalogue"],
+                ["Packs", "/packs"],
+                ["Vos besoins", "/besoins"],
+                ["Panier", "/panier"],
+                ["Devenir partenaire", "/devenir-partenaire"],
+                ["Livraison et paiement", "/livraison-paiement"],
+                ["Confidentialité", "/confidentialite"],
+              ].map(([label, href]) => (
+                <li key={href}><Link href={href} className="inline-flex min-h-10 items-center text-sm text-[#e0e9e2] hover:text-white hover:underline">{label}</Link></li>
+              ))}
             </ul>
-          </div>
+          </nav>
 
-          {/* Colonne 3 : Contact */}
           <div>
-            <h3 className="text-lg font-bold mb-4">Contact</h3>
-            <p className="text-sm text-green-50 mb-4">{COPY.footer.contact}</p>
-            <a
-              href={`https://wa.me/${WHATSAPP_NUMBER}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-[#059669] font-medium rounded-lg hover:bg-green-50 transition-colors min-h-[44px]"
-            >
-              <MessageCircle className="w-5 h-5" aria-hidden="true" />
-              Nous contacter
+            <h2 className="text-sm font-bold uppercase tracking-[0.14em] text-[#e4d2a8]">Une question ?</h2>
+            <p className="mt-3 text-sm leading-relaxed text-[#e0e9e2]">{COPY.footer.contact}</p>
+            <a href={contactUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#f6f3ea] px-4 font-semibold text-[#173f35] hover:bg-white">
+              <MessageCircle aria-hidden className="size-5" /> Nous écrire
             </a>
           </div>
         </div>
 
-        {/* Barre de copyright */}
-        <div className="mt-12 pt-8 border-t border-green-600">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-green-50">
-              © {currentYear} {SITE_NAME}. Tous droits réservés.
-            </p>
-            <p className="text-xs text-green-100">{COPY.footer.tagline}</p>
-          </div>
+        <div className="mt-9 flex flex-col gap-2 border-t border-white/15 pt-5 text-xs text-[#d9e4dc] sm:flex-row sm:items-center sm:justify-between">
+          <p>© {currentYear} {SITE_NAME}. Tous droits réservés.</p>
+          <p>{COPY.footer.tagline}</p>
         </div>
       </div>
     </footer>

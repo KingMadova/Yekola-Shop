@@ -24,14 +24,14 @@ export function VipProgressBar({ totals }: VipProgressBarProps) {
     <div
       className={`rounded-xl border p-3 ${
         vipUnlocked
-          ? "border-emerald-600 bg-emerald-50 text-emerald-900"
-          : "border-gray-200 bg-white text-gray-900"
+          ? "border-[#cbd8ca] bg-[#edf1e9] text-[#173f35]"
+          : "border-[#e9e5d9] bg-[#fbfaf6] text-[#26392e]"
       }`}
     >
       <div className="flex items-start gap-3">
         <Icon
           aria-hidden
-          className={`mt-0.5 size-5 shrink-0 ${vipUnlocked ? "text-emerald-700" : "text-amber-700"}`}
+          className={`mt-0.5 size-5 shrink-0 ${vipUnlocked ? "text-[#315d47]" : "text-[#8b713e]"}`}
         />
         <p role="status" className="text-sm font-semibold">
           {message}
@@ -44,17 +44,17 @@ export function VipProgressBar({ totals }: VipProgressBarProps) {
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={progressPercent}
-        className="mt-3 h-2.5 overflow-hidden rounded-full bg-gray-200"
+        className="mt-3 h-2.5 overflow-hidden rounded-full bg-[#e9e5d9]"
       >
         <div
           className={`h-full rounded-full transition-[width] duration-500 ease-out motion-reduce:transition-none ${
-            vipUnlocked ? "bg-emerald-600" : "bg-amber-600"
+            vipUnlocked ? "bg-[#315d47]" : "bg-[#b08c48]"
           }`}
           style={{ width: `${progressPercent}%` }}
         />
       </div>
 
-      <p className="mt-1.5 text-xs text-gray-700">
+      <p className="mt-1.5 text-xs text-[#68756c]">
         {formatFCFA(subtotalPublic)} sur {formatFCFA(VIP_THRESHOLD)}
       </p>
     </div>

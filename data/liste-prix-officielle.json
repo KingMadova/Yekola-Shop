@@ -342,7 +342,7 @@
       "category": "Gestion du Poids",
       "priceVip": 93145,
       "pricePublic": 97166,
-      "isPack": false,
+      "isPack": true,
       "sortOrder": 380
     },
     {
@@ -351,7 +351,7 @@
       "category": "Gestion du Poids",
       "priceVip": 93145,
       "pricePublic": 97166,
-      "isPack": false,
+      "isPack": true,
       "sortOrder": 390
     },
     {

@@ -29,14 +29,19 @@ export const COPY = {
     title: "Paiement mobile accepté",
     detail: "MTN Mobile Money et Airtel Money",
   },
+  heroEyebrow: "Votre boutique bien-être au Congo",
+  heroTitle: "Faites le choix d’un bien-être qui vous ressemble.",
   heroSubtitle:
-    "Produits originaux et scellés. Vous commandez sur WhatsApp et vous réglez par Mobile Money.",
+    "Découvrez les produits Forever Living, comparez les prix en FCFA et échangez avec un conseiller pour choisir en toute confiance.",
+  heroPrimaryCta: "Voir les produits",
+  heroSecondaryCta: "Être conseillé",
+  heroReassurance: "Commande sur WhatsApp · Paiement mobile accepté",
   cartNote: "Paiement mobile accepté : MTN Mobile Money et Airtel Money",
   vipBadge: "Ce pack active automatiquement votre remise VIP de 5 %",
   leadReassurance:
     "Garanti sans spam. Distributeur disponible à Brazzaville et Pointe-Noire.",
   advicePrompt:
-    "Besoin d'un conseil ? Posez votre question par message ou note vocale",
+    "Une question sur un produit ? Échangez avec un conseiller.",
 
   // Pages légales
   legal: {
@@ -48,10 +53,10 @@ export const COPY = {
 
   // Footer
   footer: {
-    about: "Votre boutique de produits Forever Living Products à Brazzaville, Pointe-Noire et dans toute la République du Congo.",
+    about: "Votre boutique de produits Forever Living à Brazzaville, Pointe-Noire et dans toute la République du Congo.",
     entrepreneurStatus: "Entrepreneur Forever Indépendant Agréé",
-    contact: "Commandez facilement par WhatsApp",
-    tagline: "Livraison express 24h • Paiement mobile accepté",
+    contact: "Une question avant de commander ? Échangeons sur WhatsApp.",
+    tagline: "Commande sur WhatsApp · Paiement mobile accepté",
   },
 } as const;
 
@@ -68,12 +73,12 @@ export const HEALTH_GOAL_META: Record<
   HealthGoal,
   { shortLabel: string; icon: HealthGoalIcon }
 > = {
-  "Digestion & Ventre plat": { shortLabel: "Digestion & Ventre plat", icon: "Salad" },
-  "Articulations & Mobilité": { shortLabel: "Articulations & Dos", icon: "Bone" },
+  "Digestion & Ventre plat": { shortLabel: "Digestion & ventre plat", icon: "Salad" },
+  "Articulations & Mobilité": { shortLabel: "Articulations & mobilité", icon: "Bone" },
   "Vitalité & Forme Masculine": { shortLabel: "Vitalité masculine", icon: "Zap" },
   "Peau & Teint Éclatant": { shortLabel: "Beauté de la peau", icon: "Sparkles" },
-  "Détox & Perte de Poids": { shortLabel: "Détox & Minceur", icon: "Leaf" },
-  "Défenses Immunitaires": { shortLabel: "Immunité & Tonus", icon: "ShieldCheck" },
+  "Détox & Perte de Poids": { shortLabel: "Détox & minceur", icon: "Leaf" },
+  "Défenses Immunitaires": { shortLabel: "Immunité & tonus", icon: "ShieldCheck" },
 };
 
 export const SITE_NAME = "Yekola Shop";

@@ -55,7 +55,7 @@ export default function BecomePartnerPage() {
         <Users aria-hidden className="size-5 shrink-0" />
         <span>Vous pouvez commencer par une simple conversation pour comprendre le modèle et poser toutes vos questions.</span>
         <BookOpen aria-hidden className="hidden size-5 shrink-0 sm:block" />
-        <BriefcaseBusiness aria-hidden className="hidden size-5 shrink-0 sm:block" />
+        <Briefcase aria-hidden className="hidden size-5 shrink-0 sm:block" />
       </div>
     </section>
   );

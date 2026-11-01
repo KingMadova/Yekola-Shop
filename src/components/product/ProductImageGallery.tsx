@@ -20,7 +20,7 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
       <div
         role="img"
         aria-label={`Photo de ${alt} bientôt disponible`}
-        className="flex aspect-square items-center justify-center rounded-2xl border border-dashed border-emerald-600 bg-emerald-50 text-emerald-800"
+        className="flex aspect-square items-center justify-center rounded-2xl border border-dashed border-[#d8dfd2] bg-[#edf1e9] text-[#315d47]"
       >
         <ImageOff aria-hidden className="size-10" />
       </div>
@@ -29,7 +29,7 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative aspect-square overflow-hidden rounded-2xl border border-gray-200 bg-white">
+      <div className="relative aspect-square overflow-hidden rounded-2xl border border-[#e9e5d9] bg-[#fbfaf6]">
         <SafeImage
           key={active}
           src={active}
@@ -50,10 +50,10 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
                 onClick={() => setActiveIndex(index)}
                 aria-label={`Voir la photo ${index + 1} sur ${images.length}`}
                 aria-current={index === activeIndex ? "true" : undefined}
-                className={`relative block size-20 overflow-hidden rounded-xl border-2 bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 ${
+                className={`relative block size-20 overflow-hidden rounded-xl border-2 bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#173f35] ${
                   index === activeIndex
-                    ? "border-emerald-600"
-                    : "border-gray-200 hover:border-gray-400"
+                    ? "border-[#173f35]"
+                    : "border-[#e9e5d9] hover:border-[#bda36d]"
                 }`}
               >
                 <SafeImage src={src} alt="" fill sizes="80px" className="object-cover" />

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Search } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 import { ProductSearch } from "@/components/catalogue/ProductSearch";
 import { CartButton } from "@/components/cart/CartButton";
 import { container, focusRing } from "@/components/ui/styles";
@@ -42,6 +42,18 @@ export function Header() {
           >
             <Search aria-hidden className="size-5" />
           </Link>
+          <details className="relative md:hidden">
+            <summary aria-label="Ouvrir le menu" className={`inline-flex size-10 cursor-pointer list-none items-center justify-center rounded-full text-[#31483d] hover:bg-[#f1eee4] ${focusRing}`}>
+              <Menu aria-hidden className="size-5" />
+            </summary>
+            <nav aria-label="Navigation mobile" className="absolute right-0 top-full z-50 mt-2 w-60 rounded-2xl border border-[#e8e5dc] bg-white p-2 shadow-xl">
+              {[...LINKS, { label: "Devenir partenaire", href: "/devenir-partenaire" }, { label: "Mon panier", href: "/panier" }].map((link) => (
+                <Link key={link.href} href={link.href} className="flex min-h-11 items-center rounded-xl px-3 text-sm font-semibold text-[#26392e] hover:bg-[#f6f3ea]">
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          </details>
           <CartButton />
         </div>
       </div>

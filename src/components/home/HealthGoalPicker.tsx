@@ -1,8 +1,7 @@
 import { Bone, Leaf, Salad, ShieldCheck, Sparkles, Zap, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { card, container, focusRing } from "@/components/ui/styles";
-import { buildCatalogueHref } from "@/lib/catalogue";
-import { HEALTH_GOAL_META, type HealthGoalIcon } from "@/lib/config";
+import { HEALTH_GOAL_META, HEALTH_GOAL_SLUGS, type HealthGoalIcon } from "@/lib/config";
 import { HEALTH_GOALS } from "@/lib/types";
 
 const ICONS: Record<HealthGoalIcon, LucideIcon> = { Salad, Bone, Zap, Sparkles, Leaf, ShieldCheck };
@@ -23,7 +22,7 @@ export function HealthGoalPicker() {
           return (
             <li key={goal}>
               <Link
-                href={buildCatalogueHref({ goal })}
+                href={"/besoins?besoin=" + HEALTH_GOAL_SLUGS[goal]}
                 className={`${card} flex h-full min-h-[112px] flex-col items-start justify-between gap-3 border-[#e9e5d9] p-3 text-left text-sm font-semibold text-[#2a4034] transition-colors hover:border-[#bda36d] hover:bg-[#fbfaf6] sm:min-h-32 sm:p-4 ${focusRing}`}
               >
                 <span className="inline-flex size-9 items-center justify-center rounded-full bg-[#edf1e9]">

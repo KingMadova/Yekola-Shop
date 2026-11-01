@@ -20,18 +20,18 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: { default: `${SITE_NAME} : bien-être naturel au Congo`, template: `%s · ${SITE_NAME}` },
   description:
-    "Produits Forever Living originaux et scellés, livrés à Brazzaville et Pointe-Noire sous 24 h. Commande sur WhatsApp, paiement mobile accepté.",
+    "Découvrez les produits Forever Living, consultez les tarifs en FCFA et commandez sur WhatsApp. Paiement mobile accepté et livraison selon votre zone.",
   openGraph: { type: "website", siteName: SITE_NAME, locale: "fr_FR" },
 };
 
-export const viewport: Viewport = { themeColor: "#059669" };
+export const viewport: Viewport = { themeColor: "#123D32" };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const products = await getCatalog();
 
   return (
     <html lang="fr">
-      <body className={`${font.className} flex min-h-dvh flex-col bg-gray-50 text-gray-900 antialiased`}>
+      <body className={`${font.className} flex min-h-dvh flex-col bg-[#fbfaf6] text-[#26392e] antialiased`}>
         <CatalogProvider products={products}>
           <a href="#contenu" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-white focus:p-3">
             Aller au contenu

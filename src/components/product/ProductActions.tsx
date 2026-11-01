@@ -45,7 +45,7 @@ export function ProductActions({ product }: { product: Product }) {
         </div>
         <p className="text-sm text-gray-800">
           Total : <strong>{formatFCFA(totals.total)}</strong>
-          {totals.vipUnlocked && " (prix VIP appliqué)"}
+          {totals.vipUnlocked && " (tarif privilégié appliqué)"}
         </p>
       </div>
 

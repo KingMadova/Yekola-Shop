@@ -6,7 +6,7 @@ import { ProductAccordion } from "./ProductAccordion";
 import { ProductActions } from "./ProductActions";
 import { ProductImageGallery } from "./ProductImageGallery";
 
-/** Fiche produit complète : galerie, prix public / VIP, accordéon, double bouton d'achat, réassurance. */
+/** Fiche produit : galerie, deux tarifs, informations disponibles, actions d'achat et réassurance. */
 export function ProductDetail({ product }: { product: Product }) {
   // Un produit ou un pack déjà au-dessus du palier déclenche le tarif client privilégié dès le premier exemplaire.
   const vipImmediate = product.pricePublic >= VIP_THRESHOLD;

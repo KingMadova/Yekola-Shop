@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Search } from "lucide-react";
 import { CartButton } from "@/components/cart/CartButton";
 import { container, focusRing } from "@/components/ui/styles";
 import { SITE_NAME } from "@/lib/config";
@@ -6,34 +7,34 @@ import { buildDistributorMessage, buildWhatsAppUrl } from "@/lib/whatsapp";
 
 const LINKS = [
   { label: "Catalogue", href: "/catalogue" },
-  { label: "Packs solutions", href: "/#packs" },
-  { label: "Besoins santé", href: "/#besoins" },
+  { label: "Packs", href: "/#packs" },
+  { label: "Vos besoins", href: "/#besoins" },
 ] as const;
 
-const linkClass = `rounded-md py-2 text-sm font-medium text-gray-900 hover:text-emerald-800 ${focusRing}`;
+const linkClass = `rounded-full px-3 py-2 text-sm font-medium text-[#31483d] transition-colors hover:bg-[#f1eee4] hover:text-[#10352d] ${focusRing}`;
 
 export function Header() {
   const distributorUrl = buildWhatsAppUrl(buildDistributorMessage());
 
   return (
-    <header className="sticky top-0 z-30 border-b border-gray-200 bg-white">
-      <div className={`${container} flex h-16 items-center gap-4`}>
-        <Link href="/" className={`text-lg font-extrabold text-emerald-900 ${focusRing}`}>
-          {SITE_NAME}
+    <header className="sticky top-0 z-30 border-b border-[#e8e5dc] bg-[#fbfaf6]/95 shadow-[0_2px_14px_rgba(20,45,35,0.04)] backdrop-blur">
+      <div className={`${container} flex h-[60px] items-center gap-3 sm:h-16`}>
+        <Link href="/" className={`shrink-0 text-[17px] font-extrabold tracking-[-0.04em] text-[#173f35] sm:text-xl ${focusRing}`}>
+          Yekola <span className="font-medium text-[#b08c48]">Shop</span>
         </Link>
 
-        <nav aria-label="Navigation principale" className="hidden items-center gap-5 md:flex">
+        <nav aria-label="Navigation principale" className="ml-5 hidden items-center gap-1 md:flex">
           {LINKS.map((link) => (
             <Link key={link.href} href={link.href} className={linkClass}>
               {link.label}
             </Link>
           ))}
           <a href={distributorUrl} target="_blank" rel="noopener noreferrer" className={linkClass}>
-            Devenir distributeur
+            Devenir partenaire
           </a>
         </nav>
 
-        <form action="/catalogue" role="search" className="mx-auto hidden w-full max-w-sm lg:block">
+        <form action="/catalogue" role="search" className="mx-auto hidden w-full max-w-xs lg:block">
           <label htmlFor="header-search" className="sr-only">
             Rechercher un produit
           </label>
@@ -41,29 +42,22 @@ export function Header() {
             id="header-search"
             name="q"
             type="search"
-            placeholder="Rechercher un produit ou un besoin"
-            className={`min-h-11 w-full rounded-full border border-gray-300 bg-gray-100 px-4 text-sm ${focusRing}`}
+            placeholder="Un produit, un besoin…"
+            className={`min-h-10 w-full rounded-full border border-[#deded4] bg-white px-4 text-sm placeholder:text-[#879087] ${focusRing}`}
           />
         </form>
 
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-2">
+          <Link
+            href="/catalogue"
+            aria-label="Rechercher un produit"
+            className={`inline-flex size-10 items-center justify-center rounded-full text-[#31483d] hover:bg-[#f1eee4] md:hidden ${focusRing}`}
+          >
+            <Search aria-hidden className="size-5" />
+          </Link>
           <CartButton />
         </div>
       </div>
-
-      <nav
-        aria-label="Navigation mobile"
-        className="flex gap-4 overflow-x-auto border-t border-gray-100 px-4 md:hidden"
-      >
-        {LINKS.map((link) => (
-          <Link key={link.href} href={link.href} className={`${linkClass} min-h-11 whitespace-nowrap`}>
-            {link.label}
-          </Link>
-        ))}
-        <a href={distributorUrl} target="_blank" rel="noopener noreferrer" className={`${linkClass} min-h-11 whitespace-nowrap`}>
-          Devenir distributeur
-        </a>
-      </nav>
     </header>
   );
 }

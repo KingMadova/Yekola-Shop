@@ -1,106 +1,113 @@
-import { Metadata } from 'next';
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: 'Politique de confidentialité | Yekola Shop',
-  description: 'Découvrez comment Yekola Shop protège vos données personnelles lors de votre commande.',
+  title: "Politique de confidentialité | Yekola Shop",
+  description: "Découvrez comment Yekola Shop collecte et protège les données personnelles liées à vos demandes et commandes.",
 };
 
 export default function ConfidentialitePage() {
   return (
-    <main className="bg-[#F9FAFB] min-h-screen">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-8">
+    <main className="min-h-screen bg-[#F9FAFB]">
+      <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+        <h1 className="mb-8 text-3xl font-extrabold text-gray-900 sm:text-4xl">
           Politique de confidentialité
         </h1>
 
-        <div className="prose prose-lg max-w-none text-gray-700 space-y-6">
+        <div className="prose prose-lg max-w-none space-y-6 text-gray-700">
           <p className="text-lg leading-relaxed">
-            Chez <strong>Yekola Shop</strong>, nous nous engageons à protéger vos données personnelles. 
-            Cette politique explique quelles informations nous collectons, pourquoi nous les collectons 
-            et comment nous les utilisons.
+            Yekola Shop protège les informations que vous nous confiez. Cette politique décrit
+            les données utilisées lorsque vous demandez le catalogue ou passez une commande.
           </p>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-bold text-gray-900 pt-4">1. Données collectées</h2>
-            <p>
-              Nous collectons uniquement les informations nécessaires au traitement de votre commande :
-            </p>
-            <ul className="list-disc pl-6 space-y-2">
-              <li><strong>Numéro de téléphone</strong> : pour vous contacter concernant votre commande et vous envoyer des informations sur nos produits</li>
-              <li><strong>Nom</strong> (facultatif) : pour personnaliser notre communication</li>
-              <li><strong>Ville</strong> : pour adapter nos informations de livraison</li>
+          <section className="space-y-3">
+            <h2 className="pt-4 text-2xl font-bold text-gray-900">1. Données collectées</h2>
+            <p>Lors d'une demande de catalogue, nous pouvons enregistrer :</p>
+            <ul className="list-disc space-y-2 pl-6">
+              <li><strong>Prénom et numéro WhatsApp</strong>, nécessaires pour identifier et traiter votre demande.</li>
+              <li><strong>Besoin exprimé ou déduit</strong>, produits consultés et montant du panier, afin de mieux comprendre votre demande.</li>
+              <li><strong>Informations de provenance</strong> : campagne, source, page d'arrivée et page consultée.</li>
+              <li><strong>Date de première visite</strong>, lorsqu'elle est disponible dans le navigateur, à titre indicatif.</li>
+              <li><strong>Date et heure de soumission</strong>, générées par notre base de données au moment de l'enregistrement.</li>
             </ul>
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-bold text-gray-900 pt-4">2. Utilisation des données</h2>
-            <p>Vos données sont utilisées pour :</p>
-            <ul className="list-disc pl-6 space-y-2">
-              <li>Traiter votre commande et vous contacter par WhatsApp</li>
-              <li>Vous informer de nos offres et promotions (uniquement si vous le souhaitez)</li>
-              <li>Améliorer notre service et notre sélection de produits</li>
+          <section className="space-y-3">
+            <h2 className="pt-4 text-2xl font-bold text-gray-900">2. Localisation GPS facultative</h2>
+            <p>
+              La localisation n'est jamais obligatoire. Elle est demandée uniquement si vous cliquez
+              volontairement sur le bouton de partage de position et acceptez la demande de votre navigateur.
+            </p>
+            <ul className="list-disc space-y-2 pl-6">
+              <li>Si vous acceptez, nous pouvons enregistrer la latitude, la longitude, la précision et l'heure de réception de la position.</li>
+              <li>Si vous refusez, ignorez la demande ou si votre appareil ne fournit pas de position, aucune coordonnée GPS n'est enregistrée.</li>
+              <li>Votre refus n'empêche ni l'envoi du formulaire ni le traitement de votre demande.</li>
+              <li>Nous ne déduisons pas votre position géographique à partir de votre adresse IP.</li>
             </ul>
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-bold text-gray-900 pt-4">3. Partage des données</h2>
-            <p>
-              <strong>Nous ne vendons ni ne louons jamais vos données à des tiers.</strong> Vos informations 
-              sont conservées de manière sécurisée et ne sont accessibles qu'aux personnes autorisées de 
-              Yekola Shop.
-            </p>
-          </section>
-
-          <section className="space-y-4">
-            <h2 className="text-2xl font-bold text-gray-900 pt-4">4. Conservation des données</h2>
-            <p>
-              Vos données sont conservées aussi longtemps que nécessaire pour vous fournir notre service. 
-              Vous pouvez à tout moment demander leur suppression en nous contactant par WhatsApp.
-            </p>
-          </section>
-
-          <section className="space-y-4">
-            <h2 className="text-2xl font-bold text-gray-900 pt-4">5. Vos droits</h2>
-            <p>Conformément à la réglementation en vigueur, vous disposez des droits suivants :</p>
-            <ul className="list-disc pl-6 space-y-2">
-              <li><strong>Droit d'accès</strong> : vous pouvez demander une copie de vos données</li>
-              <li><strong>Droit de rectification</strong> : vous pouvez corriger vos informations</li>
-              <li><strong>Droit à l'oubli</strong> : vous pouvez demander la suppression de vos données</li>
-              <li><strong>Droit d'opposition</strong> : vous pouvez refuser l'utilisation de vos données à des fins commerciales</li>
+          <section className="space-y-3">
+            <h2 className="pt-4 text-2xl font-bold text-gray-900">3. Utilisation et stockage</h2>
+            <p>Les données servent à :</p>
+            <ul className="list-disc space-y-2 pl-6">
+              <li>enregistrer et suivre votre demande de catalogue ;</li>
+              <li>comprendre vos centres d'intérêt pour vous orienter vers les produits pertinents ;</li>
+              <li>répondre à vos demandes et assurer le suivi d'une éventuelle commande ;</li>
+              <li>améliorer le fonctionnement et la pertinence de la boutique.</li>
             </ul>
             <p>
-              Pour exercer ces droits, contactez-nous simplement par WhatsApp au numéro indiqué sur notre site.
+              Les demandes sont enregistrées dans une base de données Supabase utilisée par Yekola Shop.
+              L'adresse IP peut être traitée temporairement par le serveur à des fins de limitation des abus ;
+              elle n'est pas ajoutée à la fiche prospect et n'est pas utilisée pour vous localiser.
             </p>
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-bold text-gray-900 pt-4">6. Cookies</h2>
+          <section className="space-y-3">
+            <h2 className="pt-4 text-2xl font-bold text-gray-900">4. Accès et partage</h2>
             <p>
-              Notre site utilise uniquement des cookies techniques nécessaires à son fonctionnement 
-              (panier, session utilisateur). Nous n'utilisons pas de cookies de suivi publicitaire.
+              Vos données ne sont ni vendues ni louées. Elles sont accessibles aux personnes autorisées
+              chargées du suivi de la boutique utilisée. Si vous arrivez par la boutique d'un partenaire,
+              ce partenaire peut consulter les informations nécessaires au suivi de votre demande.
             </p>
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-bold text-gray-900 pt-4">7. Modifications</h2>
+          <section className="space-y-3">
+            <h2 className="pt-4 text-2xl font-bold text-gray-900">5. Conservation et sécurité</h2>
             <p>
-              Nous pouvons mettre à jour cette politique. Toute modification sera publiée sur cette page 
-              avec la date de mise à jour.
+              Nous conservons les données pendant la durée nécessaire au traitement et au suivi de votre
+              demande, avec des mesures destinées à empêcher les accès non autorisés. La durée précise de
+              conservation doit être définie avant la mise en production.
             </p>
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-bold text-gray-900 pt-4">8. Contact</h2>
+          <section className="space-y-3">
+            <h2 className="pt-4 text-2xl font-bold text-gray-900">6. Vos droits</h2>
             <p>
-              Pour toute question concernant cette politique ou vos données personnelles, contactez-nous 
-              par WhatsApp au numéro affiché sur notre site.
+              Vous pouvez demander l'accès à vos données, leur rectification ou leur suppression, ainsi que
+              vous opposer à leur utilisation à des fins commerciales. Pour exercer ces droits, contactez-nous
+              par WhatsApp au numéro affiché sur la boutique.
             </p>
           </section>
 
-          <div className="mt-8 pt-6 border-t border-gray-200">
-            <p className="text-sm text-gray-500">
-              Dernière mise à jour : 1er novembre 2026
+          <section className="space-y-3">
+            <h2 className="pt-4 text-2xl font-bold text-gray-900">7. Cookies et stockage local</h2>
+            <p>
+              Le site utilise le stockage local du navigateur pour mémoriser certains éléments nécessaires
+              à son fonctionnement, notamment le panier, les préférences de parcours et l'état du formulaire.
+              Ces éléments ne déclenchent pas de demande GPS automatique.
             </p>
+          </section>
+
+          <section className="space-y-3">
+            <h2 className="pt-4 text-2xl font-bold text-gray-900">8. Contact et modifications</h2>
+            <p>
+              Pour toute question concernant vos données, contactez-nous par WhatsApp au numéro affiché
+              sur le site. Cette politique peut être mise à jour ; la date de dernière modification est
+              indiquée ci-dessous.
+            </p>
+          </section>
+
+          <div className="mt-8 border-t border-gray-200 pt-6">
+            <p className="text-sm text-gray-500">Dernière mise à jour : 1er novembre 2026</p>
           </div>
         </div>
       </div>

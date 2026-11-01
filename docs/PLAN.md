@@ -53,7 +53,8 @@ Variables d'environnement actuelles (`.env.example`) :
 | `NEXT_PUBLIC_SUPABASE_URL` | URL du projet Supabase |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clé anon ou publishable (publique, protégée par RLS) |
 | `CATALOG_FALLBACK` | `seed` : autorise le catalogue de secours **hors développement** (essai local d'un build de production sans Supabase) |
-| `SUPABASE_SERVICE_ROLE_KEY` | Script d'import, puis **serveur Vercel dès la phase 3** (écriture des leads et invitations de partenaires). **Secret : jamais dans le dépôt ni côté client** |
+| `SUPABASE_SERVICE_ROLE_KEY` | Script d'import et API serveur des leads. **Secret : jamais dans le dépôt ni côté client** |
+| `NEXT_PUBLIC_CATALOG_PDF_PATH` | Chemin du PDF dans `/public` (ex. `/catalogue-forever.pdf`) ; à renseigner uniquement après ajout et vérification du vrai fichier |
 
 
 ## 4. État d'avancement
@@ -68,7 +69,7 @@ Variables d'environnement actuelles (`.env.example`) :
 | WhatsApp | Commande panier, commande 1 clic, demande de catalogue, conseil, VIP, distributeur | `src/lib/whatsapp.ts`, `src/lib/phone.ts` |
 | Composants | Galerie, barre VIP, bouton WhatsApp flottant, fiche produit à double bouton, tiroir panier + formulaire | `src/components/product/*`, `cart/*`, `layout/FloatingWhatsAppButton.tsx` |
 | Pages | Accueil, catalogue filtrable (catégorie, besoin, recherche), fiche produit (SEO + JSON-LD), layout | `src/app/*` |
-| Leads (état actuel) | Pop-up à 7 s, besoin déduit du parcours, ancienne API orientée webhook à remplacer par une écriture directe Supabase | `components/lead/*`, `src/lib/interest.ts`, `leadClient.ts`, `leads.ts`, `app/api/leads/route.ts`, `store/useInterestStore.ts` |
+| Leads (en cours) | API serveur Supabase, dédoublonnage par boutique + numéro, dates de visite/soumission, GPS explicitement facultatif, formulaire avec confirmation API avant succès | `src/app/api/leads/route.ts`, `src/lib/supabase/admin.ts`, `src/lib/leads.ts`, `src/lib/leadClient.ts`, `src/components/lead/LeadCaptureModal.tsx` |
 | Liens publicitaires | 6 liens, un par besoin (annexe B) | cette page |
 | Qualité | 25 tests unitaires (prix, panier, leads, catalogue, promos), typage strict, `next build` OK, API des leads testée contre un faux webhook | `src/lib/__tests__/` |
 | Correctif | `globals.css` minimal (le fichier généré écrasait les couleurs en mode sombre) | `src/app/globals.css` |
@@ -85,9 +86,11 @@ Variables d'environnement actuelles (`.env.example`) :
 
 **Phase 1 — état au 01/11/2026 (code) :** typage strict OK, **25 tests** OK, `next build` OK avec Cache Components contre un faux serveur Supabase (promo -10 % appliquée, promo expirée ignorée, ligne invalide ignorée, composition de pack, sitemap avec produits). **Jamais testé contre un vrai projet Supabase** : voir « Reste à faire par le propriétaire » en phase 1.
 
+**Phases 2 et 3 — état au 01/11/2026 :** travail préparé sur la branche `feat/supabase-lead-capture` (non fusionnée, non exécutée sur la base réelle et non testée localement). Migrations `002_partners.sql` et `003_leads.sql` ajoutées ; client Supabase serveur, validation du payload, API d'upsert, collecte GPS après clic, formulaire asynchrone et page de confidentialité adaptés. Un test unitaire de validation a été ajouté, mais les commandes de contrôle restent à exécuter. Le PDF n'est pas présent dans le dépôt : le téléchargement réel reste en attente du fichier.
+
 ### PAS ENCORE FAIT (résumé, détail en sections 6 bis et 7)
 
-Création et branchement du projet Supabase (actions manuelles), import de la vraie liste de prix, **boutiques des partenaires (WhatsApp par boutique), collecte des leads directement dans Supabase, téléchargement automatique du catalogue PDF, GPS facultatif, exports CSV/PDF et espace partenaire**, back-office `/admin`, interface de gestion des promos/packs/offres, compression d'images, PWA, page « Conditions générales de vente », photos, mise en production.
+À terminer : migrations Supabase à appliquer et tester, initialisation de la boutique maison, routage public multi-boutiques, ajout du PDF réel et validation du téléchargement, tests de bout en bout, exports CSV/PDF et espace partenaire, back-office `/admin`, interface de gestion des promos/packs/offres, compression d'images, PWA, page « Conditions générales de vente », photos et mise en production.
 
 ### Limites actuelles à connaître
 
@@ -143,7 +146,7 @@ Ajouts de la phase 1 : `supabase/{schema,seed}.sql` · `scripts/import-products.
 
 ## 6 bis. Modèle multi-boutiques (partenaires / filleuls)
 
-*Statut : décidé le 01/11/2026 (conception). Aucun code écrit. Hypothèses sur les points marqués Q-P : section 9.*
+*Statut : conception décidée le 01/11/2026. Fondation SQL partenaires/leads et premier parcours de capture en cours sur `feat/supabase-lead-capture` ; routage multi-boutiques et espace partenaire non implémentés. Hypothèses sur les points marqués Q-P : section 9.*
 
 **Vocabulaire.** *Admin* = Alvine. *Boutique maison* = la boutique d'Alvine (aussi un partenaire, avec `is_house`). *Partenaire* = un filleul. *Client* = visiteur final.
 
@@ -233,7 +236,7 @@ Ordre conseillé : 0, 1, **2, 3, 4, 5, 6, 7, 8, 9**. La phase 8 (PWA) est indép
 **Fait quand :** le site lit Supabase, la liste de prix est importée, le build passe. `SEED_PRODUCTS` (`src/data/products.ts`) reste comme catalogue de secours de développement.
 
 ### Phase 2 : Multi-boutiques, côté public (NOUVELLE)
-1. Migration `supabase/migrations/002_partners.sql` (annexe F) : table `partners`, vue publique `partners_public`, slugs réservés, boutique maison (Alvine), RLS. Ne pas modifier `schema.sql` (déjà exécuté chez le propriétaire).
+1. Migration `supabase/migrations/002_partners.sql` (annexe F) ajoutée sur la branche `feat/supabase-lead-capture` : table `partners`, vue publique `partners_public`, slugs réservés et RLS. Elle reste à exécuter dans Supabase. Ne pas modifier `schema.sql` (déjà exécuté chez le propriétaire).
 2. `src/lib/data/partners.ts` : `getPartner(slug)` (`use cache`, étiquette `partner:{slug}`, 5 min), `getActivePartnerSlugs()`.
 3. **Restructurer les routes :** déplacer accueil, catalogue, produit, confidentialité, livraison-paiement sous `src/app/p/[partner]/…` ; le `layout` racine ne garde que `html`/`body`/police et `CatalogProvider` ; `app/p/[partner]/layout.tsx` porte le « chrome » boutique (bandeau, en-tête, pied de page, tiroir panier, WhatsApp flottant, pop-up, suivi) et `ShopProvider`. `proxy.ts` réécrit les chemins publics vers la boutique maison. Slug inconnu ou suspendu : `notFound()`.
 4. `ShopContext` et `<ShopLink>` ; remplacer **tous** les liens internes et tous les usages du numéro global (liste en annexe F).
@@ -245,14 +248,13 @@ Ordre conseillé : 0, 1, **2, 3, 4, 5, 6, 7, 8, 9**. La phase 8 (PWA) est indép
 - **Fait quand :** `/p/test` affiche la boutique du partenaire « test » avec **son** numéro partout (flottant, commande, 1 clic, pop-up, distributeur, VIP) ; `/` est inchangé ; les paniers sont distincts par boutique ; build OK ; test manuel sur téléphone.
 
 ### Phase 3 : Leads dans Supabase + parcours catalogue (NOUVELLE)
-1. Migration `003_leads.sql` : table `leads`, clé unique `(partner_id, phone)`, horodatages, métadonnées de campagne et RLS (annexe F). **Supabase est l'unique source de vérité** : aucun Google Sheets, Apps Script, webhook ou miroir externe.
-   - Supprimer le code mort et les variables de configuration de l'ancien webhook tableur (`scripts/google-sheets-leads.gs`, `GOOGLE_SHEETS_WEBHOOK_URL`, `LEADS_WEBHOOK_SECRET`) après vérification qu'aucun autre flux ne les utilise.
-2. `src/lib/leads.ts` : payload avec `partnerSlug`, besoin, autres besoins, produits consultés, panier, source, campagne, référent, chemins de visite et `first_visit_at`. `app/api/leads/route.ts` : valider le payload, résoudre le partenaire actif, puis faire un upsert serveur avec `SUPABASE_SERVICE_ROLE_KEY` (serveur uniquement). Un lead existant pour le même partenaire et numéro met à jour les informations récentes et `last_request_at`, sans écraser `created_at` ni la première valeur connue de `first_visit_at`.
+1. Migration `supabase/migrations/003_leads.sql` ajoutée sur la branche `feat/supabase-lead-capture` : table `leads`, clé unique `(partner_id, phone)`, horodatages, champs GPS et RLS. Elle reste à exécuter dans Supabase. **Supabase est l'unique source de vérité** : aucun Google Sheets, Apps Script, webhook ou miroir externe. Le script `scripts/google-sheets-leads.gs` a été supprimé de la branche ; les variables du webhook ont disparu.
+2. Implémentation sur la branche : `src/lib/leads.ts` valide le slug de boutique, le besoin, les métadonnées, `firstVisitAt` et les coordonnées. `src/app/api/leads/route.ts` résout le partenaire actif et appelle `upsert_lead` avec `SUPABASE_SERVICE_ROLE_KEY` côté serveur. La boutique maison `yekola` peut être initialisée depuis `NEXT_PUBLIC_WHATSAPP_NUMBER` si aucune ligne maison n'existe. Un lead existant conserve `created_at` et sa première `first_visit_at` ; les informations récentes et `last_request_at` sont actualisés.
 3. **Horodatage :** `created_at` est l'heure de soumission générée par PostgreSQL (référence fiable). `first_visit_at` est l'heure de première visite fournie par le navigateur, si disponible ; elle est considérée comme une donnée indicative fournie par le client. Les exports affichent les dates/heures en fuseau `Africa/Brazzaville`.
-4. **GPS facultatif uniquement (R16) :** aucun champ ville/quartier pour le visiteur et aucune localisation par IP. Afficher une action explicite pour autoriser la localisation ; ne déclencher `navigator.geolocation` qu'après ce clic. Enregistrer latitude, longitude, précision et date/heure du consentement uniquement si le navigateur fournit les coordonnées. En cas de refus, d'indisponibilité ou d'erreur, laisser toutes les colonnes GPS à `NULL` et poursuivre le formulaire sans blocage. Ne jamais demander le GPS automatiquement.
-5. **Après enregistrement réussi :** déclencher le téléchargement du catalogue PDF dans le même parcours, sans redirection ; afficher ensuite la fenêtre de remerciement. À la fermeture, faire défiler vers la section d'accueil dont le titre exact est « Que recherchez-vous ? Choisissez votre besoin, nous affichons les produits adaptés. ». Aucun lancement automatique de WhatsApp. Le fichier PDF final doit être fourni/validé et sa présence vérifiée avant de brancher son URL ; ne pas simuler un téléchargement si le fichier manque.
-6. Mettre à jour `/confidentialite` : expliquer l'enregistrement dans Supabase, les données facultatives GPS, les finalités, les destinataires et la durée de conservation à définir.
-7. Tests : validation et sécurisation du payload, dédoublonnage par partenaire, date serveur, date de première visite facultative, GPS accepté/refusé/indisponible, aucune insertion publique, échec réseau/API, téléchargement uniquement après succès, absence de redirection et défilement après fermeture du remerciement.
+4. **GPS facultatif uniquement (R16) — implémenté dans le formulaire de la branche :** aucun champ ville/quartier et aucune géolocalisation par IP. `navigator.geolocation` est appelé uniquement après clic sur « Partager ma position ». Refus, erreur ou indisponibilité : le formulaire continue sans GPS. Le visiteur peut retirer sa position avant l'envoi. `location_consent_at` est généré par PostgreSQL à la réception des coordonnées.
+5. **Après enregistrement réussi — parcours partiellement branché :** l'API est attendue avant d'afficher le remerciement ; si elle échoue, le visiteur voit une erreur et peut réessayer. Le composant déclenche le téléchargement uniquement si `NEXT_PUBLIC_CATALOG_PDF_PATH` désigne un fichier réel dans `/public`, puis affiche le remerciement et défile vers `#besoins` à sa fermeture. Aucun lancement automatique de WhatsApp. **Le PDF n'est pas présent dans le dépôt** : ne pas renseigner la variable avant d'avoir ajouté et vérifié le fichier.
+6. `/confidentialite` mise à jour dans la branche pour expliquer Supabase, le GPS facultatif, les finalités, les destinataires et le traitement temporaire de l'IP pour limiter les abus. La durée exacte de conservation reste à définir avant la mise en production.
+7. Tests : un fichier `src/lib/__tests__/leads.test.ts` couvre la validation, le numéro, la première visite et les coordonnées GPS. **Les tests, le typage strict et le build n'ont pas encore été exécutés sur cette branche.** Restent à vérifier : migration sur un vrai projet Supabase, RLS, upsert/dédoublonnage, API, GPS refusé/indisponible et parcours complet avec le PDF.
 - **Fait quand :** un lead est enregistré dans Supabase et rattaché au bon partenaire ; le même numéro sur deux boutiques crée deux fiches distinctes ; le GPS refusé n'empêche rien ; le catalogue PDF se télécharge après succès ; la fenêtre de remerciement puis le défilement fonctionnent ; aucune dépendance Google Sheets n'existe.
 
 ### Phase 4 : Back-office admin (ancienne phase 2) + gestion des partenaires
@@ -456,7 +458,7 @@ create table admins (user_id uuid primary key references auth.users on delete ca
 | iOS | Pas d'événement d'installation : encart d'aide « Partager, puis Sur l'écran d'accueil » |
 | Test | iPhone réel (Safari), Android réel (Chrome), Lighthouse |
 
-## Annexe F : Schéma multi-boutiques (migrations 002 et 003 à créer en phases 2, 3 et 7)
+## Annexe F : Schéma multi-boutiques (migrations 002 et 003 préparées sur la branche de travail)
 
 ```sql
 -- 002_partners.sql

@@ -12,6 +12,12 @@ export const WHATSAPP_NUMBER: string = (
   process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? ""
 ).replace(/\D/g, "");
 
+/** Slug de la boutique maison tant que le routage multi-boutiques public n’est pas activé. */
+export const HOUSE_PARTNER_SLUG = "yekola";
+
+/** Chemin du PDF vérifié dans /public, configuré uniquement après ajout du vrai catalogue. */
+export const CATALOG_PDF_PATH = process.env.NEXT_PUBLIC_CATALOG_PDF_PATH ?? "";
+
 /** Textes réutilisés partout : une seule modification suffit pour tout le site. */
 export const COPY = {
   announcement: [
@@ -31,7 +37,7 @@ export const COPY = {
     "Garanti sans spam. Distributeur disponible à Brazzaville et Pointe-Noire.",
   advicePrompt:
     "Besoin d'un conseil ? Posez votre question par message ou note vocale",
-  
+
   // Pages légales
   legal: {
     privacyTitle: "Politique de confidentialité",
@@ -39,7 +45,7 @@ export const COPY = {
     footerPrivacy: "Politique de confidentialité",
     footerDelivery: "Livraison et paiement",
   },
-  
+
   // Footer
   footer: {
     about: "Votre boutique de produits Forever Living Products à Brazzaville, Pointe-Noire et dans toute la République du Congo.",

@@ -7,7 +7,7 @@ interface VipProgressBarProps {
   totals: CartTotals;
 }
 
-/** Jauge vers le palier VIP : montant restant en dessous de 65 000 F, message de succès au-dessus. */
+/** Jauge vers l'accès aux prix client privilégié : montant restant sous 65 000 F, message de confirmation au-dessus. */
 export function VipProgressBar({ totals }: VipProgressBarProps) {
   const { vipUnlocked, amountToVip, progressPercent, vipDiscount, subtotalPublic, itemCount } =
     totals;

@@ -124,13 +124,10 @@ begin
     landing_path = excluded.landing_path,
     page_path = excluded.page_path,
     first_visit_at = coalesce(stored_lead.first_visit_at, excluded.first_visit_at),
-    latitude = coalesce(excluded.latitude, stored_lead.latitude),
-    longitude = coalesce(excluded.longitude, stored_lead.longitude),
-    location_accuracy_m = coalesce(excluded.location_accuracy_m, stored_lead.location_accuracy_m),
-    location_consent_at = case
-      when excluded.latitude is not null and excluded.longitude is not null then now()
-      else stored_lead.location_consent_at
-    end,
+    latitude = excluded.latitude,
+    longitude = excluded.longitude,
+    location_accuracy_m = excluded.location_accuracy_m,
+    location_consent_at = excluded.location_consent_at,
     requests_count = stored_lead.requests_count + 1,
     last_request_at = now()
   returning id into saved_id;

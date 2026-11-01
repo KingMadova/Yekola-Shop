@@ -242,7 +242,7 @@ Ordre conseillé : 0, 1, **2, 3, 4, 5, 6, 7, 8, 9**. La phase 8 (PWA) est indép
 1. `supabase/schema.sql` (tables, RLS, bucket `site-images`, fonction `is_admin()`) et `supabase/seed.sql` (les 2 packs).
 2. Client public `src/lib/supabase/public.ts` (lecture anonyme, sans cookies). Les clients `server`/`browser` avec session viendront en **phase 4**.
 3. Couche de données `src/lib/data/` : `rows.ts` (validation des lignes), `mapper.ts` (produit « effectif »), `source.ts` (lecture), `catalog.ts` (`getCatalog()` en `use cache`, étiquette `catalog`, revalidation 5 min).
-4. **Produit effectif :** `pricePublic` = prix de vente (promo comprise), `priceVip` = prix de vente -5 %, `compareAtPrice` = prix barré, `promoBadge`. Le moteur de prix (`pricing.ts`) n'a pas changé : l'hypothèse A1 s'applique d'elle-même.
+4. **Produit effectif :** `pricePublic` = prix public effectif (promo comprise), `priceVip` = tarif client privilégié effectif, `compareAtPrice` = prix barré, `promoBadge`. Une promotion réduit les deux tarifs dans la même proportion ; le tarif privilégié de base reste celui de la grille officielle.
 5. `CatalogProvider` + `useCatalog()` remplacent `getProductByCode` côté navigateur ; le panier retire les produits disparus (`prune`).
 6. Prix barré, badge promo et composition des packs affichés (`ProductCard`, `ProductDetail`, `CartLineItem`).
 7. `scripts/import-products.mjs` (essai à blanc par défaut, `--apply` pour écrire).

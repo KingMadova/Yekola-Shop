@@ -24,7 +24,7 @@ export function clampQuantity(quantity: number): number {
 }
 
 /**
- * Règle stricte : la remise VIP s'applique à TOUTE la commande si, et seulement si,
+ * Règle stricte : les prix client privilégié s'appliquent à TOUTE la commande si, et seulement si,
  * le total aux prix publics atteint ou dépasse 65 000 F. En dessous : prix public.
  */
 export function computeCartTotals(items: readonly CartItem[]): CartTotals {

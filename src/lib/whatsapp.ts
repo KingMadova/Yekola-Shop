@@ -1,4 +1,4 @@
-import { VIP_DISCOUNT_PERCENT, VIP_THRESHOLD, WHATSAPP_NUMBER } from "./config";
+import { VIP_THRESHOLD, WHATSAPP_NUMBER } from "./config";
 import { normalizeCongoPhone } from "./phone";
 import {
   computeCartTotals,
@@ -26,7 +26,7 @@ function totalsLines(totals: CartTotals): string[] {
   const lines = [`Sous-total : ${formatFCFA(totals.subtotalPublic)}`];
   if (totals.vipUnlocked) {
     lines.push(
-      `Remise VIP (−${VIP_DISCOUNT_PERCENT} %) : −${formatFCFA(totals.vipDiscount)}`,
+      `Économie au tarif client privilégié : −${formatFCFA(totals.vipDiscount)}`,
     );
   }
   lines.push(`*Total : ${formatFCFA(totals.total)}*`);
@@ -69,7 +69,7 @@ export function buildSingleProductMessage(product: Product, quantity = 1): strin
     ...totalsLines(totals),
   ];
   if (!totals.vipUnlocked) {
-    lines.push(`(Remise VIP de ${VIP_DISCOUNT_PERCENT} % dès ${formatFCFA(VIP_THRESHOLD)} d'achats)`);
+    lines.push(`(Tarif client privilégié accessible dès ${formatFCFA(VIP_THRESHOLD)} d'achats.)`);
   }
   lines.push("", "Pouvez-vous me confirmer la disponibilité et la livraison ?");
   return lines.join("\n");
@@ -92,7 +92,7 @@ export function buildAdviceMessage(): string {
 }
 
 export function buildVipInfoMessage(): string {
-  return `Bonjour, je souhaite profiter de la remise VIP de ${VIP_DISCOUNT_PERCENT} % dès ${formatFCFA(VIP_THRESHOLD)} d'achats. Pouvez-vous m'expliquer comment faire ?`;
+  return `Bonjour, je souhaite connaître les conditions pour bénéficier des prix client privilégié dès ${formatFCFA(VIP_THRESHOLD)} d'achats. Pouvez-vous m'expliquer comment faire ?`;
 }
 
 export function buildDistributorMessage(): string {

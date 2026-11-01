@@ -33,17 +33,17 @@ export function ProductAccordion({ product }: { product: Product }) {
   if (sections.length === 0) return null;
 
   return (
-    <div className="divide-y divide-gray-200 rounded-2xl border border-gray-200 bg-white">
+    <div className="divide-y divide-[#e9e5d9] rounded-2xl border border-[#e9e5d9] bg-[#fbfaf6]">
       {sections.map((section, index) => (
         <details key={section.title} open={index === 0} className="group px-4">
-          <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 py-3 font-semibold text-gray-900 focus-visible:outline-2 focus-visible:outline-emerald-700 [&::-webkit-details-marker]:hidden">
+          <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 py-3 font-semibold text-[#26392e] focus-visible:outline-2 focus-visible:outline-[#173f35] [&::-webkit-details-marker]:hidden">
             {section.title}
             <ChevronDown
               aria-hidden
-              className="size-5 shrink-0 text-gray-700 transition-transform group-open:rotate-180 motion-reduce:transition-none"
+              className="size-5 shrink-0 text-[#68756c] transition-transform group-open:rotate-180 motion-reduce:transition-none"
             />
           </summary>
-          <div className="pb-4 text-sm leading-relaxed text-gray-800">{section.body}</div>
+          <div className="pb-4 text-sm leading-relaxed text-[#59685d]">{section.body}</div>
         </details>
       ))}
     </div>

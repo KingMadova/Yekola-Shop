@@ -8,7 +8,7 @@ import { buildSingleProductMessage, buildWhatsAppUrl } from "@/lib/whatsapp";
 import { useCartStore } from "@/store/useCartStore";
 
 const stepperButton =
-  "inline-flex size-11 items-center justify-center rounded-xl border border-gray-400 bg-white text-gray-900 hover:bg-gray-100 disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-emerald-700";
+  "inline-flex size-11 items-center justify-center rounded-xl border border-[#deded4] bg-white text-[#26392e] hover:bg-[#f6f3ea] disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-[#173f35]";
 
 /** Double bouton d'achat : « Ajouter au panier » et « Commander en 1 clic via WhatsApp » (sans passer par le panier). */
 export function ProductActions({ product }: { product: Product }) {
@@ -53,7 +53,7 @@ export function ProductActions({ product }: { product: Product }) {
         <button
           type="button"
           onClick={() => addItem(product, quantity)}
-          className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 font-semibold text-white hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
+          className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#173f35] px-5 font-semibold text-white hover:bg-[#10352d] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
         >
           <ShoppingCart aria-hidden className="size-5" />
           Ajouter au panier

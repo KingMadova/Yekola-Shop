@@ -53,6 +53,11 @@ describe("parseLeadPayload", () => {
     expect(lead?.location).toBeNull();
   });
 
+  it("utilise la boutique maison par défaut et rejette un slug invalide", () => {
+    expect(parseLeadPayload(basePayload)?.partnerSlug).toBe("yekola");
+    expect(parseLeadPayload({ ...basePayload, partnerSlug: "../admin" })).toBeNull();
+  });
+
   it("rejette un prénom ou un numéro invalide", () => {
     expect(parseLeadPayload({ ...basePayload, firstName: "A" })).toBeNull();
     expect(parseLeadPayload({ ...basePayload, phone: "123" })).toBeNull();

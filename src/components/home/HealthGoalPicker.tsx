@@ -13,7 +13,7 @@ export function HealthGoalPicker() {
       <div className="mb-5 max-w-xl">
         <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#9a7b40]">Commencez ici</p>
         <h2 className="text-xl font-bold tracking-tight text-[#20382d] sm:text-2xl">Qu’aimeriez-vous améliorer dans votre routine ?</h2>
-        <p className="mt-1 text-sm text-[#68756c]">Choisissez un thème pour découvrir les produits associés.</p>
+        <p className="mt-1 text-sm text-[#68756c]">Choisissez un thème pour préciser votre recherche et être accompagné dans le catalogue.</p>
       </div>
       <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-6">
         {HEALTH_GOALS.map((goal) => {

@@ -88,6 +88,12 @@ Variables d'environnement actuelles (`.env.example`) :
 
 **Phases 2 et 3 — état après fusion du 01/11/2026 :** la capture des leads et ses migrations sont fusionnées dans `main` (PR #1). Les migrations `002_partners.sql` et `003_leads.sql` ainsi que les variables Supabase/Vercel ont été configurées par le propriétaire. L'API serveur, la validation, l'upsert/dédoublonnage par boutique et numéro, le GPS facultatif déclenché après clic et le formulaire asynchrone sont intégrés. Le catalogue réel est présent dans `public/catalogue-forever.pdf` ; une copie documentaire est conservée dans `docs/catalogue-forever.pdf`. Le téléchargement automatique doit encore être vérifié dans un parcours utilisateur complet. Le routage public multi-boutiques et les espaces `/admin` et `/espace` ne sont pas encore implémentés.
 
+### EN COURS — refonte UX/UI mobile-first
+
+- Première passe intégrée sur la branche `feat/mobile-first-natural-redesign` : palette vert forêt / ivoire / or doux, en-tête mobile compact, bandeau d'annonce masqué sur petit écran, Hero raccourci, copywriting principal, sections d'accueil, cartes produits et bouton WhatsApp flottant plus discret.
+- Le Hero a été conçu pour tenir dans le premier écran mobile sans hauteur fixe artificielle. **La conformité réelle à 360 × 800 et 390 × 844 reste à mesurer dans un navigateur** ; ne pas considérer ce critère comme validé avant test.
+- Les contrôles `npx tsc --noEmit`, `npx vitest run` et `npm run build` n'ont pas encore été exécutés sur cette branche. La documentation Next.js installée sous `node_modules/next/dist/docs/` n'était pas accessible depuis l'édition GitHub ; aucune API Next.js n'a été modifiée.
+
 ### PAS ENCORE FAIT (résumé, détail en sections 6 bis et 7)
 
 À terminer : validation fonctionnelle complète contre Supabase réel (création/dédoublonnage des leads, RLS et parcours PDF), initialisation et routage public multi-boutiques, tests de bout en bout sur téléphone, exports CSV/PDF et espace partenaire, back-office `/admin`, interface de gestion des promos/packs/offres, compression d'images, PWA, page « Conditions générales de vente », photos et préparation de la mise en production.
@@ -583,7 +589,7 @@ Même format que l'annexe B avec le chemin de la boutique : `https://DOMAINE/p/S
 
 ## 8 bis. Refonte UX/UI mobile-first — Yekola Shop (priorité immédiate)
 
-**Statut : spécification validée à implémenter.** Cette section devient le brief de référence pour la refonte visuelle. Mettre à jour ce plan avant toute modification de composants ou de styles.
+**Statut : première passe de refonte intégrée sur `feat/mobile-first-natural-redesign` ; validation visuelle et contrôles techniques encore à effectuer.** Cette section reste le brief de référence. Le Hero, l'en-tête, la palette, les textes principaux, les sections d'accueil, les cartes produits et les éléments flottants ont reçu une première adaptation mobile-first.
 
 ### Direction artistique
 

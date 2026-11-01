@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Search } from "lucide-react";
-import { useMemo, useState, useId } from "react";
+import { useEffect, useMemo, useState, useId } from "react";
 import { useCatalog } from "@/components/providers/CatalogContext";
 import { focusRing } from "@/components/ui/styles";
 import { formatFCFA } from "@/lib/pricing";
@@ -27,6 +27,10 @@ export function ProductSearch({
   const { products } = useCatalog();
   const [query, setQuery] = useState(initialQuery);
   const [focused, setFocused] = useState(false);
+  useEffect(() => setQuery(initialQuery), [initialQuery]);
+  const searchHref = "/catalogue?q=" + encodeURIComponent(query.trim())
+    + (categorySlug ? "&categorie=" + encodeURIComponent(categorySlug) : "")
+    + (goalSlug ? "&besoin=" + encodeURIComponent(goalSlug) : "");
   const matches = useMemo(() => {
     const needle = normalize(query.trim());
     if (needle.length < 2) return [];
@@ -95,7 +99,7 @@ export function ProductSearch({
             <p className="px-4 py-4 text-sm text-[#68756c]">Aucun produit ne correspond à « {query} ».</p>
           )}
           <Link
-            href={"/catalogue?q=" + encodeURIComponent(query.trim())}
+            href={searchHref}
             className="flex min-h-11 items-center justify-center border-t border-[#eeeae0] bg-[#fbfaf6] px-4 text-sm font-semibold text-[#173f35] hover:bg-[#f3f0e7]"
           >
             Voir tous les résultats

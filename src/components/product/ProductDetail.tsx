@@ -19,7 +19,7 @@ export function ProductDetail({ product }: { product: Product }) {
         <div className="flex flex-col gap-2">
           <p className="text-sm font-medium text-emerald-800">{product.category}</p>
           <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
-          <p className="max-w-prose text-gray-800">{product.shortDesc}</p>
+          <p className="max-w-prose text-gray-800">{product.shortDesc || "Besoin d'informations sur ce produit ? Échangez avec un conseiller avant de choisir."}</p>
         </div>
 
         <div className="flex flex-col gap-2 rounded-2xl border border-gray-200 bg-white p-4">
@@ -27,7 +27,7 @@ export function ProductDetail({ product }: { product: Product }) {
             <>
               <p className="flex flex-wrap items-baseline gap-x-3">
                 <span className="text-3xl font-bold text-emerald-800">{formatFCFA(product.priceVip)}</span>
-                <span className="text-sm font-medium text-gray-800">Prix VIP</span>
+                <span className="text-sm font-medium text-gray-800">Prix client privilégié</span>
               </p>
               <p className="text-sm text-gray-700">
                 Prix public : <s>{formatFCFA(product.compareAtPrice ?? product.pricePublic)}</s>
@@ -49,7 +49,7 @@ export function ProductDetail({ product }: { product: Product }) {
                 )}
               </p>
               <p className="text-sm text-emerald-800">
-                <strong>{formatFCFA(product.priceVip)}</strong> en prix VIP, dès {formatFCFA(VIP_THRESHOLD)} d&apos;achats
+                <strong>{formatFCFA(product.priceVip)}</strong> au tarif client privilégié, dès {formatFCFA(VIP_THRESHOLD)} d&apos;achats
               </p>
             </>
           )}
@@ -74,7 +74,7 @@ export function ProductDetail({ product }: { product: Product }) {
         <ul className="grid gap-3 text-sm text-gray-800 sm:grid-cols-3">
           <li className="flex items-start gap-2">
             <ShieldCheck aria-hidden className="mt-0.5 size-5 shrink-0 text-emerald-700" />
-            Produit original et scellé, label IASC
+            Conseils personnalisés pour choisir votre produit
           </li>
           <li className="flex items-start gap-2">
             <Smartphone aria-hidden className="mt-0.5 size-5 shrink-0 text-emerald-700" />

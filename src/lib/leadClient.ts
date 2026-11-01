@@ -1,5 +1,5 @@
 import { LEAD_DISMISS_DAYS } from "./config";
-import { parseLeadPayload } from "./leads";
+import { isRecord, parseLeadPayload } from "./leads";
 import type { LeadPayload } from "./types";
 
 const PENDING_KEY = "forever-lead-pending-v1";
@@ -22,7 +22,15 @@ function safeSet(key: string, value: string): void {
   }
 }
 
-/** « submitted » pour toujours, « dismissed » pendant LEAD_DISMISS_DAYS jours : ensuite le pop-up peut revenir une fois. */
+function safeRemove(key: string): void {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    /* stockage indisponible : sans effet */
+  }
+}
+
+/** « submitted » pour toujours, « dismissed » pendant LEAD_DISMISS_DAYS jours. */
 export function readLeadStatus(): LeadStatus | null {
   const raw = safeGet(STATUS_KEY);
   if (!raw) return null;
@@ -43,33 +51,39 @@ export function writeLeadStatus(status: LeadStatus): void {
   safeSet(STATUS_KEY, JSON.stringify({ status, at: Date.now() }));
 }
 
-async function post(payload: LeadPayload, honeypot = ""): Promise<void> {
+async function post(payload: LeadPayload, honeypot = ""): Promise<boolean> {
   try {
     const response = await fetch("/api/leads", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...payload, website: honeypot }),
-      keepalive: true, // la requête aboutit même si WhatsApp prend le dessus sur l'onglet
+      keepalive: true,
     });
-    if (response.ok) localStorage.removeItem(PENDING_KEY);
+
+    const result: unknown = await response.json().catch(() => null);
+    if (!response.ok || !isRecord(result) || result.ok !== true) return false;
+
+    safeRemove(PENDING_KEY);
+    return true;
   } catch {
-    /* réseau coupé : le lead reste en attente et repart à la prochaine visite */
+    return false;
   }
 }
 
-/** Envoie le lead sans jamais bloquer le visiteur ; garde une copie locale jusqu'à confirmation. */
-export function sendLead(payload: LeadPayload, honeypot = ""): void {
+/** Attend la confirmation Supabase ; garde une copie locale si l'API échoue. */
+export async function sendLead(payload: LeadPayload, honeypot = ""): Promise<boolean> {
   safeSet(PENDING_KEY, JSON.stringify(payload));
-  void post(payload, honeypot);
+  return post(payload, honeypot);
 }
 
-export function retryPendingLead(): void {
+/** Reprend un envoi interrompu lors d'une visite ultérieure, sans afficher de faux succès. */
+export async function retryPendingLead(): Promise<void> {
   const raw = safeGet(PENDING_KEY);
   if (!raw) return;
   try {
     const payload = parseLeadPayload(JSON.parse(raw));
-    if (payload) void post(payload);
+    if (payload) await post(payload);
   } catch {
-    /* ignoré */
+    /* valeur corrompue : ignorée */
   }
 }

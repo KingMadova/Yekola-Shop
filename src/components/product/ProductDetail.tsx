@@ -8,7 +8,7 @@ import { ProductImageGallery } from "./ProductImageGallery";
 
 /** Fiche produit complète : galerie, prix public / VIP, accordéon, double bouton d'achat, réassurance. */
 export function ProductDetail({ product }: { product: Product }) {
-  // Un produit ou un pack déjà au-dessus du palier déclenche la tarif client privilégié dès le premier exemplaire.
+  // Un produit ou un pack déjà au-dessus du palier déclenche le tarif client privilégié dès le premier exemplaire.
   const vipImmediate = product.pricePublic >= VIP_THRESHOLD;
 
   return (
@@ -17,22 +17,22 @@ export function ProductDetail({ product }: { product: Product }) {
 
       <div className="flex flex-col gap-5">
         <div className="flex flex-col gap-2">
-          <p className="text-sm font-medium text-emerald-800">{product.category}</p>
-          <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
-          <p className="max-w-prose text-gray-800">{product.shortDesc || "Besoin d'informations sur ce produit ? Échangez avec un conseiller avant de choisir."}</p>
+          <p className="text-sm font-medium text-[#173f35]">{product.category} · Réf. {product.code}</p>
+          <h1 className="text-3xl font-bold text-[#26392e]">{product.name}</h1>
+          <p className="max-w-prose text-[#59685d]">{product.shortDesc || "Besoin d'informations sur ce produit ? Échangez avec un conseiller avant de choisir."}</p>
         </div>
 
-        <div className="flex flex-col gap-2 rounded-2xl border border-gray-200 bg-white p-4">
+        <div className="flex flex-col gap-2 rounded-2xl border border-[#e9e5d9] bg-[#fbfaf6] p-4">
           {vipImmediate ? (
             <>
               <p className="flex flex-wrap items-baseline gap-x-3">
                 <span className="text-3xl font-bold text-emerald-800">{formatFCFA(product.priceVip)}</span>
                 <span className="text-sm font-medium text-gray-800">Prix client privilégié</span>
               </p>
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-[#68756c]">
                 Prix public : <s>{formatFCFA(product.compareAtPrice ?? product.pricePublic)}</s>
               </p>
-              <p className="w-fit rounded-full bg-amber-100 px-3 py-1.5 text-sm font-semibold text-amber-900">
+              <p className="w-fit rounded-full bg-[#f4efdf] px-3 py-1.5 text-sm font-semibold text-[#705a2f]">
                 {COPY.vipBadge}
               </p>
             </>
@@ -44,7 +44,7 @@ export function ProductDetail({ product }: { product: Product }) {
                 {product.compareAtPrice && (
                   <>
                     <s className="text-base text-gray-700">{formatFCFA(product.compareAtPrice)}</s>
-                    <span className="rounded-full bg-amber-700 px-2.5 py-1 text-xs font-bold text-white">{product.promoBadge}</span>
+                    <span className="rounded-full bg-[#8a6330] px-2.5 py-1 text-xs font-bold text-white">{product.promoBadge}</span>
                   </>
                 )}
               </p>
@@ -56,7 +56,7 @@ export function ProductDetail({ product }: { product: Product }) {
         </div>
 
         {product.packItems && (
-          <div className="rounded-2xl border border-gray-200 bg-white p-4">
+          <div className="rounded-2xl border border-[#e9e5d9] bg-white p-4">
             <p className="font-semibold text-gray-900">Ce pack contient</p>
             <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-gray-800">
               {product.packItems.map((item) => (
@@ -73,7 +73,7 @@ export function ProductDetail({ product }: { product: Product }) {
 
         <ul className="grid gap-3 text-sm text-gray-800 sm:grid-cols-3">
           <li className="flex items-start gap-2">
-            <ShieldCheck aria-hidden className="mt-0.5 size-5 shrink-0 text-emerald-700" />
+            <ShieldCheck aria-hidden className="mt-0.5 size-5 shrink-0 text-[#315d47]" />
             Conseils personnalisés pour choisir votre produit
           </li>
           <li className="flex items-start gap-2">

@@ -82,7 +82,7 @@ export async function retryPendingLead(): Promise<void> {
   if (!raw) return;
   try {
     const payload = parseLeadPayload(JSON.parse(raw));
-    if (payload) await post(payload);
+    if (payload && (await post(payload))) writeLeadStatus("submitted");
   } catch {
     /* valeur corrompue : ignorée */
   }

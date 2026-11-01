@@ -39,7 +39,7 @@ export function resolvePromo(
 
 /**
  * Transforme les lignes de la base en produits « effectifs » :
- * `pricePublic` et `priceVip` viennent des deux colonnes tarifaires officielles.
+ * `pricePublic` et `priceVip` viennent des deux colonnes tarifaires officielles de la grille.
  * Une promotion réduit les deux tarifs dans la même proportion ; aucun taux VIP n'est recalculé.
  */
 export function buildCatalog(rows: CatalogRows, now: Date): Product[] {

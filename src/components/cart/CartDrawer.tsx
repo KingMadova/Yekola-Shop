@@ -95,7 +95,7 @@ export function CartDrawer() {
               </div>
               {totals.vipUnlocked && (
                 <div className="flex justify-between text-emerald-800">
-                  <dt>Remise VIP (−5 %)</dt>
+                  <dt>Économie au tarif privilégié</dt>
                   <dd>−{formatFCFA(totals.vipDiscount)}</dd>
                 </div>
               )}

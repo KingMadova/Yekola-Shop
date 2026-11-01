@@ -60,6 +60,7 @@ export function LeadCaptureModal() {
 
   const [open, setOpen] = useState(false);
   const [done, setDone] = useState(false);
+  const [catalogueDownloadReady, setCatalogueDownloadReady] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [phone, setPhone] = useState("");
   const [honeypot, setHoneypot] = useState("");
@@ -203,9 +204,7 @@ export function LeadCaptureModal() {
 
     submitted.current = true;
     writeLeadStatus("submitted");
-    if (!downloadCatalogue()) {
-      setFormError("");
-    }
+    setCatalogueDownloadReady(downloadCatalogue());
     setDone(true);
   }
 
@@ -261,7 +260,7 @@ export function LeadCaptureModal() {
             <Check aria-hidden className="size-12 rounded-full bg-emerald-100 p-2.5 text-emerald-800" />
             <h2 id={titleId} className="text-xl font-bold">Merci {firstName.trim()} !</h2>
             <p className="text-gray-800">Vos informations ont bien été enregistrées.</p>
-            {CATALOG_PDF_PATH ? (
+            {catalogueDownloadReady ? (
               <p className="text-sm text-gray-700">Le téléchargement du catalogue a été lancé. Vous pouvez poursuivre votre navigation.</p>
             ) : (
               <p className="text-sm text-amber-800">Le catalogue PDF n'est pas encore disponible au téléchargement. Votre demande est bien enregistrée.</p>

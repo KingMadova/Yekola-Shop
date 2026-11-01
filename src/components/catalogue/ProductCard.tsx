@@ -51,7 +51,7 @@ export function ProductCard({ product, highlightVip = false }: ProductCardProps)
           <div>
             <p className="text-base font-bold text-[#173f35] sm:text-lg">{formatFCFA(product.priceVip)}</p>
             <p className="text-[10px] text-[#778178] sm:text-xs">
-              Prix VIP · au lieu de <s>{formatFCFA(product.compareAtPrice ?? product.pricePublic)}</s>
+              Prix client privilégié · au lieu de <s>{formatFCFA(product.compareAtPrice ?? product.pricePublic)}</s>
             </p>
           </div>
         ) : (
@@ -63,7 +63,7 @@ export function ProductCard({ product, highlightVip = false }: ProductCardProps)
               )}
             </p>
             <p className="text-[10px] text-[#778178] sm:text-xs">
-              VIP : {formatFCFA(product.priceVip)} dès {formatFCFA(VIP_THRESHOLD)} d&apos;achats
+              Prix privilégié : {formatFCFA(product.priceVip)} dès {formatFCFA(VIP_THRESHOLD)} d&apos;achats
             </p>
           </div>
         )}

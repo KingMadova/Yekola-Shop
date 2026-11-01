@@ -4,8 +4,6 @@ import { HOUSE_PARTNER_SLUG } from "@/lib/config";
 import { normalizeCongoPhone } from "@/lib/phone";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-export const runtime = "nodejs";
-
 const WINDOW_MS = 10 * 60 * 1000;
 const MAX_PER_WINDOW = 5;
 const hits = new Map<string, number[]>();

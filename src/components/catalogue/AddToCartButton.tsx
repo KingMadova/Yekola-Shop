@@ -12,9 +12,10 @@ export function AddToCartButton({ product }: { product: Product }) {
       type="button"
       onClick={() => addItem(product)}
       aria-label={`Ajouter ${product.name} au panier`}
-      className={`inline-flex size-11 shrink-0 items-center justify-center rounded-xl bg-emerald-700 text-white hover:bg-emerald-800 ${focusRing}`}
+      className={`inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#173f35] px-3 text-xs font-semibold text-white transition-colors hover:bg-[#10352d] sm:text-sm ${focusRing}`}
     >
-      <ShoppingCart aria-hidden className="size-5" />
+      <ShoppingCart aria-hidden className="size-4" />
+      Ajouter au panier
     </button>
   );
 }

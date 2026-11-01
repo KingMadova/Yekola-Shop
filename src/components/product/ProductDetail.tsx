@@ -8,7 +8,7 @@ import { ProductImageGallery } from "./ProductImageGallery";
 
 /** Fiche produit complète : galerie, prix public / VIP, accordéon, double bouton d'achat, réassurance. */
 export function ProductDetail({ product }: { product: Product }) {
-  // Un produit ou un pack déjà au-dessus du palier déclenche la remise VIP dès le premier exemplaire.
+  // Un produit ou un pack déjà au-dessus du palier déclenche la tarif client privilégié dès le premier exemplaire.
   const vipImmediate = product.pricePublic >= VIP_THRESHOLD;
 
   return (

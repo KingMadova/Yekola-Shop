@@ -54,7 +54,7 @@ Variables d'environnement actuelles (`.env.example`) :
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clé anon ou publishable (publique, protégée par RLS) |
 | `CATALOG_FALLBACK` | `seed` : autorise le catalogue de secours **hors développement** (essai local d'un build de production sans Supabase) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Script d'import et API serveur des leads. **Secret : jamais dans le dépôt ni côté client** |
-| `NEXT_PUBLIC_CATALOG_PDF_PATH` | Chemin du PDF dans `/public` (ex. `/catalogue-forever.pdf`) ; à renseigner uniquement après ajout et vérification du vrai fichier |
+| `NEXT_PUBLIC_CATALOG_PDF_PATH` | Chemin du PDF dans `/public` ; fichier présent : `public/catalogue-forever.pdf`, valeur attendue `/catalogue-forever.pdf`. Le téléchargement après soumission du formulaire reste à tester en conditions réelles |
 
 
 ## 4. État d'avancement

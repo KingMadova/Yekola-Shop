@@ -34,13 +34,19 @@ items.forEach((item, index) => {
   if (!Number.isFinite(price) || price <= 0) problems.push("prix public invalide");
   if (!Number.isFinite(vipPrice) || vipPrice <= 0 || vipPrice > price) problems.push("prix client privilégié invalide");
   if (problems.length) { errors.push(`#${index + 1} ${item.code ?? item.name ?? "?"} : ${problems.join(", ")}`); return; }
-  rows.push({
+  const row = {
     code: String(item.code), slug: item.slug ?? slugify(item.name), name: item.name, category: item.category,
     price_public: price, price_vip: vipPrice, is_active: true,
-    short_desc: item.shortDesc ?? "", health_goals: item.healthGoals ?? [],
-    benefits: item.benefits ?? [], duration: item.duration ?? null, usage_advice: item.usageAdvice ?? null,
-    is_best_seller: item.isBestSeller === true, is_pack: item.isPack === true, sort_order: item.sortOrder ?? 0,
-  });
+    is_pack: item.isPack === true, sort_order: item.sortOrder ?? (index + 1) * 10,
+  };
+  // Les champs éditoriaux absents de la grille ne doivent pas effacer les contenus déjà saisis.
+  if (item.shortDesc !== undefined) row.short_desc = item.shortDesc;
+  if (item.healthGoals !== undefined) row.health_goals = item.healthGoals;
+  if (item.benefits !== undefined) row.benefits = item.benefits;
+  if (item.duration !== undefined) row.duration = item.duration;
+  if (item.usageAdvice !== undefined) row.usage_advice = item.usageAdvice;
+  if (item.isBestSeller !== undefined) row.is_best_seller = item.isBestSeller === true;
+  rows.push(row);
 });
 
 console.log(`${rows.length} produit(s) valide(s), ${errors.length} erreur(s).`);

@@ -24,8 +24,8 @@ Direction visuelle (références fournies : NovaTrend, NimbleCart) : bandeau d'a
 | # | Règle |
 |---|---|
 | R1 | Monnaie : FCFA, **entiers**. Format d'affichage `65 000 F` avec espaces insécables. |
-| R2 | **Remise VIP 5 %** : prix VIP = prix de vente × 95 %, arrondi au franc. Elle s'applique à **toute la commande** si le total atteint **65 000 F**, **jamais en dessous**. |
-| R3 | **Une promo ne bloque pas la remise VIP** (décision du 31/10/2026). Le VIP se calcule sur le prix promo. **Hypothèse A1, à confirmer :** le palier de 65 000 F se mesure sur le total aux **prix de vente** (promo comprise, avant VIP). |
+| R2 | **Prix client privilégié** : chaque produit possède un prix public et un prix client privilégié exact issus de la grille tarifaire officielle. À partir de **65 000 F** de total aux prix publics, les prix client privilégié s'appliquent à toutes les lignes. Aucun taux de 5 % n'est recalculé. |
+| R3 | **Une promotion ne bloque pas l'accès aux prix client privilégié.** Le palier de 65 000 F se mesure sur le total aux prix publics de vente (promo comprise, avant tarif privilégié). Une promotion est appliquée dans la même proportion aux deux tarifs de la grille. |
 | R4 | Commande par message WhatsApp pré-formaté vers le numéro du distributeur (+242…). Aucun paiement en ligne. |
 | R5 | Règlement proposé : Espèces à la livraison, MTN Mobile Money, Airtel Money. La mention de réassurance est « **Paiement mobile accepté** ». L'ancienne mention « Paiement à la réception après vérification du colis » a été **retirée volontairement** : ne pas la remettre. |
 | R6 | Mention obligatoire : « Entrepreneur Forever Indépendant Agréé ». Vocabulaire bien-être, **aucune allégation de guérison médicale**. |
@@ -86,13 +86,20 @@ Variables d'environnement actuelles (`.env.example`) :
 
 **Phase 1 — état au 01/11/2026 (code) :** typage strict et build validés ; les tests globaux du dépôt sont désormais à **31 tests réussis**. La configuration Supabase réelle a été renseignée par le propriétaire. La vérification des données réelles du catalogue et du rafraîchissement après modification reste à effectuer.
 
-**Phases 2 et 3 — état après fusion du 01/11/2026 :** la capture des leads et ses migrations sont fusionnées dans `main` (PR #1). Les migrations `002_partners.sql` et `003_leads.sql` ainsi que les variables Supabase/Vercel ont été configurées par le propriétaire. L'API serveur, la validation, l'upsert/dédoublonnage par boutique et numéro, le GPS facultatif déclenché après clic et le formulaire asynchrone sont intégrés. Le catalogue réel est présent dans `public/catalogue-forever.pdf` ; une copie documentaire est conservée dans `docs/catalogue-forever.pdf`. Le téléchargement automatique doit encore être vérifié dans un parcours utilisateur complet. Le routage public multi-boutiques et les espaces `/admin` et `/espace` ne sont pas encore implémentés.
+**Phases 2 et 3 — état après fusion du 01/11/2026 :** la capture des leads et ses migrations sont fusionnées dans `main` (PR #1). Les migrations `002_partners.sql` et `003_leads.sql` ainsi que les variables Supabase/Vercel ont été configurées par le propriétaire. L'API serveur, la validation, l'upsert/dédoublonnage par boutique et numéro, le GPS facultatif déclenché après clic et le formulaire asynchrone sont intégrés. Le catalogue réel est présent dans `public/catalogue-forever.pdf` ; la grille de prix clients du 01/11/2026 est structurée dans `data/liste-prix-officielle.json` (53 références). Le téléchargement automatique doit encore être vérifié dans un parcours utilisateur complet. Le routage public multi-boutiques et les espaces `/admin` et `/espace` ne sont pas encore implémentés.
 
 ### EN COURS — refonte UX/UI mobile-first
 
 - Première passe intégrée sur la branche `feat/mobile-first-natural-redesign` : palette vert forêt / ivoire / or doux, en-tête mobile compact, bandeau d'annonce masqué sur petit écran, Hero raccourci, copywriting principal, sections d'accueil, cartes produits et bouton WhatsApp flottant plus discret.
 - Le Hero a été conçu pour tenir dans le premier écran mobile sans hauteur fixe artificielle. **La conformité réelle à 360 × 800 et 390 × 844 reste à mesurer dans un navigateur** ; ne pas considérer ce critère comme validé avant test.
 - Les contrôles `npx tsc --noEmit`, `npx vitest run` et `npm run build` n'ont pas encore été exécutés sur cette branche. La documentation Next.js installée sous `node_modules/next/dist/docs/` n'était pas accessible depuis l'édition GitHub ; aucune API Next.js n'a été modifiée.
+
+### EN COURS — pages commerciales et tarifs officiels
+
+- La grille `data/liste-prix-officielle.json` contient 53 références avec prix public et prix client privilégié exacts.
+- Le modèle de données, la migration `004_official_vip_prices.sql` et le script d'import acceptent le tarif privilégié explicite.
+- Pages ajoutées : `/packs`, `/besoins`, `/panier`, `/devenir-partenaire` ; suggestions de produits dans la recherche du catalogue et de l'en-tête desktop.
+- **Reste à faire :** exécuter la migration puis l'import sur le projet Supabase réel, vérifier les pages dans le navigateur, compléter les descriptions/photos et associer les produits aux besoins après validation des informations produit.
 
 ### PAS ENCORE FAIT (résumé, détail en sections 6 bis et 7)
 
@@ -246,7 +253,7 @@ Ordre conseillé : 0, 1, **2, 3, 4, 5, 6, 7, 8, 9**. La phase 8 (PWA) est indép
 2. SQL Editor : exécuter `supabase/schema.sql`, puis `supabase/seed.sql`.
 3. Project Settings > API : copier l'URL et la clé anon/publishable dans `.env.local` (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`) ; `npm i @supabase/supabase-js` ; redémarrer.
 4. Vérifier : le site affiche les mêmes 2 packs ; modifier un prix dans Table Editor, il change sur le site en 5 minutes au plus.
-5. Importer la vraie liste de prix : `node --env-file=.env.local scripts/import-products.mjs liste.json` (essai à blanc), puis `--apply`. **Si le JSON nettoyé n'a pas le format attendu** (en tête du script), fournir un échantillon et adapter le script.
+5. Exécuter `supabase/migrations/004_official_vip_prices.sql`, puis importer les 53 références officielles : `node --env-file=.env.local scripts/import-products.mjs data/liste-prix-officielle.json` (essai à blanc), puis ajouter `--apply` pour écrire dans Supabase. Les deux tarifs sont importés tels qu'indiqués dans le PDF ; le script réactive les références de la grille et ne recalcule pas le prix client privilégié.
 6. Au déploiement : reporter les variables dans Vercel.
 
 **Fait quand :** le site lit Supabase, la liste de prix est importée, le build passe. `SEED_PRODUCTS` (`src/data/products.ts`) reste comme catalogue de secours de développement.

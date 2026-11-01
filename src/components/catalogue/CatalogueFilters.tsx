@@ -2,8 +2,8 @@ import Link from "next/link";
 import { ProductSearch } from "./ProductSearch";
 import { focusRing } from "@/components/ui/styles";
 import { buildCatalogueHref, type CatalogueQuery } from "@/lib/catalogue";
-import { CATEGORY_SLUGS, HEALTH_GOAL_META, HEALTH_GOAL_SLUGS } from "@/lib/config";
-import { CATEGORIES, HEALTH_GOALS } from "@/lib/types";
+import { CATEGORY_SLUGS, HEALTH_GOAL_SLUGS } from "@/lib/config";
+import { CATEGORIES } from "@/lib/types";
 
 const pill = (active: boolean) =>
   `inline-flex min-h-11 items-center whitespace-nowrap rounded-full border px-4 text-sm font-medium ${focusRing} ${
@@ -38,23 +38,12 @@ export function CatalogueFilters({ query }: { query: CatalogueQuery }) {
         </ul>
       </nav>
 
-      <nav aria-label="Besoins santé">
-        <p className="mb-2 text-sm font-semibold text-[#26392e]">Votre besoin</p>
-        <ul className="flex gap-2 overflow-x-auto pb-1">
-          <li>
-            <Link href={buildCatalogueHref({ ...query, goal: undefined })} aria-current={!query.goal ? "true" : undefined} className={pill(!query.goal)}>
-              Tous les besoins
-            </Link>
-          </li>
-          {HEALTH_GOALS.map((goal) => (
-            <li key={goal}>
-              <Link href={buildCatalogueHref({ ...query, goal })} aria-current={query.goal === goal ? "true" : undefined} className={pill(query.goal === goal)}>
-                {HEALTH_GOAL_META[goal].shortLabel}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
+      <div className="flex flex-wrap items-center gap-2 border-t border-[#e9e5d9] pt-3">
+        <p className="text-sm text-[#68756c]">Vous préférez commencer par un objectif ?</p>
+        <Link href="/besoins" className="inline-flex min-h-10 items-center font-semibold text-[#173f35] underline underline-offset-4">
+          Explorer vos besoins
+        </Link>
+      </div>
     </div>
   );
 }

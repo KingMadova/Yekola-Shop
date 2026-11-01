@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { normalizeCongoPhone } from "../phone";
-import { computeCartTotals, computeVipPrice, formatFCFA } from "../pricing";
+import { computeCartTotals, formatFCFA } from "../pricing";
 import type { CartItem, Product } from "../types";
 import { buildSingleProductMessage, buildWhatsAppUrl } from "../whatsapp";
 
-function makeProduct(pricePublic: number, code = "T1"): Product {
+function makeProduct(pricePublic: number, priceVip: number, code = "T1"): Product {
   return {
     code,
     name: `Produit ${code}`,
@@ -12,30 +12,33 @@ function makeProduct(pricePublic: number, code = "T1"): Product {
     category: "Boissons",
     healthGoals: [],
     pricePublic,
-    priceVip: computeVipPrice(pricePublic),
+    priceVip,
     images: [],
     shortDesc: "",
     benefits: [],
   };
 }
 
-const item = (price: number, quantity = 1, code = "T1"): CartItem => ({
-  product: makeProduct(price, code),
+const item = (price: number, vipPrice: number, quantity = 1, code = "T1"): CartItem => ({
+  product: makeProduct(price, vipPrice, code),
   quantity,
 });
 
 const plain = (text: string) => text.replace(/\u00a0/g, " ");
 
-describe("prix VIP", () => {
-  it("calcule -5 % arrondi au franc", () => {
-    expect(computeVipPrice(68_543)).toBe(65_116);
-    expect(computeVipPrice(97_166)).toBe(92_308);
+describe("tarifs client privilégié officiels", () => {
+  it("utilise exactement le tarif de la grille, sans recalculer 5 %", () => {
+    const totals = computeCartTotals([item(20_156, 19_322, 4)]);
+    expect(totals.subtotalPublic).toBe(80_624);
+    expect(totals.vipUnlocked).toBe(true);
+    expect(totals.total).toBe(77_288);
+    expect(totals.vipDiscount).toBe(3_336);
   });
 });
 
 describe("palier de 65 000 F", () => {
   it("garde le prix public à 64 999 F", () => {
-    const totals = computeCartTotals([item(64_999)]);
+    const totals = computeCartTotals([item(64_999, 61_750)]);
     expect(totals.vipUnlocked).toBe(false);
     expect(totals.total).toBe(64_999);
     expect(totals.vipDiscount).toBe(0);
@@ -44,7 +47,7 @@ describe("palier de 65 000 F", () => {
   });
 
   it("active la remise dès 65 000 F pile", () => {
-    const totals = computeCartTotals([item(65_000)]);
+    const totals = computeCartTotals([item(65_000, 61_750)]);
     expect(totals.vipUnlocked).toBe(true);
     expect(totals.total).toBe(61_750);
     expect(totals.vipDiscount).toBe(3_250);
@@ -53,7 +56,7 @@ describe("palier de 65 000 F", () => {
   });
 
   it("applique la remise à toutes les lignes quand le total cumulé atteint le palier", () => {
-    const totals = computeCartTotals([item(40_000, 1, "A"), item(30_000, 1, "B")]);
+    const totals = computeCartTotals([item(40_000, 38_000, 1, "A"), item(30_000, 28_500, 1, "B")]);
     expect(totals.subtotalPublic).toBe(70_000);
     expect(totals.total).toBe(38_000 + 28_500);
   });
@@ -84,8 +87,8 @@ describe("WhatsApp", () => {
     expect(url).toBe("https://wa.me/242061234567?text=Bonjour%20%26%20merci");
   });
 
-  it("applique le prix VIP dans la commande 1 clic d'un pack > 65 000 F", () => {
-    const message = plain(buildSingleProductMessage(makeProduct(68_543)));
+  it("reprend le tarif privilégié exact dans la commande 1 clic d'un pack > 65 000 F", () => {
+    const message = plain(buildSingleProductMessage(makeProduct(68_543, 65_116)));
     expect(message).toContain("65 116 F");
     expect(message).toContain("Remise VIP");
   });

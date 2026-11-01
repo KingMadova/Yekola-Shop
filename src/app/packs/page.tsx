@@ -18,7 +18,7 @@ export default async function PacksPage() {
         <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-[#9a7b40]">Sélections prêtes à découvrir</p>
         <h1 className="text-3xl font-bold tracking-tight text-[#173f35] sm:text-4xl">Nos packs</h1>
         <p className="mt-3 text-base leading-relaxed text-[#68756c]">
-          Retrouvez les références regroupées dans la catégorie Combo / Packs, avec leurs prix publics et leurs tarifs client privilégié.
+          Retrouvez les packs et programmes de démarrage, avec leurs prix publics et leurs tarifs client privilégié.
         </p>
       </header>
 

@@ -25,12 +25,15 @@ async function getPartnerId(
 ): Promise<string | null> {
   const { data: existing, error } = await client
     .from("partners")
-    .select("id, status")
+    .select("id, status, is_house")
     .eq("slug", partnerSlug)
     .maybeSingle();
 
   if (error) throw new Error("Impossible de vérifier la boutique.");
-  if (existing) return existing.status === "active" ? existing.id : null;
+  if (existing) {
+    const isCorrectHouse = partnerSlug !== HOUSE_PARTNER_SLUG || existing.is_house;
+    return existing.status === "active" && isCorrectHouse ? existing.id : null;
+  }
 
   // Première initialisation de la boutique maison avec le numéro déjà configuré dans l'environnement.
   if (partnerSlug !== HOUSE_PARTNER_SLUG) return null;
@@ -53,10 +56,11 @@ async function getPartnerId(
     // Une requête concurrente a éventuellement créé la boutique entre-temps.
     const { data: retry } = await client
       .from("partners")
-      .select("id, status")
+      .select("id, status, is_house")
       .eq("slug", partnerSlug)
       .maybeSingle();
-    return retry?.status === "active" ? retry.id : null;
+    const isCorrectHouse = partnerSlug !== HOUSE_PARTNER_SLUG || retry?.is_house === true;
+    return retry?.status === "active" && isCorrectHouse ? retry.id : null;
   }
 
   return created.id;

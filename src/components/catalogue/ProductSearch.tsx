@@ -15,7 +15,7 @@ interface ProductSearchProps {
 }
 
 const normalize = (value: string) =>
-  value.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").toLocaleLowerCase("fr");
+  value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("fr");
 
 export function ProductSearch({
   initialQuery = "",

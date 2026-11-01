@@ -7,7 +7,7 @@ import { CATEGORIES, HEALTH_GOALS } from "@/lib/types";
 
 const pill = (active: boolean) =>
   `inline-flex min-h-11 items-center whitespace-nowrap rounded-full border px-4 text-sm font-medium ${focusRing} ${
-    active ? "border-emerald-700 bg-emerald-700 text-white" : "border-gray-300 bg-white text-gray-900 hover:bg-gray-100"
+    active ? "border-[#173f35] bg-[#173f35] text-white" : "border-[#e3dac4] bg-white text-[#31483d] hover:bg-[#f6f3ea]"
   }`;
 
 /** Filtres en liens : fonctionnent sans JavaScript, se partagent par URL et se branchent sur les publicités. */
@@ -21,7 +21,7 @@ export function CatalogueFilters({ query }: { query: CatalogueQuery }) {
       />
 
       <nav aria-label="Catégories">
-        <p className="mb-2 text-sm font-semibold text-gray-900">Catégories</p>
+        <p className="mb-2 text-sm font-semibold text-[#26392e]">Catégories</p>
         <ul className="flex gap-2 overflow-x-auto pb-1">
           <li>
             <Link href={buildCatalogueHref({ ...query, category: undefined })} aria-current={!query.category ? "true" : undefined} className={pill(!query.category)}>
@@ -39,7 +39,7 @@ export function CatalogueFilters({ query }: { query: CatalogueQuery }) {
       </nav>
 
       <nav aria-label="Besoins santé">
-        <p className="mb-2 text-sm font-semibold text-gray-900">Votre besoin</p>
+        <p className="mb-2 text-sm font-semibold text-[#26392e]">Votre besoin</p>
         <ul className="flex gap-2 overflow-x-auto pb-1">
           <li>
             <Link href={buildCatalogueHref({ ...query, goal: undefined })} aria-current={!query.goal ? "true" : undefined} className={pill(!query.goal)}>

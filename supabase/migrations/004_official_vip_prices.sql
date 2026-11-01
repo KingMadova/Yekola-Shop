@@ -1,4 +1,4 @@
--- Tarifs client privilégié officiels issus de la grille tarifaire du 01/11/2026.
+-- Tarifs client privilégié officiels issus de la grille tarifaire fournie.
 -- Les produits sans prix VIP confirmé sont désactivés jusqu'à l'import de la liste officielle.
 alter table public.products add column if not exists price_vip integer;
 

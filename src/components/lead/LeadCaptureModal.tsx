@@ -4,7 +4,7 @@ import { Check, MapPin, X } from "lucide-react";
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { focusRing } from "@/components/ui/styles";
 import { useCatalog } from "@/components/providers/CatalogContext";
-import { CATALOG_PDF_PATH, COPY, HEALTH_GOAL_META, LEAD_MODAL_DELAY_MS } from "@/lib/config";
+import { CATALOG_PDF_PATH, COPY, HEALTH_GOAL_META, HOUSE_PARTNER_SLUG, LEAD_MODAL_DELAY_MS } from "@/lib/config";
 import { buildNeedProfile, ORIGIN_LABELS } from "@/lib/interest";
 import { readLeadStatus, retryPendingLead, sendLead, writeLeadStatus } from "@/lib/leadClient";
 import { normalizeCongoPhone } from "@/lib/phone";
@@ -166,6 +166,7 @@ export function LeadCaptureModal() {
       cartGoals: items.flatMap((item) => item.product.healthGoals),
     });
     const payload: LeadPayload = {
+      partnerSlug: HOUSE_PARTNER_SLUG,
       firstName: firstName.trim(),
       phone: normalized,
       need: profile.need,

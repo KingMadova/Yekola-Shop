@@ -12,6 +12,9 @@ export const WHATSAPP_NUMBER: string = (
   process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? ""
 ).replace(/\D/g, "");
 
+/** Slug de la boutique maison tant que le routage multi-boutiques public n’est pas activé. */
+export const HOUSE_PARTNER_SLUG = "yekola";
+
 /** Chemin du PDF vérifié dans /public, configuré uniquement après ajout du vrai catalogue. */
 export const CATALOG_PDF_PATH = process.env.NEXT_PUBLIC_CATALOG_PDF_PATH ?? "";
 

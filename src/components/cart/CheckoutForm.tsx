@@ -45,7 +45,7 @@ function validate(values: CustomerInfo): FormErrors {
 }
 
 const controlClass =
-  "min-h-12 w-full rounded-lg border bg-white px-3 text-base text-gray-900 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-emerald-700";
+  "min-h-12 w-full rounded-lg border bg-white px-3 text-base text-[#26392e] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#173f35]";
 
 interface FieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -66,7 +66,7 @@ function Field({ label, error, inputRef, id, ...inputProps }: FieldProps) {
         ref={inputRef}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId : undefined}
-        className={`${controlClass} ${error ? "border-red-700" : "border-gray-400"}`}
+        className={`${controlClass} ${error ? "border-red-700" : "border-[#deded4]"}`}
       />
       {error && (
         <p id={errorId} className="text-sm text-red-700">
@@ -175,7 +175,7 @@ export function CheckoutForm({ items, totals }: CheckoutFormProps) {
         {PAYMENT_METHODS.map((method) => (
           <label
             key={method}
-            className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-gray-300 bg-white px-3 text-sm has-[:checked]:border-emerald-600 has-[:checked]:bg-emerald-50"
+            className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-[#e3dac4] bg-white px-3 text-sm has-[:checked]:border-[#173f35] has-[:checked]:bg-[#edf1e9]"
           >
             <input
               type="radio"
@@ -183,7 +183,7 @@ export function CheckoutForm({ items, totals }: CheckoutFormProps) {
               value={method}
               checked={values.payment === method}
               onChange={() => setValues({ ...values, payment: method })}
-              className="size-4 accent-emerald-700"
+              className="size-4 accent-[#173f35]"
             />
             {method}
           </label>
@@ -202,7 +202,7 @@ export function CheckoutForm({ items, totals }: CheckoutFormProps) {
       </button>
 
       {sent && (
-        <p role="status" className="rounded-xl bg-emerald-50 p-3 text-sm text-emerald-900">
+        <p role="status" className="rounded-xl bg-[#edf1e9] p-3 text-sm text-[#173f35]">
           Votre message est prêt dans WhatsApp. Envoyez-le pour valider votre commande.
         </p>
       )}

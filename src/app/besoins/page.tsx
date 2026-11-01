@@ -33,7 +33,7 @@ async function NeedsContent({ searchParams }: NeedsPageProps) {
 
   return (
     <div className="flex flex-col gap-8">
-      {selected && <InterestSignal goal={selected} origin="besoins" />}
+      {selected && <InterestSignal goal={selected} origin="choix" />}
       <header className="max-w-2xl">
         <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-[#9a7b40]">Un point de départ pour choisir</p>
         <h1 className="text-3xl font-bold tracking-tight text-[#173f35] sm:text-4xl">

@@ -1,4 +1,3 @@
-import { computeVipPrice } from "../pricing";
 import type { Product } from "../types";
 import type { CatalogRows, PromotionRow } from "./rows";
 
@@ -40,8 +39,8 @@ export function resolvePromo(
 
 /**
  * Transforme les lignes de la base en produits « effectifs » :
- * `pricePublic` = prix de vente (promo comprise), `priceVip` = prix de vente -5 %.
- * Le moteur de prix (palier de 65 000 F) n'a donc pas à connaître les promos.
+ * `pricePublic` et `priceVip` viennent des deux colonnes tarifaires officielles.
+ * Une promotion réduit les deux tarifs dans la même proportion ; aucun taux VIP n'est recalculé.
  */
 export function buildCatalog(rows: CatalogRows, now: Date): Product[] {
   const promosByProduct = new Map<string, PromotionRow[]>();
@@ -73,7 +72,9 @@ export function buildCatalog(rows: CatalogRows, now: Date): Product[] {
         category: row.category,
         healthGoals: row.health_goals,
         pricePublic: sellingPrice,
-        priceVip: computeVipPrice(sellingPrice),
+        priceVip: promo && row.price_public > 0
+          ? Math.min(sellingPrice, Math.round(row.price_vip * sellingPrice / row.price_public))
+          : row.price_vip,
         images: row.images,
         shortDesc: row.short_desc,
         duration: row.duration ?? undefined,

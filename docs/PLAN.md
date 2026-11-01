@@ -580,3 +580,102 @@ create table orders (
 ## Annexe H : Liens publicitaires par partenaire
 
 Même format que l'annexe B avec le chemin de la boutique : `https://DOMAINE/p/SLUG/?besoin=SLUG_BESOIN&utm_source=facebook&utm_medium=cpc&utm_campaign=CAMPAGNE&utm_content=video-1`. Pour la boutique maison, le chemin reste `https://DOMAINE/?besoin=…`. Les slugs de besoins (R9) ne changent pas. L'espace partenaire (phase 6) génère ces liens automatiquement.
+
+## 8 bis. Refonte UX/UI mobile-first — Yekola Shop (priorité immédiate)
+
+**Statut : spécification validée à implémenter.** Cette section devient le brief de référence pour la refonte visuelle. Mettre à jour ce plan avant toute modification de composants ou de styles.
+
+### Direction artistique
+
+Créer un langage visuel original qui combine :
+- **A — Luxe minimaliste :** hiérarchie typographique nette, composition éditoriale, espaces maîtrisés, détails sobres et finitions soignées.
+- **B — E-commerce premium :** produits et prix immédiatement compréhensibles, visuels forts, promotions lisibles, actions d'achat évidentes et parcours sans friction.
+- **C — Wellness naturel :** chaleur, sérénité, matière organique et univers végétal, sans tomber dans le cliché « feuille verte partout ».
+
+La direction finale est un **premium wellness naturel et commercial** : élégante et épurée, mais clairement conçue pour vendre et conseiller.
+
+### Palette et principes graphiques
+
+Palette de départ à appliquer de façon cohérente (à vérifier en contraste WCAG AA avant validation) :
+- Vert forêt : `#123D32` — marque, titres forts, navigation et actions principales.
+- Ivoire naturel : `#F6F3EA` — fonds doux et grandes surfaces.
+- Or doux : `#D5A84B` — accent ponctuel pour offres et détails premium, jamais pour du petit texte peu contrasté.
+- Blanc : `#FFFFFF` — cartes, formulaires et surfaces de lecture.
+- Neutres chauds : gamme de gris/beiges pour texte secondaire, séparateurs et bordures.
+
+Éviter les aplats verts excessifs, les dégradés décoratifs sans fonction, les ombres lourdes, les rayons uniformément énormes et l'accumulation de badges. Les photographies produits doivent être prioritaires dès qu'elles sont disponibles ; ne pas inventer de témoignages, d'images de clients ou de preuves sociales.
+
+### Règle non négociable : Hero visible entièrement sans scroll
+
+Sur la page d'accueil mobile, **la section Hero doit être entièrement visible dans le premier écran, sans défilement vertical**. Cela comprend le titre, le texte d'accroche, les actions principales, le visuel/produit mis en avant et les éléments de réassurance essentiels choisis pour le Hero.
+
+- Concevoir et mesurer le Hero en tenant compte de la hauteur réelle de l'en-tête et de l'éventuel bandeau d'annonce ; ne pas raisonner sur la hauteur du viewport seule.
+- Cible de validation : écrans mobiles de référence 360 × 800 et 390 × 844 CSS px, puis vérification sur un petit écran et avec les barres du navigateur mobile visibles.
+- Aucun élément essentiel du Hero ne doit être coupé, masqué derrière une barre fixe ou repoussé sous la ligne de flottaison. Pas de scroll nécessaire pour découvrir le CTA principal ou le produit vedette.
+- Adapter la composition au viewport : réduire les espacements et tailles de façon maîtrisée, organiser texte et visuel intelligemment, et privilégier une image cadrée/compacte. Ne pas résoudre le problème en réduisant le texte jusqu'à le rendre illisible.
+- Si l'ensemble ne tient pas dans les conditions de test, simplifier le contenu du Hero et déplacer les éléments secondaires sous le Hero. Ne jamais tricher avec une hauteur fixe qui déborde.
+- Sur desktop, conserver une composition plus ample et équilibrée ; la contrainte « entièrement visible sans scroll » vise le premier écran mobile.
+
+### Copywriting : réécriture complète orientée client
+
+Réécrire les textes de l'accueil et des composants de conversion avec une voix :
+- claire, humaine, chaleureuse, crédible et professionnelle ;
+- orientée bénéfices d'usage et besoins du client, sans promesse miraculeuse ;
+- concrète sur les prix en FCFA, les modalités de commande, la livraison et le conseil ;
+- courte sur mobile : titres spécifiques, paragraphes courts, CTA explicites et libellés cohérents.
+
+Le Hero doit répondre immédiatement à trois questions : **qu'est-ce que je trouve ici ?**, **comment cela peut m'aider à choisir ?**, **comment commander ?** Préférer un titre distinctif et concret à une formule générique. Le sous-titre doit expliquer l'accompagnement et l'accès aux produits ; les CTA doivent distinguer clairement « Voir les produits » et « Être conseillé sur WhatsApp ».
+
+Réviser aussi les titres de sections, descriptions des besoins, cartes produits, badges promotionnels, messages vides, réassurance, panier, formulaire de commande et pied de page. Éviter les répétitions, le jargon, les majuscules inutiles et les promesses vagues.
+
+**Contraintes métier et éditoriales inchangées :**
+- aucune allégation de guérison, de prévention ou de traitement médical ;
+- ne pas présenter un complément comme substitut à un avis médical ;
+- ne pas inventer de résultats, d'avis clients, de certifications, de délais ou de zones de livraison ;
+- conserver les règles de prix VIP, promotions, commande WhatsApp et paiement définies en section 2 ;
+- conserver la mention légale « Entrepreneur Forever Indépendant Agréé » au bon endroit ;
+- textes partagés et réutilisés centralisés dans `COPY` de `src/lib/config.ts` lorsque pertinent.
+
+### Parcours et composants mobiles
+
+1. **En-tête compact :** une seule ligne utile, marque, panier et accès recherche/navigation ; supprimer la double rangée mobile actuelle si elle encombre le premier écran. Prévoir une navigation basse uniquement si elle améliore réellement l'accès aux destinations principales et ne masque pas le contenu.
+2. **Accueil :** Hero complet au premier écran, puis réassurance, besoins/catégories, meilleures ventes, packs, témoignages authentiques (section masquée si aucune preuve réelle), conseil et pied de page.
+3. **Catalogue :** recherche facilement accessible, filtres mobiles compacts (panneau ou tiroir si nécessaire), nombre de résultats lisible et grille adaptée aux petits écrans.
+4. **Cartes produits :** photo cohérente, nom lisible, prix public/promo/VIP sans ambiguïté, action tactile claire ; pas de densité excessive.
+5. **Fiche produit :** galerie adaptée au mobile, informations et prix hiérarchisés, contenu scannable, quantité simple, CTA d'achat accessible sans masquer les informations.
+6. **Panier/commande :** récapitulatif clair, contrôle des quantités facile, formulaire lisible et CTA WhatsApp évident ; respecter les règles métier existantes.
+7. **Éléments flottants :** WhatsApp, tiroirs, modales et éventuelle navigation fixe ne doivent jamais recouvrir les actions, champs ou contenus importants.
+
+### Responsive, accessibilité et performance
+
+- Mobile-first : définir les styles de base pour 320–390 px, puis enrichir progressivement tablette et desktop.
+- Cibles tactiles ≥ 44 px, champs de saisie ≥ 16 px, focus visible, labels explicites, ordre clavier logique, contrastes WCAG AA.
+- Respecter `prefers-reduced-motion`, éviter les animations non essentielles et les défilements horizontaux involontaires.
+- Images responsives, dimensions réservées pour éviter les sauts de mise en page, chargement optimisé ; ne pas ajouter de dépendance UI sans justification.
+- Préserver SEO, navigation sans JavaScript quand elle existe, URLs publicitaires, règles métier, capture des leads, Supabase et isolation multi-boutiques.
+- Ne pas supprimer ni réécrire une fonctionnalité métier au seul motif de simplifier le visuel.
+
+### Périmètre et ordre d'exécution
+
+**Étape 1 — audit et inventaire :** relever les composants partagés, les styles globaux, les états mobiles et les textes actuels. Repérer les contraintes de données réelles (photos absentes, catalogue incomplet, témoignages vides) et ne pas maquiller ces lacunes par du contenu fictif.
+
+**Étape 2 — système visuel :** définir tokens de couleurs, typographie, espacements, rayons, bordures, boutons, champs, cartes et états interactifs.
+
+**Étape 3 — accueil et Hero :** refondre en premier l'en-tête et le Hero, puis vérifier impérativement l'intégralité du premier écran sur 360 × 800 et 390 × 844.
+
+**Étape 4 — parcours d'achat :** catalogue, cartes, fiche produit, panier et commande WhatsApp.
+
+**Étape 5 — finition :** autres sections de l'accueil, pages légales, états vides/erreur, navigation, footer, tablette et desktop.
+
+### Critères d'acceptation
+
+- Le Hero et son CTA principal sont entièrement visibles au premier écran mobile, sans scroll, sur les deux formats de référence.
+- L'en-tête ne consomme pas une hauteur disproportionnée et ne crée pas de double navigation encombrante.
+- Les parcours accueil → catalogue → fiche produit → panier → WhatsApp fonctionnent toujours.
+- Aucun contenu essentiel n'est masqué par un élément fixe ou flottant.
+- Les prix, promotions, seuil VIP, numéro WhatsApp, mentions légales et règles de livraison restent exacts.
+- Les textes sont cohérents, concrets, sans allégations médicales ni preuves inventées.
+- Vérifier manuellement les vues 320 px, 360 px, 390 px, tablette et desktop.
+- Avant toute fusion : `npx tsc --noEmit`, `npx vitest run`, `npm run build` ; ajouter/adapter des tests si une logique change.
+- À la fin de la session de code, actualiser la section 4 « État d'avancement » et les phases concernées.
+

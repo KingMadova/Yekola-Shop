@@ -53,7 +53,8 @@ Variables d'environnement actuelles (`.env.example`) :
 | `NEXT_PUBLIC_SUPABASE_URL` | URL du projet Supabase |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clé anon ou publishable (publique, protégée par RLS) |
 | `CATALOG_FALLBACK` | `seed` : autorise le catalogue de secours **hors développement** (essai local d'un build de production sans Supabase) |
-| `SUPABASE_SERVICE_ROLE_KEY` | Script d'import, puis **serveur Vercel dès la phase 3** (écriture des leads et invitations de partenaires). **Secret : jamais dans le dépôt ni côté client** |
+| `SUPABASE_SERVICE_ROLE_KEY` | Script d'import et API serveur des leads. **Secret : jamais dans le dépôt ni côté client** |
+| `NEXT_PUBLIC_CATALOG_PDF_PATH` | Chemin du PDF dans `/public` (ex. `/catalogue-forever.pdf`) ; à renseigner uniquement après ajout et vérification du vrai fichier |
 
 
 ## 4. État d'avancement
@@ -68,7 +69,7 @@ Variables d'environnement actuelles (`.env.example`) :
 | WhatsApp | Commande panier, commande 1 clic, demande de catalogue, conseil, VIP, distributeur | `src/lib/whatsapp.ts`, `src/lib/phone.ts` |
 | Composants | Galerie, barre VIP, bouton WhatsApp flottant, fiche produit à double bouton, tiroir panier + formulaire | `src/components/product/*`, `cart/*`, `layout/FloatingWhatsAppButton.tsx` |
 | Pages | Accueil, catalogue filtrable (catégorie, besoin, recherche), fiche produit (SEO + JSON-LD), layout | `src/app/*` |
-| Leads (état actuel) | Pop-up à 7 s, besoin déduit du parcours, ancienne API orientée webhook à remplacer par une écriture directe Supabase | `components/lead/*`, `src/lib/interest.ts`, `leadClient.ts`, `leads.ts`, `app/api/leads/route.ts`, `store/useInterestStore.ts` |
+| Leads (en cours) | API serveur Supabase, dédoublonnage par boutique + numéro, dates de visite/soumission, GPS explicitement facultatif, formulaire avec confirmation API avant succès | `src/app/api/leads/route.ts`, `src/lib/supabase/admin.ts`, `src/lib/leads.ts`, `src/lib/leadClient.ts`, `src/components/lead/LeadCaptureModal.tsx` |
 | Liens publicitaires | 6 liens, un par besoin (annexe B) | cette page |
 | Qualité | 25 tests unitaires (prix, panier, leads, catalogue, promos), typage strict, `next build` OK, API des leads testée contre un faux webhook | `src/lib/__tests__/` |
 | Correctif | `globals.css` minimal (le fichier généré écrasait les couleurs en mode sombre) | `src/app/globals.css` |
@@ -85,9 +86,11 @@ Variables d'environnement actuelles (`.env.example`) :
 
 **Phase 1 — état au 01/11/2026 (code) :** typage strict OK, **25 tests** OK, `next build` OK avec Cache Components contre un faux serveur Supabase (promo -10 % appliquée, promo expirée ignorée, ligne invalide ignorée, composition de pack, sitemap avec produits). **Jamais testé contre un vrai projet Supabase** : voir « Reste à faire par le propriétaire » en phase 1.
 
+**Phases 2 et 3 — état au 01/11/2026 :** travail préparé sur la branche `feat/supabase-lead-capture` (non fusionnée, non exécutée sur la base réelle et non testée localement). Migrations `002_partners.sql` et `003_leads.sql` ajoutées ; client Supabase serveur, validation du payload, API d'upsert, collecte GPS après clic, formulaire asynchrone et page de confidentialité adaptés. Un test unitaire de validation a été ajouté, mais les commandes de contrôle restent à exécuter. Le PDF n'est pas présent dans le dépôt : le téléchargement réel reste en attente du fichier.
+
 ### PAS ENCORE FAIT (résumé, détail en sections 6 bis et 7)
 
-Création et branchement du projet Supabase (actions manuelles), import de la vraie liste de prix, **boutiques des partenaires (WhatsApp par boutique), collecte des leads directement dans Supabase, téléchargement automatique du catalogue PDF, GPS facultatif, exports CSV/PDF et espace partenaire**, back-office `/admin`, interface de gestion des promos/packs/offres, compression d'images, PWA, page « Conditions générales de vente », photos, mise en production.
+À terminer : migrations Supabase à appliquer et tester, initialisation de la boutique maison, routage public multi-boutiques, ajout du PDF réel et validation du téléchargement, tests de bout en bout, exports CSV/PDF et espace partenaire, back-office `/admin`, interface de gestion des promos/packs/offres, compression d'images, PWA, page « Conditions générales de vente », photos et mise en production.
 
 ### Limites actuelles à connaître
 
@@ -143,7 +146,7 @@ Ajouts de la phase 1 : `supabase/{schema,seed}.sql` · `scripts/import-products.
 
 ## 6 bis. Modèle multi-boutiques (partenaires / filleuls)
 
-*Statut : décidé le 01/11/2026 (conception). Aucun code écrit. Hypothèses sur les points marqués Q-P : section 9.*
+*Statut : conception décidée le 01/11/2026. Fondation SQL partenaires/leads et premier parcours de capture en cours sur `feat/supabase-lead-capture` ; routage multi-boutiques et espace partenaire non implémentés. Hypothèses sur les points marqués Q-P : section 9.*
 
 **Vocabulaire.** *Admin* = Alvine. *Boutique maison* = la boutique d'Alvine (aussi un partenaire, avec `is_house`). *Partenaire* = un filleul. *Client* = visiteur final.
 
@@ -233,7 +236,7 @@ Ordre conseillé : 0, 1, **2, 3, 4, 5, 6, 7, 8, 9**. La phase 8 (PWA) est indép
 **Fait quand :** le site lit Supabase, la liste de prix est importée, le build passe. `SEED_PRODUCTS` (`src/data/products.ts`) reste comme catalogue de secours de développement.
 
 ### Phase 2 : Multi-boutiques, côté public (NOUVELLE)
-1. Migration `supabase/migrations/002_partners.sql` (annexe F) : table `partners`, vue publique `partners_public`, slugs réservés, boutique maison (Alvine), RLS. Ne pas modifier `schema.sql` (déjà exécuté chez le propriétaire).
+1. Migration `supabase/migrations/002_partners.sql` (annexe F) ajoutée sur la branche `feat/supabase-lead-capture` : table `partners`, vue publique `partners_public`, slugs réservés et RLS. Elle reste à exécuter dans Supabase. Ne pas modifier `schema.sql` (déjà exécuté chez le propriétaire).
 2. `src/lib/data/partners.ts` : `getPartner(slug)` (`use cache`, étiquette `partner:{slug}`, 5 min), `getActivePartnerSlugs()`.
 3. **Restructurer les routes :** déplacer accueil, catalogue, produit, confidentialité, livraison-paiement sous `src/app/p/[partner]/…` ; le `layout` racine ne garde que `html`/`body`/police et `CatalogProvider` ; `app/p/[partner]/layout.tsx` porte le « chrome » boutique (bandeau, en-tête, pied de page, tiroir panier, WhatsApp flottant, pop-up, suivi) et `ShopProvider`. `proxy.ts` réécrit les chemins publics vers la boutique maison. Slug inconnu ou suspendu : `notFound()`.
 4. `ShopContext` et `<ShopLink>` ; remplacer **tous** les liens internes et tous les usages du numéro global (liste en annexe F).
@@ -456,7 +459,7 @@ create table admins (user_id uuid primary key references auth.users on delete ca
 | iOS | Pas d'événement d'installation : encart d'aide « Partager, puis Sur l'écran d'accueil » |
 | Test | iPhone réel (Safari), Android réel (Chrome), Lighthouse |
 
-## Annexe F : Schéma multi-boutiques (migrations 002 et 003 à créer en phases 2, 3 et 7)
+## Annexe F : Schéma multi-boutiques (migrations 002 et 003 préparées sur la branche de travail)
 
 ```sql
 -- 002_partners.sql

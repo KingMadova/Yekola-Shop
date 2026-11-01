@@ -74,11 +74,10 @@ export function LeadCaptureModal() {
   const [locationState, setLocationState] = useState<LocationState>("idle");
 
   useEffect(() => {
-    void retryPendingLead();
-    if (readLeadStatus() !== null) return;
-
     let timer = 0;
     let attempts = 0;
+    let cancelled = false;
+
     const tryOpen = () => {
       const busy = document.hidden || useCartStore.getState().isOpen || isTyping();
       if (busy) {
@@ -99,8 +98,18 @@ export function LeadCaptureModal() {
       setInferred(profile.need !== null);
       setOpen(true);
     };
-    timer = window.setTimeout(tryOpen, LEAD_MODAL_DELAY_MS);
-    return () => window.clearTimeout(timer);
+
+    async function initialize() {
+      await retryPendingLead();
+      if (cancelled || readLeadStatus() !== null) return;
+      timer = window.setTimeout(tryOpen, LEAD_MODAL_DELAY_MS);
+    }
+
+    void initialize();
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
   }, []);
 
   useEffect(() => {

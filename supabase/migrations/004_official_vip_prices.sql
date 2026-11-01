@@ -4,7 +4,7 @@ alter table public.products add column if not exists price_vip integer;
 
 alter table public.products drop constraint if exists products_price_vip_nonnegative;
 alter table public.products add constraint products_price_vip_nonnegative
-  check (price_vip is null or price_vip >= 0);
+  check (price_vip is null or (price_vip >= 0 and price_vip <= price_public));
 
 update public.products set is_active = false where price_vip is null;
 

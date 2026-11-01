@@ -31,6 +31,7 @@ create trigger partners_updated_at before update on public.partners
 
 alter table public.partners enable row level security;
 revoke all on public.partners from anon, authenticated;
+grant all on public.partners to service_role;
 grant select on public.partners to authenticated;
 grant update (display_name, photo_url, welcome_text, delivery_note, whatsapp_number)
   on public.partners to authenticated;

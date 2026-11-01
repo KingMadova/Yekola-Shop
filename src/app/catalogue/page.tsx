@@ -22,8 +22,8 @@ interface CataloguePageProps {
 /** Les filtres lisent l'URL (donnée dynamique) : le contenu est dans un <Suspense>, la page reste préchargeable. */
 export default function CataloguePage({ searchParams }: CataloguePageProps) {
   return (
-    <div className={`${container} flex flex-col gap-6 py-8`}>
-      <Suspense fallback={<div aria-hidden className="h-64 animate-pulse rounded-2xl bg-gray-200" />}>
+    <div className={`${container} flex flex-col gap-6 py-8 sm:py-12`}>
+      <Suspense fallback={<div aria-hidden className="h-64 animate-pulse rounded-2xl bg-[#f0eee7]" />}>
         <CatalogueContent searchParams={searchParams} />
       </Suspense>
     </div>
@@ -40,8 +40,8 @@ async function CatalogueContent({ searchParams }: CataloguePageProps) {
       {query.goal && <InterestSignal goal={query.goal} origin="catalogue" />}
 
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
-        <p className="mt-1 text-gray-800" aria-live="polite">
+        <h1 className="text-3xl font-bold tracking-tight text-[#173f35]">{title}</h1>
+        <p className="mt-1 text-[#68756c]" aria-live="polite">
           {results.length} produit{results.length > 1 ? "s" : ""}
         </p>
       </div>
@@ -51,11 +51,11 @@ async function CatalogueContent({ searchParams }: CataloguePageProps) {
       {results.length > 0 ? (
         <ProductGrid products={results} />
       ) : (
-        <div className="flex flex-col items-start gap-3 rounded-2xl border border-gray-200 bg-white p-6">
-          <p className="text-lg font-semibold text-gray-900">
+        <div className="flex flex-col items-start gap-3 rounded-2xl border border-[#e9e5d9] bg-[#fbfaf6] p-6">
+          <p className="text-lg font-semibold text-[#26392e]">
             {query.goal ? "Nous préparons la sélection pour ce besoin." : "Aucun produit ne correspond à votre recherche."}
           </p>
-          <p className="max-w-prose text-gray-800">
+          <p className="max-w-prose text-[#68756c]">
             Écrivez-nous sur WhatsApp : un distributeur vous recommande les bons produits.
           </p>
           <div className="flex flex-wrap gap-3">
@@ -67,7 +67,7 @@ async function CatalogueContent({ searchParams }: CataloguePageProps) {
             >
               Demander conseil sur WhatsApp
             </a>
-            <Link href="/catalogue" className={`inline-flex min-h-12 items-center rounded-xl px-4 font-semibold text-emerald-800 underline ${focusRing}`}>
+            <Link href="/catalogue" className={`inline-flex min-h-12 items-center rounded-xl px-4 font-semibold text-[#173f35] underline ${focusRing}`}>
               Voir tout le catalogue
             </Link>
           </div>

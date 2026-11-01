@@ -4,7 +4,6 @@ import { ProductSearch } from "@/components/catalogue/ProductSearch";
 import { CartButton } from "@/components/cart/CartButton";
 import { container, focusRing } from "@/components/ui/styles";
 import { SITE_NAME } from "@/lib/config";
-import { buildDistributorMessage, buildWhatsAppUrl } from "@/lib/whatsapp";
 
 const LINKS = [
   { label: "Catalogue", href: "/catalogue" },
@@ -15,8 +14,6 @@ const LINKS = [
 const linkClass = `rounded-full px-3 py-2 text-sm font-medium text-[#31483d] transition-colors hover:bg-[#f1eee4] hover:text-[#10352d] ${focusRing}`;
 
 export function Header() {
-  const distributorUrl = buildWhatsAppUrl(buildDistributorMessage());
-
   return (
     <header className="sticky top-0 z-30 border-b border-[#e8e5dc] bg-[#fbfaf6]/95 shadow-[0_2px_14px_rgba(20,45,35,0.04)] backdrop-blur">
       <div className={`${container} flex h-[60px] items-center gap-3 sm:h-16`}>

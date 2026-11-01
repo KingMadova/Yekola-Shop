@@ -6,7 +6,7 @@ import { HEALTH_GOALS } from "@/lib/types";
 
 const ICONS: Record<HealthGoalIcon, LucideIcon> = { Salad, Bone, Zap, Sparkles, Leaf, ShieldCheck };
 
-/** Chaque carte mène à /catalogue?besoin=… : fonctionne sans JavaScript et mémorise le besoin. */
+/** Chaque carte mène à /besoins?besoin=… : fonctionne sans JavaScript et mémorise le besoin. */
 export function HealthGoalPicker() {
   return (
     <section id="besoins" className={`${container} scroll-mt-24 py-9 sm:py-12`}>

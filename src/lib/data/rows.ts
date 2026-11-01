@@ -8,6 +8,7 @@ export interface ProductRow {
   category: Category;
   health_goals: HealthGoal[];
   price_public: number;
+  price_vip: number;
   short_desc: string;
   duration: string | null;
   usage_advice: string | null;
@@ -60,8 +61,9 @@ export function parseProductRows(value: unknown): ProductRow[] {
     const slug = str(raw.slug);
     const name = str(raw.name);
     const price = int(raw.price_public);
+    const vipPrice = int(raw.price_vip);
     const category = CATEGORIES.find((item) => item === raw.category);
-    if (!id || !code || !slug || !name || price === null || price < 0 || !category) {
+    if (!id || !code || !slug || !name || price === null || price <= 0 || vipPrice === null || vipPrice <= 0 || vipPrice > price || !category) {
       console.warn(`[catalogue] ligne produit ignorée : ${code ?? id ?? "inconnue"}`);
       continue;
     }
@@ -70,6 +72,7 @@ export function parseProductRows(value: unknown): ProductRow[] {
       id, code, slug, name, category,
       health_goals: HEALTH_GOALS.filter((goal) => goals.includes(goal)),
       price_public: price,
+      price_vip: vipPrice,
       short_desc: str(raw.short_desc) ?? "",
       duration: str(raw.duration),
       usage_advice: str(raw.usage_advice),

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { isRecord, parseLeadPayload } from "@/lib/leads";
+import { HOUSE_PARTNER_SLUG } from "@/lib/config";
 import { normalizeCongoPhone } from "@/lib/phone";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -18,26 +19,28 @@ function isRateLimited(ip: string): boolean {
   return recent.length > MAX_PER_WINDOW;
 }
 
-async function getHousePartnerId(
+async function getPartnerId(
   client: NonNullable<ReturnType<typeof createAdminClient>>,
+  partnerSlug: string,
 ): Promise<string | null> {
   const { data: existing, error } = await client
     .from("partners")
     .select("id, status")
-    .eq("is_house", true)
+    .eq("slug", partnerSlug)
     .maybeSingle();
 
-  if (error) throw new Error("Impossible de vérifier la boutique maison.");
+  if (error) throw new Error("Impossible de vérifier la boutique.");
   if (existing) return existing.status === "active" ? existing.id : null;
 
-  // Première initialisation : réutilise le numéro de la boutique maison déjà configuré.
+  // Première initialisation de la boutique maison avec le numéro déjà configuré dans l'environnement.
+  if (partnerSlug !== HOUSE_PARTNER_SLUG) return null;
   const whatsappNumber = normalizeCongoPhone(process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "");
   if (!whatsappNumber) return null;
 
   const { data: created, error: createError } = await client
     .from("partners")
     .insert({
-      slug: "yekola",
+      slug: HOUSE_PARTNER_SLUG,
       display_name: "Yekola Shop",
       whatsapp_number: whatsappNumber,
       is_house: true,
@@ -51,7 +54,7 @@ async function getHousePartnerId(
     const { data: retry } = await client
       .from("partners")
       .select("id, status")
-      .eq("is_house", true)
+      .eq("slug", partnerSlug)
       .maybeSingle();
     return retry?.status === "active" ? retry.id : null;
   }
@@ -87,9 +90,9 @@ export async function POST(request: Request) {
   }
 
   try {
-    const partnerId = await getHousePartnerId(client);
+    const partnerId = await getPartnerId(client, lead.partnerSlug);
     if (!partnerId) {
-      console.error("[leads] Boutique maison absente, inactive ou numéro WhatsApp non configuré");
+      console.error("[leads] Boutique absente, inactive ou non configurée :", lead.partnerSlug);
       return NextResponse.json({ ok: false, error: "SHOP_NOT_CONFIGURED" }, { status: 503 });
     }
 

@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import { filterProducts, buildCatalogueHref, parseCatalogueQuery } from "../catalogue";
 import { applySignal, buildNeedProfile, goalFromText, rankGoals } from "../interest";
 import { parseLeadPayload } from "../leads";
-import { computeVipPrice } from "../pricing";
 import type { Product } from "../types";
 
 const product = (code: string, over: Partial<Product> = {}): Product => ({
@@ -12,7 +11,7 @@ const product = (code: string, over: Partial<Product> = {}): Product => ({
   category: "Boissons",
   healthGoals: [],
   pricePublic: 10_000,
-  priceVip: computeVipPrice(10_000),
+  priceVip: 9_500,
   images: [],
   shortDesc: "Boisson à base d'aloès",
   benefits: [],

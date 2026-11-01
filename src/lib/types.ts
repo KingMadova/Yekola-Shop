@@ -90,12 +90,19 @@ export interface CustomerInfo {
   payment: PaymentMethod;
 }
 
-/** Lead envoyé vers Google Sheets : coordonnées + besoin déduit du parcours du visiteur. */
+/** Coordonnées fournies uniquement après clic et autorisation du visiteur. */
+export interface LeadLocation {
+  latitude: number;
+  longitude: number;
+  accuracy: number | null;
+}
+
+/** Données du prospect envoyées à l'API serveur Supabase. */
 export interface LeadPayload {
   firstName: string;
   phone: string; // normalisé, ex. "242061234567"
   need: HealthGoal | null;
-  needOrigin: string; // ex. "publicité, filtre catalogue"
+  needOrigin: string;
   otherNeeds: HealthGoal[];
   viewedProducts: string[];
   cartTotal: number;
@@ -104,4 +111,8 @@ export interface LeadPayload {
   referrer: string;
   landingPath: string;
   pagePath: string;
+  /** Première visite enregistrée par le navigateur ; valeur indicative, non autoritative. */
+  firstVisitAt: string | null;
+  /** Absent si le visiteur n'a pas expressément autorisé le GPS. */
+  location: LeadLocation | null;
 }

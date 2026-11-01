@@ -2,8 +2,6 @@ import type { Category, HealthGoal } from "./types";
 
 /** Palier (en FCFA) à partir duquel la remise VIP s'applique à toute la commande. */
 export const VIP_THRESHOLD = 65_000;
-/** Remise VIP en pourcentage entier (calcul en entiers, pas de flottants). */
-export const VIP_DISCOUNT_PERCENT = 5;
 export const MAX_LINE_QUANTITY = 99;
 export const DISTRIBUTOR_MENTION = "Entrepreneur Forever Indépendant Agréé";
 
@@ -23,7 +21,7 @@ export const COPY = {
   announcement: [
     "Livraison express 24 h à Brazzaville et Pointe-Noire",
     "Paiement mobile accepté : MTN Mobile Money, Airtel Money",
-    "Remise VIP de 5 % dès 65 000 F d'achats",
+    "Prix client privilégié dès 65 000 F d'achats",
   ],
   paymentTrust: {
     title: "Paiement mobile accepté",
@@ -37,7 +35,7 @@ export const COPY = {
   heroSecondaryCta: "Être conseillé",
   heroReassurance: "Commande sur WhatsApp · Paiement mobile accepté",
   cartNote: "Paiement mobile accepté : MTN Mobile Money et Airtel Money",
-  vipBadge: "Ce pack active automatiquement votre remise VIP de 5 %",
+  vipBadge: "Le prix client privilégié s'applique dès 65 000 F d'achats",
   leadReassurance:
     "Garanti sans spam. Distributeur disponible à Brazzaville et Pointe-Noire.",
   advicePrompt:

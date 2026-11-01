@@ -20,6 +20,7 @@ create table products (
     'Compléments Alimentaires','Gestion du Poids','Soins Personnels','Soins de la Peau')),
   health_goals text[] not null default '{}',
   price_public integer not null check (price_public >= 0),  -- prix catalogue, hors promo
+  price_vip integer not null check (price_vip >= 0),        -- tarif client privilégié officiel
   short_desc text not null default '',
   duration text,
   usage_advice text,

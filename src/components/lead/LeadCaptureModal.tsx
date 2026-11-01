@@ -1,20 +1,21 @@
 "use client";
 
-import { Check, MessageCircle, X } from "lucide-react";
+import { Check, MapPin, X } from "lucide-react";
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { focusRing } from "@/components/ui/styles";
 import { useCatalog } from "@/components/providers/CatalogContext";
-import { COPY, HEALTH_GOAL_META, LEAD_MODAL_DELAY_MS } from "@/lib/config";
+import { CATALOG_PDF_PATH, COPY, HEALTH_GOAL_META, LEAD_MODAL_DELAY_MS } from "@/lib/config";
 import { buildNeedProfile, ORIGIN_LABELS } from "@/lib/interest";
 import { readLeadStatus, retryPendingLead, sendLead, writeLeadStatus } from "@/lib/leadClient";
 import { normalizeCongoPhone } from "@/lib/phone";
 import { computeCartTotals } from "@/lib/pricing";
-import { HEALTH_GOALS, type HealthGoal, type LeadPayload } from "@/lib/types";
-import { buildLeadMessage, buildWhatsAppUrl } from "@/lib/whatsapp";
+import { HEALTH_GOALS, type HealthGoal, type LeadLocation, type LeadPayload } from "@/lib/types";
 import { useCartItems, useCartStore } from "@/store/useCartStore";
 import { useInterestStore } from "@/store/useInterestStore";
 
 const fieldClass = `min-h-12 w-full rounded-lg border bg-white px-3 text-base text-gray-900 ${focusRing}`;
+
+type LocationState = "idle" | "loading" | "granted" | "denied" | "unavailable";
 
 function isTyping(): boolean {
   const element = document.activeElement;
@@ -25,9 +26,23 @@ function isTyping(): boolean {
   );
 }
 
+function downloadCatalogue(): boolean {
+  // Le chemin doit désigner un fichier réel dans /public. Aucun lien fictif par défaut.
+  if (!CATALOG_PDF_PATH.startsWith("/") || CATALOG_PDF_PATH.startsWith("//")) return false;
+
+  const link = document.createElement("a");
+  link.href = CATALOG_PDF_PATH;
+  link.download = "catalogue-yekola-shop.pdf";
+  link.style.display = "none";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  return true;
+}
+
 /**
- * Pop-up de capture : prénom + numéro WhatsApp, rien d'autre d'obligatoire.
- * Le besoin est déduit du parcours (publicité, filtres, fiches, panier) ; le visiteur peut le corriger en un geste.
+ * Pop-up de capture : prénom + numéro WhatsApp.
+ * Le besoin est déduit du parcours et le GPS ne peut être demandé qu'après un clic explicite.
  */
 export function LeadCaptureModal() {
   const titleId = useId();
@@ -38,6 +53,7 @@ export function LeadCaptureModal() {
   const { getProductByCode } = useCatalog();
   const cartItems = useCartItems();
   const itemsRef = useRef(cartItems);
+
   useEffect(() => {
     itemsRef.current = cartItems;
   }, [cartItems]);
@@ -51,11 +67,14 @@ export function LeadCaptureModal() {
   const [inferred, setInferred] = useState(false);
   const [editingNeed, setEditingNeed] = useState(false);
   const [touched, setTouched] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState("");
   const [errors, setErrors] = useState<{ firstName?: string; phone?: string }>({});
+  const [location, setLocation] = useState<LeadLocation | null>(null);
+  const [locationState, setLocationState] = useState<LocationState>("idle");
 
-  // Ouverture après 7 s, sans jamais gêner : onglet masqué, panier ouvert ou saisie en cours => on attend.
   useEffect(() => {
-    retryPendingLead();
+    void retryPendingLead();
     if (readLeadStatus() !== null) return;
 
     let timer = 0;
@@ -91,17 +110,50 @@ export function LeadCaptureModal() {
 
   function handleClose() {
     setOpen(false);
-    if (!submitted.current) writeLeadStatus("dismissed");
+    if (!submitted.current) {
+      writeLeadStatus("dismissed");
+      return;
+    }
+    window.setTimeout(() => {
+      document.getElementById("besoins")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 0);
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleRequestLocation() {
+    if (!navigator.geolocation) {
+      setLocationState("unavailable");
+      return;
+    }
+
+    setLocationState("loading");
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocation({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: Number.isFinite(position.coords.accuracy) ? position.coords.accuracy : null,
+        });
+        setLocationState("granted");
+      },
+      (error) => {
+        setLocation(null);
+        setLocationState(error.code === error.PERMISSION_DENIED ? "denied" : "unavailable");
+      },
+      { enableHighAccuracy: false, timeout: 10_000, maximumAge: 60_000 },
+    );
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (submitting) return;
+
     const normalized = normalizeCongoPhone(phone);
     const nextErrors = {
       firstName: firstName.trim().length < 2 ? "Indiquez votre prénom." : undefined,
       phone: normalized ? undefined : "Entrez un numéro WhatsApp valide, par exemple 06 123 4567.",
     };
     setErrors(nextErrors);
+    setFormError("");
     if (nextErrors.firstName) return nameRef.current?.focus();
     if (nextErrors.phone || !normalized) return phoneRef.current?.focus();
 
@@ -126,17 +178,24 @@ export function LeadCaptureModal() {
       referrer: interest.referrer ?? "",
       landingPath: interest.landingPath ?? "",
       pagePath: window.location.pathname,
+      firstVisitAt: interest.firstSeenAt,
+      location,
     };
 
-    // 1) Le lead part vers Google Sheets sans attendre (copie locale en cas d'échec). 2) WhatsApp s'ouvre aussitôt.
-    sendLead(payload, honeypot);
+    setSubmitting(true);
+    const saved = await sendLead(payload, honeypot);
+    setSubmitting(false);
+
+    if (!saved) {
+      setFormError("Nous n'avons pas pu enregistrer vos informations. Vérifiez votre connexion puis réessayez.");
+      return;
+    }
+
     submitted.current = true;
     writeLeadStatus("submitted");
-
-    const url = buildWhatsAppUrl(buildLeadMessage(payload.firstName, payload.phone, profile.need ?? undefined));
-    const popup = window.open(url, "_blank");
-    if (popup) popup.opener = null;
-    else window.location.assign(url);
+    if (!downloadCatalogue()) {
+      setFormError("");
+    }
     setDone(true);
   }
 
@@ -191,15 +250,24 @@ export function LeadCaptureModal() {
           <div role="status" className="flex flex-col items-center gap-3 py-4 text-center">
             <Check aria-hidden className="size-12 rounded-full bg-emerald-100 p-2.5 text-emerald-800" />
             <h2 id={titleId} className="text-xl font-bold">Merci {firstName.trim()} !</h2>
-            <p className="text-gray-800">WhatsApp s&apos;ouvre avec votre demande. Envoyez le message pour recevoir le catalogue.</p>
-            <button type="button" onClick={() => dialogRef.current?.close()} className={`min-h-12 rounded-xl border border-emerald-700 px-6 font-semibold text-emerald-800 hover:bg-emerald-50 ${focusRing}`}>
-              Fermer
+            <p className="text-gray-800">Vos informations ont bien été enregistrées.</p>
+            {CATALOG_PDF_PATH ? (
+              <p className="text-sm text-gray-700">Le téléchargement du catalogue a été lancé. Vous pouvez poursuivre votre navigation.</p>
+            ) : (
+              <p className="text-sm text-amber-800">Le catalogue PDF n'est pas encore disponible au téléchargement. Votre demande est bien enregistrée.</p>
+            )}
+            <button
+              type="button"
+              onClick={() => dialogRef.current?.close()}
+              className={`min-h-12 rounded-xl border border-emerald-700 px-6 font-semibold text-emerald-800 hover:bg-emerald-50 ${focusRing}`}
+            >
+              Continuer
             </button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} noValidate className="relative flex flex-col gap-4">
             <h2 id={titleId} className="pr-10 text-xl font-bold">
-              Téléchargez le catalogue officiel Forever avec les tarifs en FCFA sur WhatsApp
+              Recevez le catalogue officiel Forever et ses tarifs en FCFA
             </h2>
 
             <div className="flex flex-col gap-1">
@@ -246,6 +314,49 @@ export function LeadCaptureModal() {
               chips
             )}
 
+            <section className="rounded-xl border border-gray-200 p-3">
+              <div className="flex items-start gap-2">
+                <MapPin aria-hidden className="mt-0.5 size-5 shrink-0 text-emerald-800" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-gray-900">Localisation (facultative)</p>
+                  <p className="mt-1 text-xs text-gray-700">
+                    Vous pouvez partager votre position pour nous aider à mieux situer votre demande. Elle n'est jamais demandée sans votre clic.
+                  </p>
+                  {locationState === "granted" && (
+                    <p className="mt-2 text-xs font-medium text-emerald-800">Position ajoutée à votre demande.</p>
+                  )}
+                  {locationState === "denied" && (
+                    <p className="mt-2 text-xs text-gray-700">Autorisation refusée. Vous pouvez continuer sans localisation.</p>
+                  )}
+                  {locationState === "unavailable" && (
+                    <p className="mt-2 text-xs text-gray-700">Position indisponible sur cet appareil. Vous pouvez continuer sans localisation.</p>
+                  )}
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={handleRequestLocation}
+                      disabled={locationState === "loading"}
+                      className={`min-h-10 rounded-lg border border-emerald-700 px-3 text-sm font-semibold text-emerald-800 disabled:opacity-60 ${focusRing}`}
+                    >
+                      {locationState === "loading" ? "Localisation…" : location ? "Actualiser ma position" : "Partager ma position"}
+                    </button>
+                    {location && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setLocation(null);
+                          setLocationState("idle");
+                        }}
+                        className={`min-h-10 rounded-lg px-3 text-sm text-gray-700 underline ${focusRing}`}
+                      >
+                        Retirer
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </section>
+
             {/* Champ piège : invisible pour les humains, rempli par les robots. */}
             <input
               type="text"
@@ -258,13 +369,18 @@ export function LeadCaptureModal() {
               className="absolute -left-[9999px] size-px opacity-0"
             />
 
-            <button type="submit" className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#075E54] px-5 font-semibold text-white hover:bg-[#064c44] ${focusRing}`}>
-              <MessageCircle aria-hidden className="size-5" />
-              Recevoir le catalogue sur WhatsApp
+            {formError && <p role="alert" className="text-sm text-red-700">{formError}</p>}
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#075E54] px-5 font-semibold text-white hover:bg-[#064c44] disabled:cursor-wait disabled:opacity-70 ${focusRing}`}
+            >
+              {submitting ? "Enregistrement…" : "Enregistrer et télécharger le catalogue"}
             </button>
 
             <p className="text-center text-xs text-gray-700">
-              {COPY.leadReassurance} En continuant, vous acceptez d&apos;être contacté sur WhatsApp au sujet de ce catalogue.
+              {COPY.leadReassurance} En validant, vous acceptez l'utilisation de ces informations pour donner suite à votre demande. La localisation reste facultative.
             </p>
           </form>
         )}

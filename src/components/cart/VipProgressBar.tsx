@@ -1,5 +1,5 @@
 import { CheckCircle2, Gift } from "lucide-react";
-import { VIP_DISCOUNT_PERCENT, VIP_THRESHOLD } from "@/lib/config";
+import { VIP_THRESHOLD } from "@/lib/config";
 import { formatFCFA } from "@/lib/pricing";
 import type { CartTotals } from "@/lib/types";
 
@@ -13,10 +13,10 @@ export function VipProgressBar({ totals }: VipProgressBarProps) {
     totals;
 
   const message = vipUnlocked
-    ? `Remise VIP de ${VIP_DISCOUNT_PERCENT} % activée : vous économisez ${formatFCFA(vipDiscount)}.`
+    ? `Prix client privilégié activé : vous économisez ${formatFCFA(vipDiscount)}.`
     : itemCount === 0
-      ? `Dès ${formatFCFA(VIP_THRESHOLD)} d'achats, profitez de ${VIP_DISCOUNT_PERCENT} % de remise VIP sur tous vos articles.`
-      : `Plus que ${formatFCFA(amountToVip)} pour débloquer ${VIP_DISCOUNT_PERCENT} % de remise VIP sur tous vos articles.`;
+      ? `Dès ${formatFCFA(VIP_THRESHOLD)} d'achats, accédez aux prix client privilégié du catalogue.`
+      : `Plus que ${formatFCFA(amountToVip)} pour accéder aux prix client privilégié sur votre commande.`;
 
   const Icon = vipUnlocked ? CheckCircle2 : Gift;
 
@@ -40,7 +40,7 @@ export function VipProgressBar({ totals }: VipProgressBarProps) {
 
       <div
         role="progressbar"
-        aria-label="Progression vers la remise VIP"
+        aria-label="Progression vers les prix client privilégié"
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={progressPercent}

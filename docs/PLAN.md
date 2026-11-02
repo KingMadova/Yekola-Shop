@@ -93,6 +93,7 @@ Variables d'environnement actuelles (`.env.example`) :
 - `RootLayout` reste synchrone. `getCatalog()` est appelé dans `CatalogApp`, sous un `Suspense` explicite.
 - Le `CatalogProvider` englobe tous les consommateurs du contexte : en-tête/recherche, pages, tiroir panier et modale de capture. Cette portée évite l'erreur `useCatalog doit être utilisé sous <CatalogProvider>`.
 - Le fallback affiche une structure de chargement de la boutique pendant la récupération du catalogue. Le build et le rendu navigateur restent à vérifier localement.
+- `/packs` : le titre et l'introduction restent dans le shell ; `PacksContent` charge le catalogue sous un `<Suspense>` local avec un squelette de grille, conformément au correctif Stream de l'Insight `instant-shell-url-data`. Le comportement en navigation doit encore être confirmé dans le navigateur.
 
 ### EN COURS — refonte UX/UI mobile-first
 

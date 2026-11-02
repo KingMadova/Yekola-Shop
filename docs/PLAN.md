@@ -1,6 +1,6 @@
 # Plan de projet : Boutique Forever (dépôt `yekola-shop`)
 
-Dernière mise à jour : 2 novembre 2026. Propriétaire : Alvine YOKA (Pointe-Noire). Interface, textes et commentaires en français.
+Dernière mise à jour : 2 novembre 2026 (décisions commerciales VIP et codes promo ajoutées). Propriétaire : Alvine YOKA (Pointe-Noire). Interface, textes et commentaires en français.
 
 ## 0. À lire en premier (reprise par une autre personne)
 
@@ -24,8 +24,8 @@ Direction visuelle (références fournies : NovaTrend, NimbleCart) : bandeau d'a
 | # | Règle |
 |---|---|
 | R1 | Monnaie : FCFA, **entiers**. Format d'affichage `65 000 F` avec espaces insécables. |
-| R2 | **Prix client privilégié** : chaque produit possède un prix public et un prix client privilégié exact issus de la grille tarifaire officielle. À partir de **65 000 F** de total aux prix publics, les prix client privilégié s'appliquent à toutes les lignes. Aucun taux de 5 % n'est recalculé. |
-| R3 | **Une promotion ne bloque pas l'accès aux prix client privilégié.** Le palier de 65 000 F se mesure sur le total aux prix publics de vente (promo comprise, avant tarif privilégié). Une promotion est appliquée dans la même proportion aux deux tarifs de la grille. |
+| R2 | **Prix publics et prix client privilégié :** les prix publics sont affichés normalement. Le tarif client privilégié exact provient de la grille officielle ; il n'est pas affiché systématiquement à tous les visiteurs. L'accès VIP est présenté par une invitation dédiée en plein écran. |
+| R3 | **Accès VIP :** un client devient VIP à vie après une commande d'au moins **65 000 F effectivement payée**, une fois le paiement confirmé par l'administrateur. La simple création ou l'envoi d'une commande ne donne pas le statut VIP. Le seuil et la confirmation sont évalués côté serveur. |
 | R4 | Commande par message WhatsApp pré-formaté vers le numéro du distributeur (+242…). Aucun paiement en ligne. |
 | R5 | Règlement proposé : Espèces à la livraison, MTN Mobile Money, Airtel Money. La mention de réassurance est « **Paiement mobile accepté** ». L'ancienne mention « Paiement à la réception après vérification du colis » a été **retirée volontairement** : ne pas la remettre. |
 | R6 | Mention obligatoire : « Entrepreneur Forever Indépendant Agréé ». Vocabulaire bien-être, **aucune allégation de guérison médicale**. |
@@ -39,6 +39,29 @@ Direction visuelle (références fournies : NovaTrend, NimbleCart) : bandeau d'a
 | R14 | *(Hypothèse à confirmer, Q-P8)* Le site **ne calcule aucune commission** : la rémunération relève de Forever. |
 | R15 | Slug d'un partenaire : 3 à 30 caractères, minuscules, chiffres et tirets ; mots réservés interdits (annexe F). |
 | R16 | **Localisation des visiteurs : GPS facultatif uniquement.** Aucun champ ville/quartier, aucune géolocalisation par adresse IP. Le GPS n'est demandé qu'après une action explicite ; le refus n'empêche jamais l'envoi du formulaire ni le téléchargement du catalogue. |
+| R17 | **Codes promo partenaires :** un code créé par un partenaire est valable exclusivement dans la boutique de ce partenaire. Il ne fonctionne jamais dans la boutique d'un autre partenaire ni dans la boutique maison, sauf si cette dernière est explicitement son propre périmètre. |
+| R18 | **Réduction des codes partenaires :** réduction en pourcentage comprise entre 1 % et 20 % maximum, appliquée au prix public. Le code possède une période de validité, une limite d'utilisations et un périmètre de produits configurable ; il peut être désactivé. Son utilisation est enregistrée et attribuée au partenaire propriétaire. |
+| R19 | **Non-cumul :** un code promo partenaire ne se cumule pas avec une promotion globale déjà appliquée. Les promotions, packs et offres configurés par l'administrateur restent globaux à toutes les boutiques ; les codes partenaires constituent un mécanisme distinct et limité à une seule boutique. |
+| R20 | **Pas de commission automatique :** Yekola Shop enregistre l'utilisation des codes et l'attribution, mais ne calcule ni ne verse de commission. |
+| R21 | **Validation commerciale :** le paiement et la commande sont confirmés manuellement par l'administrateur après le parcours WhatsApp. Le statut VIP et les compteurs d'utilisation concernés ne doivent être validés qu'après confirmation du paiement. |
+
+## Décisions commerciales confirmées — 2 novembre 2026
+
+Cette section complète les règles R2, R3 et R17 à R21. Elle doit être lue avant toute implémentation des promotions, codes promo, commandes ou du statut VIP.
+
+- **Prix affichés :** les visiteurs voient les prix publics. Les prix client privilégié ne sont pas affichés systématiquement dans le catalogue.
+- **Invitation VIP :** présenter l'accès VIP au moyen d'une invitation dédiée en plein écran, plutôt que d'afficher en permanence les tarifs VIP à tous les visiteurs.
+- **Obtention du VIP :** le client obtient le statut VIP à vie après une commande d'au moins 65 000 F effectivement payée et confirmée manuellement par l'administrateur.
+- **Codes promo partenaires :** chaque partenaire peut créer des codes promotionnels pour sa propre boutique. Un code est strictement limité à cette boutique : il est invalide sur toute autre boutique, même si le client connaît le code.
+- **Paramètres des codes :** remise de 1 à 20 % maximum, période de validité, nombre maximal d'utilisations, périmètre de produits configurable, activation/désactivation et historique des utilisations attribué au partenaire propriétaire.
+- **Base de réduction :** le code partenaire réduit le prix public, pas le tarif VIP.
+- **Non-cumul :** un code partenaire n'est pas cumulable avec une promotion globale. Les promotions, packs et offres créés par l'administrateur restent globaux à toutes les boutiques.
+- **Gestion des commandes :** le parcours client reste une commande WhatsApp sans paiement en ligne. L'administrateur vérifie et confirme manuellement le paiement ; la confirmation déclenche les traitements métier qui en dépendent, notamment l'attribution du VIP.
+- **Commissions :** le site ne calcule ni ne verse automatiquement de commission ; il conserve les informations d'utilisation et d'attribution des codes.
+
+**À ne pas inventer lors du développement :** la base de calcul des 65 000 F en présence d'une réduction reste à trancher (montant réellement payé après remise ou total avant remise). La priorité technique entre promotion globale et code doit respecter le non-cumul et être définie sans appliquer deux remises.
+
+---
 
 ## 3. Stack
 
@@ -117,7 +140,7 @@ Variables d'environnement actuelles (`.env.example`) :
 - Pas de page « Conditions générales de vente ». Seules « Confidentialité » et « Livraison et paiement » existent. Un consentement court figure sous le pop-up.
 - Le pied de page est un composant client : l'année du copyright s'affiche après hydratation (valeur de repli 2026).
 - **Sans projet Supabase configuré**, le site utilise le catalogue de secours (2 packs) en développement ; **en production il refuse de démarrer** (voulu : jamais de prix périmés).
-- Deux décisions restent à confirmer par le propriétaire : l'hypothèse **A1** et la possibilité de mettre un pack en promo (questions 1 et 6 de la section 9). Les questions 2, 3 et 4 sont tranchées.
+- Les règles VIP, les codes promo partenaires, le non-cumul avec les promotions globales et la confirmation manuelle des paiements sont consignés en R2, R3 et R17 à R21. Le montant exact à prendre en compte pour le seuil VIP lorsqu'une remise a été appliquée reste à confirmer (section 9). La possibilité de mettre un pack en promotion reste également à confirmer.
 
 - **Un seul numéro WhatsApp** (variable d'environnement) pour tout le site : à remplacer par un numéro par partenaire (phase 2).
 - Textes de livraison (« 24 h à Brazzaville et Pointe-Noire ») identiques partout : à rendre propres à chaque partenaire.
@@ -289,24 +312,30 @@ Ordre conseillé : 0, 1, **2, 3, 4, 5, 6, 7, 8, 9**. La phase 8 (PWA) est indép
 6. Après chaque enregistrement : `updateTag("catalog")` (ou `partner:{slug}`).
 - **Fait quand :** l'admin crée un produit avec photos et invite un partenaire ; le site public change en moins d'une minute.
 
-### Phase 5 : Promos, packs et offres (ancienne phase 3)Inchangé, avec une précision : **les promos, packs et offres sont globaux** et s'appliquent à toutes les boutiques (R10).
-1. **Promos :** par produit, prix promo **ou** pourcentage, dates de début et de fin, badge, interrupteur. Expiration à la lecture. Liste des promos actives et à venir.
-2. **Packs :** un pack est un produit (`is_pack`) avec composition (`pack_items`) et son **propre prix**.3. **Offres :** bannières d'accueil (titre, sous-titre, image, lien, dates, ordre) : composant `OfferBanners`.
-4. Tests : promo + palier (A1).
-- **Fait quand :** l'admin lance une promo datée ; elle s'affiche dans **toutes** les boutiques, s'applique au panier et disparaît seule.
+### Phase 5 : Promos, packs et offres (globales — administrateur)
+Les promotions, packs et offres configurés par l'administrateur sont **globaux** et s'appliquent à toutes les boutiques. Les codes promo créés par les partenaires sont un mécanisme séparé, strictement limité à la boutique de leur créateur (R17 à R20).
+1. **Promotions globales :** par produit, prix promo ou pourcentage, dates de début et de fin, badge et activation/désactivation. Expiration vérifiée côté serveur. Elles s'appliquent à toutes les boutiques.
+2. **Packs :** un pack est un produit (`is_pack`) avec composition (`pack_items`) et son propre prix. Les packs et leur gestion restent sous le contrôle de l'administrateur.
+3. **Offres :** bannières d'accueil (titre, sous-titre, image, lien, dates, ordre) : composant `OfferBanners`.
+4. **Non-cumul :** un code promo partenaire ne s'ajoute pas à une promotion globale. Définir et tester explicitement la règle de priorité au calcul du panier ; ne jamais appliquer deux réductions sur la même ligne.
+5. **Tests :** dates, activation, périmètre global, code partenaire limité à son partenaire, limite d'utilisations, produits éligibles, non-cumul et prix VIP.
+- **Fait quand :** l'administrateur crée une promotion datée visible dans toutes les boutiques ; elle s'applique au panier et expire seule ; un code partenaire ne fonctionne que dans sa boutique et respecte ses limites.
 ### Phase 6 : Espace partenaire (NOUVELLE)
 1. Connexion partenaire (mot de passe ou lien magique) via l'invitation de l'admin ; `requirePartner()` dans chaque Server Action ; RLS en seconde barrière.2. `/espace` (tableau de bord) : lien de la boutique avec bouton « Copier » et **QR code**, nombre de leads, derniers leads, commandes (phase 7).
 3. `/espace/leads` : liste filtrable (besoin, statut), changement de **statut** (Nouveau, Contacté, Intéressé, Client, Perdu), **note**, bouton WhatsApp vers le lead, export CSV et PDF. Les partenaires ne voient **que leurs leads** (R12) ; l'export applique exactement le même périmètre d'accès.
 4. `/espace/profil` : nom affiché, photo (compression, annexe D), texte d'accueil (300 caractères), note de livraison, numéro WhatsApp (avec journal et alerte à l'admin, Q-P3). Aucune modification de produits ni de prix.
 5. `/espace/liens` : **liens publicitaires générés** pour les 6 besoins avec leur slug et des paramètres `utm_*` (annexe B).
-6. Tests d'isolation : un partenaire ne peut ni lire ni modifier les données d'un autre (requêtes avec deux comptes).
+6. **Codes promo du partenaire :** création et gestion de codes réservés à sa boutique ; remise de 1 à 20 % sur le prix public, dates de validité, nombre maximal d'utilisations, produits éligibles et activation/désactivation. Historique des utilisations et attribution au partenaire. Le code d'un partenaire doit être refusé sur toutes les autres boutiques, y compris côté API.
+7. Tests d'isolation : un partenaire ne peut ni lire ni modifier les données d'un autre (requêtes avec deux comptes), ni utiliser ou administrer les codes promo d'un autre partenaire.
 - **Fait quand :** deux partenaires de test se connectent, voient chacun uniquement leurs leads, modifient leur profil, et la boutique publique reflète ces changements en moins de 5 minutes.
 
 ### Phase 7 : Réglages, contenu et journal des commandes (ancienne phase 4 + commandes)
 - Table `settings` (clés publiques) : annonces par défaut, textes de réassurance. `config.ts` lit la base avec repli.
 - Témoignages : liste, envoi d'image, visible/masqué (globaux).
-- **Journal `orders`** (annexe F) : à « Confirmer ma commande », enregistrer l'instantané (articles, prix unitaires, total, VIP appliqué) rattaché au partenaire **avant** d'ouvrir WhatsApp ; statuts Nouveau, Confirmé, Livré, Annulé ; vue partenaire (`/espace/commandes`) et vue admin (tout).
-- **Fait quand :** changer une annonce se fait sans redéploiement ; chaque commande WhatsApp laisse une trace chez le bon partenaire.
+- **Journal `orders`** (annexe F) : enregistrer l'instantané (articles, prix unitaires, total, réduction, code promo éventuel, partenaire propriétaire du code, VIP appliqué) avant d'ouvrir WhatsApp ; statuts Nouveau, Confirmé, Livré, Annulé ; vue partenaire (`/espace/commandes`) et vue admin (tout).
+- **Confirmation manuelle :** l'administrateur confirme le paiement et la commande après vérification. Conserver la date, l'identité de l'administrateur et le montant effectivement payé. Ne pas accorder le statut VIP sur une commande simplement créée ou envoyée.
+- **Qualification VIP :** après confirmation d'un paiement d'au moins 65 000 F, attribuer au client le statut VIP à vie. Le montant de référence (avant ou après remise) doit être confirmé dans les questions ouvertes avant d'implémenter cette règle.
+- **Fait quand :** chaque commande WhatsApp laisse une trace chez le bon partenaire ; l'administrateur confirme le paiement ; le statut VIP n'est attribué qu'après confirmation et respecte le seuil convenu.
 
 ### Phase 8 : PWA (iOS et Android) (ancienne phase 5)
 1. **Un manifeste par boutique** : route `/p/{slug}/manifest.webmanifest` : `name` = « {Nom du partenaire} · Yekola Shop », `start_url: "/p/{slug}?source=pwa"`, `scope: "/p/{slug}/"` (boutique maison : `/`). `display: "standalone"`, `lang: "fr"`, `theme_color: "#059669"`, `background_color: "#F9FAFB"`, icônes (annexe E).
@@ -334,11 +363,11 @@ Typage strict sans `any` · tests ajoutés pour toute règle de prix · aucun te
 ## 9. Questions ouvertes (à trancher avec le propriétaire)
 
 **Générales**
-1. **A1 :** le palier de 65 000 F se mesure-t-il sur le total aux prix de vente promo comprise ? (hypothèse retenue : oui)
+1. **Seuil VIP après remise :** pour qualifier un client VIP, les 65 000 F minimum correspondent-ils au montant effectivement payé après application éventuelle d'un code promo ou d'une promotion globale, ou au total avant remise ? La règle confirmée est « commande d'au moins 65 000 F payée », mais cette base de calcul doit être précisée.
 2. Résolu : marque **Yekola Shop** ; connexion admin **mot de passe et lien magique** ; hébergement **Vercel** ; domaine **à acheter plus tard**.
 3. Adresse(s) e-mail des administrateurs (au minimum celle d'Alvine).
 4. Garder « Espèces à la livraison » dans le formulaire ? (conservé pour l'instant)
-5. Un pack peut-il être en promo en plus de son prix de pack ? (prévu : oui, comme tout produit)
+5. Un pack peut-il être en promo en plus de son prix de pack ? (à confirmer avant implémentation).
 
 **Partenaires** (hypothèses de travail entre parenthèses ; elles guident les phases 2 à 6)
 - **Q-P1.** Qui livre et encaisse ? (chaque partenaire, pour les commandes reçues sur sa boutique)

@@ -283,6 +283,14 @@ Ordre conseillé : 0, 1, **2, 3, 4, 5, 6, 7, 8, 9**. La phase 8 (PWA) est indép
 ### Phase 2 : Multi-boutiques, côté public (NOUVELLE)
 1. Migration `supabase/migrations/002_partners.sql` (annexe F) fusionnée dans `main` et déclarée configurée par le propriétaire : table `partners`, vue publique `partners_public`, slugs réservés et RLS. **À valider :** vérifier les politiques et les données dans le projet Supabase réel. Ne pas modifier `schema.sql` (déjà exécuté chez le propriétaire).
 2. `src/lib/data/partners.ts` : `getPartner(slug)` (`use cache`, étiquette `partner:{slug}`, 5 min), `getActivePartnerSlugs()`.
+
+**Avancement du 02/11/2026 — première brique de phase 2 :**
+- [x] Audit Supabase réel : boutique maison `yekola` active ; RLS activée ; politiques de lecture/modification propres au partenaire ; permissions de la vue publique limitées à SELECT pour `anon` et `authenticated`.
+- [x] `src/lib/partner-slug.ts` : validation stricte des slugs (3 à 30 caractères, minuscules/chiffres/tirets) et rejet des chemins réservés.
+- [x] `src/lib/data/partners.ts` : lecture de `partners_public` uniquement ; `getPartner(slug)` avec cache isolé par `partner:{slug}` ; `getActivePartnerSlugs()` ; validation défensive des champs publics et du numéro WhatsApp.
+- [x] `src/lib/__tests__/partners.test.ts` : tests unitaires des slugs valides, invalides et réservés.
+- [ ] Validation locale à faire par le propriétaire : `npx tsc --noEmit`, `npx vitest run`, `npm run build`. Ces commandes n'ont pas été exécutées dans cet environnement.
+- **Important :** aucune route, page, donnée Supabase ou interface existante n'a été modifiée à ce stade. Le routage et le contexte de boutique restent la prochaine étape.
 3. **Restructurer les routes :** déplacer accueil, catalogue, produit, confidentialité, livraison-paiement sous `src/app/p/[partner]/…` ; le `layout` racine ne garde que `html`/`body`/police et `CatalogProvider` ; `app/p/[partner]/layout.tsx` porte le « chrome » boutique (bandeau, en-tête, pied de page, tiroir panier, WhatsApp flottant, pop-up, suivi) et `ShopProvider`. `proxy.ts` réécrit les chemins publics vers la boutique maison. Slug inconnu ou suspendu : `notFound()`.
 4. `ShopContext` et `<ShopLink>` ; remplacer **tous** les liens internes et tous les usages du numéro global (liste en annexe F).
 5. Panier et pop-up par boutique (clés avec slug) ; `CartHydrator` reçoit le slug.

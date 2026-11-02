@@ -88,11 +88,11 @@ Variables d'environnement actuelles (`.env.example`) :
 
 **Phases 2 et 3 — état après fusion du 01/11/2026 :** la capture des leads et ses migrations sont fusionnées dans `main` (PR #1). Les migrations `002_partners.sql` et `003_leads.sql` ainsi que les variables Supabase/Vercel ont été configurées par le propriétaire. L'API serveur, la validation, l'upsert/dédoublonnage par boutique et numéro, le GPS facultatif déclenché après clic et le formulaire asynchrone sont intégrés. Le catalogue réel est présent dans `public/catalogue-forever.pdf` ; la grille de prix clients fournie est structurée dans `data/liste-prix-officielle.json` (53 références). Le téléchargement automatique doit encore être vérifié dans un parcours utilisateur complet. Le routage public multi-boutiques et les espaces `/admin` et `/espace` ne sont pas encore implémentés.
 
-### Correctif Next 16 — catalogue du layout (en cours de validation)
+### Correctif Next 16 — catalogue du layout (validation locale requise)
 
-- `RootLayout` est désormais synchrone : le `getCatalog()` a été déplacé dans `CatalogHeader`, un composant serveur placé sous un `Suspense` local.
-- Seuls l'en-tête (qui contient `ProductSearch`) et la modale de capture des leads attendent le catalogue. Le contenu principal, le pied de page, le panier et les éléments flottants restent rendus indépendamment.
-- Le fallback de l'en-tête conserve une zone visuelle pendant le chargement. Ne pas déclarer ce correctif validé avant les contrôles locaux `tsc`, Vitest, build et vérification du navigateur.
+- `RootLayout` reste synchrone. `getCatalog()` est appelé dans `CatalogApp`, sous un `Suspense` explicite.
+- Le `CatalogProvider` englobe tous les consommateurs du contexte : en-tête/recherche, pages, tiroir panier et modale de capture. Cette portée évite l'erreur `useCatalog doit être utilisé sous <CatalogProvider>`.
+- Le fallback affiche une structure de chargement de la boutique pendant la récupération du catalogue. Le build et le rendu navigateur restent à vérifier localement.
 
 ### EN COURS — refonte UX/UI mobile-first
 

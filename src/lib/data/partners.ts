@@ -15,6 +15,16 @@ export interface PublicPartner {
 }
 
 const SLUG_PATTERN = /^[a-z0-9][a-z0-9-]{1,28}[a-z0-9]$/;
+const RESERVED_SLUGS = new Set([
+  "admin", "api", "p", "espace", "partenaire", "catalogue", "produit",
+  "connexion", "login", "logout", "hors-ligne", "confidentialite",
+  "livraison-paiement", "sitemap", "robots", "manifest", "www",
+]);
+
+/** Même règle de slug que la contrainte SQL, avec les chemins réservés du site. */
+export function isValidPartnerSlug(slug: string): boolean {
+  return SLUG_PATTERN.test(slug) && !RESERVED_SLUGS.has(slug);
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -70,10 +80,10 @@ function parsePublicPartner(value: unknown): PublicPartner {
  */
 export async function getPartner(slug: string): Promise<PublicPartner | null> {
   "use cache";
+  if (!isValidPartnerSlug(slug)) return null;
+
   cacheTag(`partner:${slug}`);
   cacheLife({ stale: 60, revalidate: 300, expire: 86_400 });
-
-  if (!SLUG_PATTERN.test(slug)) return null;
 
   const client = createPublicClient();
   if (!client) return null;
@@ -114,7 +124,7 @@ export async function getActivePartnerSlugs(): Promise<string[]> {
   }
 
   return data.flatMap((row: unknown) => {
-    if (!isRecord(row) || typeof row.slug !== "string" || !SLUG_PATTERN.test(row.slug)) {
+    if (!isRecord(row) || typeof row.slug !== "string" || !isValidPartnerSlug(row.slug)) {
       return [];
     }
     return [row.slug];

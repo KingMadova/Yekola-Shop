@@ -289,10 +289,13 @@ Ordre conseillé : 0, 1, **2, 3, 4, 5, 6, 7, 8, 9**. La phase 8 (PWA) est indép
 - [x] `src/lib/partner-slug.ts` : validation stricte des slugs (3 à 30 caractères, minuscules/chiffres/tirets) et rejet des chemins réservés.
 - [x] `src/lib/data/partners.ts` : lecture de `partners_public` uniquement ; `getPartner(slug)` avec cache isolé par `partner:{slug}` ; `getActivePartnerSlugs()` ; validation défensive des champs publics et du numéro WhatsApp.
 - [x] `src/lib/__tests__/partners.test.ts` : tests unitaires des slugs valides, invalides et réservés.
+- [x] `src/lib/shop-path.ts` : génération des chemins propres à chaque boutique ; les URL de la boutique maison restent inchangées.
+- [x] `src/components/providers/ShopContext.tsx` : `ShopProvider`, `useShop()` et `ShopLink`, avec numéro WhatsApp explicite provenant du partenaire.
+- [x] `src/lib/__tests__/shop-path.test.ts` : tests des chemins maison/partenaire et rejet des chemins externes.
 - [ ] Validation locale à faire par le propriétaire : `npx tsc --noEmit`, `npx vitest run`, `npm run build`. Ces commandes n'ont pas été exécutées dans cet environnement.
-- **Important :** aucune route, page, donnée Supabase ou interface existante n'a été modifiée à ce stade. Le routage et le contexte de boutique restent la prochaine étape.
+- **Important :** le fournisseur n'est pas encore monté dans les routes et les composants existants n'utilisent pas encore `ShopLink`. Aucune route, page, donnée Supabase ou interface existante n'a été modifiée. La restructuration du routage est la prochaine étape.
 3. **Restructurer les routes :** déplacer accueil, catalogue, produit, confidentialité, livraison-paiement sous `src/app/p/[partner]/…` ; le `layout` racine ne garde que `html`/`body`/police et `CatalogProvider` ; `app/p/[partner]/layout.tsx` porte le « chrome » boutique (bandeau, en-tête, pied de page, tiroir panier, WhatsApp flottant, pop-up, suivi) et `ShopProvider`. `proxy.ts` réécrit les chemins publics vers la boutique maison. Slug inconnu ou suspendu : `notFound()`.
-4. `ShopContext` et `<ShopLink>` ; remplacer **tous** les liens internes et tous les usages du numéro global (liste en annexe F).
+4. `ShopContext`, `<ShopLink>` et `buildShopHref()` sont créés ; **reste à faire** : monter le fournisseur dans le layout boutique, remplacer tous les liens internes et tous les usages du numéro global (liste en annexe F).
 5. Panier et pop-up par boutique (clés avec slug) ; `CartHydrator` reçoit le slug.
 6. Métadonnées : `noindex` + `canonical` pour les partenaires. Sitemap : maison seulement.
 7. Textes dépendants du partenaire : note de livraison, annonces, « Devenir distributeur », « Client VIP », mention FBO dans le pied de page.

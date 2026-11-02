@@ -88,6 +88,12 @@ Variables d'environnement actuelles (`.env.example`) :
 
 **Phases 2 et 3 — état après fusion du 01/11/2026 :** la capture des leads et ses migrations sont fusionnées dans `main` (PR #1). Les migrations `002_partners.sql` et `003_leads.sql` ainsi que les variables Supabase/Vercel ont été configurées par le propriétaire. L'API serveur, la validation, l'upsert/dédoublonnage par boutique et numéro, le GPS facultatif déclenché après clic et le formulaire asynchrone sont intégrés. Le catalogue réel est présent dans `public/catalogue-forever.pdf` ; la grille de prix clients fournie est structurée dans `data/liste-prix-officielle.json` (53 références). Le téléchargement automatique doit encore être vérifié dans un parcours utilisateur complet. Le routage public multi-boutiques et les espaces `/admin` et `/espace` ne sont pas encore implémentés.
 
+### Correctif Next 16 — catalogue du layout (en cours de validation)
+
+- `RootLayout` est désormais synchrone : le `getCatalog()` a été déplacé dans `CatalogHeader`, un composant serveur placé sous un `Suspense` local.
+- Seuls l'en-tête (qui contient `ProductSearch`) et la modale de capture des leads attendent le catalogue. Le contenu principal, le pied de page, le panier et les éléments flottants restent rendus indépendamment.
+- Le fallback de l'en-tête conserve une zone visuelle pendant le chargement. Ne pas déclarer ce correctif validé avant les contrôles locaux `tsc`, Vitest, build et vérification du navigateur.
+
 ### EN COURS — refonte UX/UI mobile-first
 
 - Première passe intégrée sur la branche `feat/mobile-first-natural-redesign` : palette vert forêt / ivoire / or doux, en-tête mobile compact, bandeau d'annonce masqué sur petit écran, Hero raccourci, copywriting principal, sections d'accueil, cartes produits et bouton WhatsApp flottant plus discret.

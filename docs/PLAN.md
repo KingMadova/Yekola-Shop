@@ -97,8 +97,7 @@ Variables d'environnement actuelles (`.env.example`) :
 
 ### EN COURS — refonte UX/UI mobile-first
 
-- Première passe intégrée sur la branche `feat/mobile-first-natural-redesign` : palette vert forêt / ivoire / or doux, en-tête mobile compact, bandeau d'annonce masqué sur petit écran, Hero raccourci, copywriting principal, sections d'accueil, cartes produits et bouton WhatsApp flottant plus discret.- Le Hero a été conçu pour tenir dans le premier écran mobile sans hauteur fixe artificielle. **La conformité réelle à 360 × 800 et 390 × 844 reste à mesurer dans un navigateur** ; ne pas considérer ce critère comme validé avant test.- Les contrôles `npx tsc --noEmit`, `npx vitest run` et `npm run build` n'ont pas encore été exécutés sur cette branche. La documentation Next.js installée sous `node_modules/next/dist/docs/` n'était pas accessible depuis l'édition GitHub ; aucune API Next.js n'a été modifiée.
-### EN COURS — pages commerciales et tarifs officiels
+- Première passe intégrée sur la branche `feat/mobile-first-natural-redesign` : palette vert forêt / ivoire / or doux, en-tête mobile compact, bandeau d'annonce masqué sur petit écran, Hero raccourci, copywriting principal, sections d'accueil, cartes produits et bouton WhatsApp flottant plus discret.- Le Hero a été conçu pour tenir dans le premier écran mobile sans hauteur fixe artificielle. **La conformité réelle à 360 × 800 et 390 × 844 reste à mesurer dans un navigateur** ; ne pas considérer ce critère comme validé avant test.- Les contrôles `npx tsc --noEmit`, `npx vitest run` et `npm run build` n'ont pas encore été exécutés sur cette branche. La documentation Next.js installée sous `node_modules/next/dist/docs/` n'était pas accessible depuis l'édition GitHub ; aucune API Next.js n'a été modifiée.### EN COURS — pages commerciales et tarifs officiels
 
 - La grille `data/liste-prix-officielle.json` contient 53 références avec prix public et prix client privilégié exacts.
 - Le modèle de données, la migration `004_official_vip_prices.sql` et le script d'import acceptent le tarif privilégié explicite.
@@ -198,7 +197,6 @@ Ajouts de la phase 1 : `supabase/{schema,seed}.sql` · `scripts/import-products.
 `ShopContext` fourni par `app/p/[partner]/layout.tsx` : partenaire (slug, nom, WhatsApp, n° FBO, photo, texte d'accueil, note de livraison), `href(path)` (préfixe `/p/{slug}`, vide pour la maison) et `whatsappUrl(message)`. Les composants n'utilisent plus **jamais** un numéro global : `buildWhatsAppUrl(message, number)` rend le numéro **obligatoire** (un oubli devient une erreur de compilation).
 | Commun à toutes les boutiques | Propre à chaque boutique ||---|---|
 | Produits, prix, promos, packs, offres, textes légaux, design | Numéro WhatsApp, nom, photo, texte d'accueil, note de livraison, n° FBO, leads, commandes, panier du navigateur, état du pop-up |
-
 - **Attribution (v1) :** la boutique visitée = le partenaire. Aucune ambiguïté possible. Cookie « parrain » plus tard (Q-P4).
 - **Panier et pop-up par boutique :** clés `forever-cart-v1:{slug}` et `forever-lead-status-v1:{slug}`.
 - **Messages WhatsApp :** commencent par « Bonjour {nom du partenaire} » ; le message de commande indique la boutique.
@@ -297,8 +295,7 @@ Ordre conseillé : 0, 1, **2, 3, 4, 5, 6, 7, 8, 9**. La phase 8 (PWA) est indép
 4. Tests : promo + palier (A1).
 - **Fait quand :** l'admin lance une promo datée ; elle s'affiche dans **toutes** les boutiques, s'applique au panier et disparaît seule.
 ### Phase 6 : Espace partenaire (NOUVELLE)
-1. Connexion partenaire (mot de passe ou lien magique) via l'invitation de l'admin ; `requirePartner()` dans chaque Server Action ; RLS en seconde barrière.
-2. `/espace` (tableau de bord) : lien de la boutique avec bouton « Copier » et **QR code**, nombre de leads, derniers leads, commandes (phase 7).
+1. Connexion partenaire (mot de passe ou lien magique) via l'invitation de l'admin ; `requirePartner()` dans chaque Server Action ; RLS en seconde barrière.2. `/espace` (tableau de bord) : lien de la boutique avec bouton « Copier » et **QR code**, nombre de leads, derniers leads, commandes (phase 7).
 3. `/espace/leads` : liste filtrable (besoin, statut), changement de **statut** (Nouveau, Contacté, Intéressé, Client, Perdu), **note**, bouton WhatsApp vers le lead, export CSV et PDF. Les partenaires ne voient **que leurs leads** (R12) ; l'export applique exactement le même périmètre d'accès.
 4. `/espace/profil` : nom affiché, photo (compression, annexe D), texte d'accueil (300 caractères), note de livraison, numéro WhatsApp (avec journal et alerte à l'admin, Q-P3). Aucune modification de produits ni de prix.
 5. `/espace/liens` : **liens publicitaires générés** pour les 6 besoins avec leur slug et des paramètres `utm_*` (annexe B).
@@ -397,8 +394,7 @@ Format : `https://DOMAINE/?besoin=SLUG&utm_source=facebook&utm_medium=cpc&utm_ca
 ```sql
 create table products (
   id uuid primary key default gen_random_uuid(),
-  code text unique not null,
-  slug text unique not null,
+  code text unique not null,  slug text unique not null,
   name text not null,
   category text not null check (category in ('Combo / Packs','Boissons','Produits de la Ruche',
     'Compléments Alimentaires','Gestion du Poids','Soins Personnels','Soins de la Peau')),
@@ -497,8 +493,7 @@ create table partners (
   constraint partners_slug_reserved check (slug not in (
     'admin','api','p','espace','partenaire','catalogue','produit','connexion','login','logout',
     'hors-ligne','confidentialite','livraison-paiement','sitemap','robots','manifest','www'))
-);
-create unique index partners_one_house on partners (is_house) where is_house;
+);create unique index partners_one_house on partners (is_house) where is_house;
 
 -- Vue publique : uniquement les colonnes affichables, uniquement les boutiques actives.
 create view partners_public as
@@ -597,7 +592,6 @@ Créer un langage visuel original qui combine :
 La direction finale est un **premium wellness naturel et commercial** : élégante et épurée, mais clairement conçue pour vendre et conseiller.
 
 ### Palette et principes graphiques
-
 Palette de départ à appliquer de façon cohérente (à vérifier en contraste WCAG AA avant validation) :
 - Vert forêt : `#123D32` — marque, titres forts, navigation et actions principales.
 - Ivoire naturel : `#F6F3EA` — fonds doux et grandes surfaces.
@@ -698,7 +692,6 @@ Réviser aussi les titres de sections, descriptions des besoins, cartes produits
 - Les politiques administrateur restent inchangées. Les politiques des leads continuent de s'appuyer sur `current_partner_id()` : un partenaire suspendu ne peut donc plus lire ou modifier ses leads via ces politiques.
 - La contrainte `partners_status_check` autorise déjà `pending`, `active` et `suspended`. Au moment du contrôle, un seul partenaire était actif et aucun partenaire suspendu n'était présent.
 - La table `settings` était vide au moment de l'audit ; ne stocker dans cette table que des paramètres destinés à être publics.
-
 ### Migrations versionnées sur la branche de travail
 
 - `supabase/migrations/005_harden_public_privileges.sql` : enregistre les corrections des privilèges de tables, colonnes, séquences, fonctions et privilèges par défaut de `postgres`.
@@ -715,7 +708,7 @@ Réviser aussi les titres de sections, descriptions des besoins, cartes produits
 
 ### État Git et validations
 
-- Branche de travail : `feat/mobile-first-natural-redesign`. Elle est en avance de 107 commits sur `main`, sans commit en retard au moment de la comparaison.
+- Branche de travail : `feat/mobile-first-natural-redesign`. Elle est en avance de plus de 100 commits sur `main`, sans commit en retard au moment de la comparaison.
 - `feat/supabase-lead-capture` n'apporte pas de changement fonctionnel supplémentaire à la branche de refonte : le PDF catalogue et la correction de la route leads sont déjà présents. Ne pas fusionner cette ancienne branche séparément.
 - La PR #4 de refonte reste un brouillon. La fusion dans `main` attend les validations techniques, visuelles et fonctionnelles. Le dernier statut Vercel vérifié sur le commit de tête `0d0f031` est en échec ; consulter les logs du déploiement avant toute fusion.
 - Les contrôles `npx tsc --noEmit`, `npx vitest run` et `npm run build` n'ont pas été exécutés dans cette session après les ajouts des migrations. Ils restent obligatoires avant fusion.

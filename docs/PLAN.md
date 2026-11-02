@@ -97,8 +97,7 @@ Variables d'environnement actuelles (`.env.example`) :
 
 ### EN COURS — refonte UX/UI mobile-first
 
-- Première passe intégrée sur la branche `feat/mobile-first-natural-redesign` : palette vert forêt / ivoire / or doux, en-tête mobile compact, bandeau d'annonce masqué sur petit écran, Hero raccourci, copywriting principal, sections d'accueil, cartes produits et bouton WhatsApp flottant plus discret.- Le Hero a été conçu pour tenir dans le premier écran mobile sans hauteur fixe artificielle. **La conformité réelle à 360 × 800 et 390 × 844 reste à mesurer dans un navigateur** ; ne pas considérer ce critère comme validé avant test.
-- Les contrôles `npx tsc --noEmit`, `npx vitest run` et `npm run build` n'ont pas encore été exécutés sur cette branche. La documentation Next.js installée sous `node_modules/next/dist/docs/` n'était pas accessible depuis l'édition GitHub ; aucune API Next.js n'a été modifiée.
+- Première passe intégrée sur la branche `feat/mobile-first-natural-redesign` : palette vert forêt / ivoire / or doux, en-tête mobile compact, bandeau d'annonce masqué sur petit écran, Hero raccourci, copywriting principal, sections d'accueil, cartes produits et bouton WhatsApp flottant plus discret.- Le Hero a été conçu pour tenir dans le premier écran mobile sans hauteur fixe artificielle. **La conformité réelle à 360 × 800 et 390 × 844 reste à mesurer dans un navigateur** ; ne pas considérer ce critère comme validé avant test.- Les contrôles `npx tsc --noEmit`, `npx vitest run` et `npm run build` n'ont pas encore été exécutés sur cette branche. La documentation Next.js installée sous `node_modules/next/dist/docs/` n'était pas accessible depuis l'édition GitHub ; aucune API Next.js n'a été modifiée.
 
 ### EN COURS — pages commerciales et tarifs officiels
 
@@ -198,7 +197,6 @@ Ajouts de la phase 1 : `supabase/{schema,seed}.sql` · `scripts/import-products.
 
 ### Contexte de boutique
 `ShopContext` fourni par `app/p/[partner]/layout.tsx` : partenaire (slug, nom, WhatsApp, n° FBO, photo, texte d'accueil, note de livraison), `href(path)` (préfixe `/p/{slug}`, vide pour la maison) et `whatsappUrl(message)`. Les composants n'utilisent plus **jamais** un numéro global : `buildWhatsAppUrl(message, number)` rend le numéro **obligatoire** (un oubli devient une erreur de compilation).
-
 | Commun à toutes les boutiques | Propre à chaque boutique |
 |---|---|
 | Produits, prix, promos, packs, offres, textes légaux, design | Numéro WhatsApp, nom, photo, texte d'accueil, note de livraison, n° FBO, leads, commandes, panier du navigateur, état du pop-up |
@@ -297,8 +295,7 @@ Ordre conseillé : 0, 1, **2, 3, 4, 5, 6, 7, 8, 9**. La phase 8 (PWA) est indép
 
 ### Phase 5 : Promos, packs et offres (ancienne phase 3)Inchangé, avec une précision : **les promos, packs et offres sont globaux** et s'appliquent à toutes les boutiques (R10).
 1. **Promos :** par produit, prix promo **ou** pourcentage, dates de début et de fin, badge, interrupteur. Expiration à la lecture. Liste des promos actives et à venir.
-2. **Packs :** un pack est un produit (`is_pack`) avec composition (`pack_items`) et son **propre prix**.
-3. **Offres :** bannières d'accueil (titre, sous-titre, image, lien, dates, ordre) : composant `OfferBanners`.
+2. **Packs :** un pack est un produit (`is_pack`) avec composition (`pack_items`) et son **propre prix**.3. **Offres :** bannières d'accueil (titre, sous-titre, image, lien, dates, ordre) : composant `OfferBanners`.
 4. Tests : promo + palier (A1).
 - **Fait quand :** l'admin lance une promo datée ; elle s'affiche dans **toutes** les boutiques, s'applique au panier et disparaît seule.
 
@@ -397,7 +394,6 @@ Format : `https://DOMAINE/?besoin=SLUG&utm_source=facebook&utm_medium=cpc&utm_ca
 | Vitalité & Forme Masculine | `vitalite` | `vitalite-masculine` || Peau & Teint Éclatant | `peau` | `peau-eclatante` |
 | Détox & Perte de Poids | `detox` | `detox-c9` |
 | Défenses Immunitaires | `immunite` | `immunite-tonus` |
-
 `besoin=` est le signal fiable ; le nom de campagne sert de repli (mots-clés reconnus dans `src/lib/interest.ts`). Changer `utm_source` (`instagram`, `tiktok`, `whatsapp`) et `utm_medium` (`cpc`, `statut`) selon la plateforme. Quand le catalogue sera complet, remplacer `/?besoin=` par `/catalogue?besoin=`.
 
 ## Annexe C : Schéma cible Supabase (à créer en phase 1)
@@ -497,8 +493,7 @@ create table partners (
   whatsapp_number text not null check (whatsapp_number ~ '^242[0-9]{9}$'),
   fbo_id text,
   city text,
-  photo_url text,
-  welcome_text text check (char_length(welcome_text) <= 300),
+  photo_url text,  welcome_text text check (char_length(welcome_text) <= 300),
   delivery_note text check (char_length(delivery_note) <= 200),
   is_house boolean not null default false,
   status text not null default 'pending' check (status in ('pending','active','suspended')),
@@ -598,7 +593,6 @@ Même format que l'annexe B avec le chemin de la boutique : `https://DOMAINE/p/S
 ## 8 bis. Refonte UX/UI mobile-first — Yekola Shop (priorité immédiate)
 
 **Statut : première passe de refonte intégrée sur `feat/mobile-first-natural-redesign` ; validation visuelle et contrôles techniques encore à effectuer.** Cette section reste le brief de référence. Le Hero, l'en-tête, la palette, les textes principaux, les sections d'accueil, les cartes produits et les éléments flottants ont reçu une première adaptation mobile-first.
-
 ### Direction artistique
 
 Créer un langage visuel original qui combine :
@@ -697,8 +691,7 @@ Réviser aussi les titres de sections, descriptions des besoins, cartes produits
 
 ### Audit et durcissement Supabase
 
-- Audit des neuf tables du schéma public : RLS activé sur toutes. Les privilèges SQL navigateur ont été réduits ; les rôles `anon` et `authenticated` n'ont pas de droits d'écriture généraux sur les tables métier.
-- Lecture publique conservée uniquement pour `offers`, `pack_items`, `products`, `promotions`, `settings`, `testimonials` et la vue `partners_public`.
+- Audit des neuf tables du schéma public : RLS activé sur toutes. Les privilèges SQL navigateur ont été réduits ; les rôles `anon` et `authenticated` n'ont pas de droits d'écriture généraux sur les tables métier.- Lecture publique conservée uniquement pour `offers`, `pack_items`, `products`, `promotions`, `settings`, `testimonials` et la vue `partners_public`.
 - `authenticated` conserve la lecture de son profil partenaire et des leads selon RLS, avec mise à jour limitée aux colonnes `partners` autorisées et à `leads.status/note`.
 - Les privilèges de colonnes et de séquences ont également été contrôlés. Les privilèges par défaut des objets créés par `postgres` dans `public` ont été durcis pour `anon` et `authenticated`.
 - **Limite non résolue :** les privilèges par défaut de `supabase_admin` n'ont pas pu être modifiés depuis le SQL Editor (permission refusée). Ne pas considérer ce point comme corrigé.
@@ -715,10 +708,10 @@ Réviser aussi les titres de sections, descriptions des besoins, cartes produits
 
 ### Migrations versionnées sur la branche de travail
 
-- `supabase/migrations/005_harden_public_privileges.sql) : enregistre les corrections des privilèges de tables, colonnes, séquences, fonctions et privilèges par défaut de `postgres`.
-- `supabase/migrations/006_enforce_suspended_partner_access.sql) : enregistre la suspension totale et le durcissement de `current_partner_id()`.
+- `supabase/migrations/005_harden_public_privileges.sql` : enregistre les corrections des privilèges de tables, colonnes, séquences, fonctions et privilèges par défaut de `postgres`.
+- `supabase/migrations/006_enforce_suspended_partner_access.sql` : enregistre la suspension totale et le durcissement de `current_partner_id()`.
 - Ces corrections avaient été exécutées par le propriétaire depuis le SQL Editor Supabase avant l'ajout des fichiers. Les migrations sont réexécutables ; vérifier l'historique `supabase_migrations.schema_migrations` avant toute commande de déploiement de migrations afin de savoir si ces versions sont déjà enregistrées.
-- Les scripts 005/006 ne modifient pas les privilèges par défaut de `supabase_admin).
+- Les scripts 005/006 ne modifient pas les privilèges par défaut de `supabase_admin`.
 
 ### Points de sécurité restant à traiter
 
@@ -731,7 +724,6 @@ Réviser aussi les titres de sections, descriptions des besoins, cartes produits
 
 - Branche de travail : `feat/mobile-first-natural-redesign`. Elle est en avance de 103 commits sur `main`, sans commit en retard au moment de la comparaison.
 - `feat/supabase-lead-capture` n'apporte pas de changement fonctionnel supplémentaire à la branche de refonte : le PDF catalogue et la correction de la route leads sont déjà présents. Ne pas fusionner cette ancienne branche séparément.
-- La PR #4 de refonte reste un brouillon. La fusion dans `main) attend les validations techniques, visuelles, fonctionnelles et le contrôle du déploiement.
+- La PR #4 de refonte reste un brouillon. La fusion dans `main` attend les validations techniques, visuelles, fonctionnelles et le contrôle du déploiement.
 - Les contrôles `npx tsc --noEmit`, `npx vitest run` et `npm run build` n'ont pas été exécutés dans cette session après les ajouts des migrations. Ils restent obligatoires avant fusion.
 - Le parcours réel d'import des 53 références, le test mobile du Hero et les parcours visiteur contre Supabase restent à valider.
-

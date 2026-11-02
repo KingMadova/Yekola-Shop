@@ -1,5 +1,6 @@
 import { cacheLife, cacheTag } from "next/cache";
 import { createPublicClient } from "@/lib/supabase/public";
+import { isValidPartnerSlug } from "@/lib/partner-slug";
 
 /** Champs volontairement limités à la vue publique partners_public. */
 export interface PublicPartner {
@@ -12,18 +13,6 @@ export interface PublicPartner {
   welcomeText: string | null;
   deliveryNote: string | null;
   isHouse: boolean;
-}
-
-const SLUG_PATTERN = /^[a-z0-9][a-z0-9-]{1,28}[a-z0-9]$/;
-const RESERVED_SLUGS = new Set([
-  "admin", "api", "p", "espace", "partenaire", "catalogue", "produit",
-  "connexion", "login", "logout", "hors-ligne", "confidentialite",
-  "livraison-paiement", "sitemap", "robots", "manifest", "www",
-]);
-
-/** Même règle de slug que la contrainte SQL, avec les chemins réservés du site. */
-export function isValidPartnerSlug(slug: string): boolean {
-  return SLUG_PATTERN.test(slug) && !RESERVED_SLUGS.has(slug);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -49,7 +38,7 @@ function parsePublicPartner(value: unknown): PublicPartner {
 
   if (
     typeof slug !== "string" ||
-    !SLUG_PATTERN.test(slug) ||
+    !isValidPartnerSlug(slug) ||
     typeof display_name !== "string" ||
     typeof whatsapp_number !== "string" ||
     !/^242[0-9]{9}$/.test(whatsapp_number) ||

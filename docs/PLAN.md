@@ -1,6 +1,6 @@
 # Plan de projet : Boutique Forever (dépôt `yekola-shop`)
 
-Dernière mise à jour : 1er novembre 2026. Propriétaire : Alvine YOKA (Pointe-Noire). Interface, textes et commentaires en français.
+Dernière mise à jour : 2 novembre 2026. Propriétaire : Alvine YOKA (Pointe-Noire). Interface, textes et commentaires en français.
 
 ## 0. À lire en premier (reprise par une autre personne)
 
@@ -97,8 +97,7 @@ Variables d'environnement actuelles (`.env.example`) :
 
 ### EN COURS — refonte UX/UI mobile-first
 
-- Première passe intégrée sur la branche `feat/mobile-first-natural-redesign` : palette vert forêt / ivoire / or doux, en-tête mobile compact, bandeau d'annonce masqué sur petit écran, Hero raccourci, copywriting principal, sections d'accueil, cartes produits et bouton WhatsApp flottant plus discret.
-- Le Hero a été conçu pour tenir dans le premier écran mobile sans hauteur fixe artificielle. **La conformité réelle à 360 × 800 et 390 × 844 reste à mesurer dans un navigateur** ; ne pas considérer ce critère comme validé avant test.
+- Première passe intégrée sur la branche `feat/mobile-first-natural-redesign` : palette vert forêt / ivoire / or doux, en-tête mobile compact, bandeau d'annonce masqué sur petit écran, Hero raccourci, copywriting principal, sections d'accueil, cartes produits et bouton WhatsApp flottant plus discret.- Le Hero a été conçu pour tenir dans le premier écran mobile sans hauteur fixe artificielle. **La conformité réelle à 360 × 800 et 390 × 844 reste à mesurer dans un navigateur** ; ne pas considérer ce critère comme validé avant test.
 - Les contrôles `npx tsc --noEmit`, `npx vitest run` et `npm run build` n'ont pas encore été exécutés sur cette branche. La documentation Next.js installée sous `node_modules/next/dist/docs/` n'était pas accessible depuis l'édition GitHub ; aucune API Next.js n'a été modifiée.
 
 ### EN COURS — pages commerciales et tarifs officiels
@@ -198,7 +197,6 @@ Ajouts de la phase 1 : `supabase/{schema,seed}.sql` · `scripts/import-products.
 - **Pourquoi un chemin et non un sous-domaine :** pas de domaine acheté, et un chemin marche partout (aperçus Vercel). Un sous-domaine `awa.domaine.com` pourra être ajouté plus tard par simple réécriture, sans refonte.
 
 ### Contexte de boutique
-
 `ShopContext` fourni par `app/p/[partner]/layout.tsx` : partenaire (slug, nom, WhatsApp, n° FBO, photo, texte d'accueil, note de livraison), `href(path)` (préfixe `/p/{slug}`, vide pour la maison) et `whatsappUrl(message)`. Les composants n'utilisent plus **jamais** un numéro global : `buildWhatsAppUrl(message, number)` rend le numéro **obligatoire** (un oubli devient une erreur de compilation).
 
 | Commun à toutes les boutiques | Propre à chaque boutique |
@@ -297,8 +295,7 @@ Ordre conseillé : 0, 1, **2, 3, 4, 5, 6, 7, 8, 9**. La phase 8 (PWA) est indép
 6. Après chaque enregistrement : `updateTag("catalog")` (ou `partner:{slug}`).
 - **Fait quand :** l'admin crée un produit avec photos et invite un partenaire ; le site public change en moins d'une minute.
 
-### Phase 5 : Promos, packs et offres (ancienne phase 3)
-Inchangé, avec une précision : **les promos, packs et offres sont globaux** et s'appliquent à toutes les boutiques (R10).
+### Phase 5 : Promos, packs et offres (ancienne phase 3)Inchangé, avec une précision : **les promos, packs et offres sont globaux** et s'appliquent à toutes les boutiques (R10).
 1. **Promos :** par produit, prix promo **ou** pourcentage, dates de début et de fin, badge, interrupteur. Expiration à la lecture. Liste des promos actives et à venir.
 2. **Packs :** un pack est un produit (`is_pack`) avec composition (`pack_items`) et son **propre prix**.
 3. **Offres :** bannières d'accueil (titre, sous-titre, image, lien, dates, ordre) : composant `OfferBanners`.
@@ -397,8 +394,7 @@ Format : `https://DOMAINE/?besoin=SLUG&utm_source=facebook&utm_medium=cpc&utm_ca
 |---|---|---|
 | Digestion & Ventre plat | `digestion` | `digestion-30-jours` |
 | Articulations & Mobilité | `articulations` | `articulations-confort` |
-| Vitalité & Forme Masculine | `vitalite` | `vitalite-masculine` |
-| Peau & Teint Éclatant | `peau` | `peau-eclatante` |
+| Vitalité & Forme Masculine | `vitalite` | `vitalite-masculine` || Peau & Teint Éclatant | `peau` | `peau-eclatante` |
 | Détox & Perte de Poids | `detox` | `detox-c9` |
 | Défenses Immunitaires | `immunite` | `immunite-tonus` |
 
@@ -497,8 +493,7 @@ create table partners (
   user_id uuid unique references auth.users on delete set null,   -- compte de connexion (phase 6)
   parent_id uuid references partners on delete set null,           -- parrain (arbre, phase 10)
   slug text unique not null check (slug ~ '^[a-z0-9][a-z0-9-]{1,28}[a-z0-9]$'),
-  display_name text not null,
-  email text,
+  display_name text not null,  email text,
   whatsapp_number text not null check (whatsapp_number ~ '^242[0-9]{9}$'),
   fbo_id text,
   city text,
@@ -598,7 +593,6 @@ create table orders (
 - L'export respecte les filtres et ne doit jamais permettre de contourner la RLS ou l'isolation entre partenaires.
 
 ## Annexe H : Liens publicitaires par partenaire
-
 Même format que l'annexe B avec le chemin de la boutique : `https://DOMAINE/p/SLUG/?besoin=SLUG_BESOIN&utm_source=facebook&utm_medium=cpc&utm_campaign=CAMPAGNE&utm_content=video-1`. Pour la boutique maison, le chemin reste `https://DOMAINE/?besoin=…`. Les slugs de besoins (R9) ne changent pas. L'espace partenaire (phase 6) génère ces liens automatiquement.
 
 ## 8 bis. Refonte UX/UI mobile-first — Yekola Shop (priorité immédiate)
@@ -698,4 +692,46 @@ Réviser aussi les titres de sections, descriptions des besoins, cartes produits
 - Vérifier manuellement les vues 320 px, 360 px, 390 px, tablette et desktop.
 - Avant toute fusion : `npx tsc --noEmit`, `npx vitest run`, `npm run build` ; ajouter/adapter des tests si une logique change.
 - À la fin de la session de code, actualiser la section 4 « État d'avancement » et les phases concernées.
+
+## Journal de suivi — 2 novembre 2026
+
+### Audit et durcissement Supabase
+
+- Audit des neuf tables du schéma public : RLS activé sur toutes. Les privilèges SQL navigateur ont été réduits ; les rôles `anon` et `authenticated` n'ont pas de droits d'écriture généraux sur les tables métier.
+- Lecture publique conservée uniquement pour `offers`, `pack_items`, `products`, `promotions`, `settings`, `testimonials` et la vue `partners_public`.
+- `authenticated` conserve la lecture de son profil partenaire et des leads selon RLS, avec mise à jour limitée aux colonnes `partners` autorisées et à `leads.status/note`.
+- Les privilèges de colonnes et de séquences ont également été contrôlés. Les privilèges par défaut des objets créés par `postgres` dans `public` ont été durcis pour `anon` et `authenticated`.
+- **Limite non résolue :** les privilèges par défaut de `supabase_admin` n'ont pas pu être modifiés depuis le SQL Editor (permission refusée). Ne pas considérer ce point comme corrigé.
+- `partners_public` est techniquement une vue automatiquement modifiable, mais les rôles navigateur ne disposent pas des privilèges INSERT/UPDATE/DELETE ; seule la lecture est accordée.
+- `is_admin()` reste exécutable par `anon`, car les politiques RLS du catalogue l'appellent ; sans utilisateur authentifié, elle renvoie false. `upsert_lead()` reste réservée à `service_role`.
+
+### Suspension totale des partenaires
+
+- `current_partner_id()` ne retourne désormais que l'identifiant d'un partenaire dont le statut est `active` ; son `search_path` est vide et les objets sont qualifiés.
+- Les politiques de lecture et de modification du profil partenaire exigent aussi `status = 'active'`.
+- Les politiques administrateur restent inchangées. Les politiques des leads continuent de s'appuyer sur `current_partner_id()` : un partenaire suspendu ne peut donc plus lire ou modifier ses leads via ces politiques.
+- La contrainte `partners_status_check` autorise déjà `pending`, `active` et `suspended`. Au moment du contrôle, un seul partenaire était actif et aucun partenaire suspendu n'était présent.
+- La table `settings` était vide au moment de l'audit ; ne stocker dans cette table que des paramètres destinés à être publics.
+
+### Migrations versionnées sur la branche de travail
+
+- `supabase/migrations/005_harden_public_privileges.sql) : enregistre les corrections des privilèges de tables, colonnes, séquences, fonctions et privilèges par défaut de `postgres`.
+- `supabase/migrations/006_enforce_suspended_partner_access.sql) : enregistre la suspension totale et le durcissement de `current_partner_id()`.
+- Ces corrections avaient été exécutées par le propriétaire depuis le SQL Editor Supabase avant l'ajout des fichiers. Les migrations sont réexécutables ; vérifier l'historique `supabase_migrations.schema_migrations` avant toute commande de déploiement de migrations afin de savoir si ces versions sont déjà enregistrées.
+- Les scripts 005/006 ne modifient pas les privilèges par défaut de `supabase_admin).
+
+### Points de sécurité restant à traiter
+
+- **API Next.js utilisant `service_role` :** cette clé contourne RLS. Chaque route serveur privilégiée doit authentifier l'appelant et vérifier son rôle/statut avant toute opération. La revue complète des routes API reste à faire.
+- Vérifier en particulier que les endpoints partenaires refusent un partenaire suspendu, même lorsqu'ils utilisent le client admin Supabase.
+- Les fonctions SECURITY DEFINER `is_admin()` et `upsert_lead()` utilisent encore `search_path = public` ; examiner leur durcissement dans une migration dédiée, sans modifier leur comportement métier.
+- Les privilèges par défaut de `supabase_admin` restent à traiter avec un rôle autorisé.
+
+### État Git et validations
+
+- Branche de travail : `feat/mobile-first-natural-redesign`. Elle est en avance de 103 commits sur `main`, sans commit en retard au moment de la comparaison.
+- `feat/supabase-lead-capture` n'apporte pas de changement fonctionnel supplémentaire à la branche de refonte : le PDF catalogue et la correction de la route leads sont déjà présents. Ne pas fusionner cette ancienne branche séparément.
+- La PR #4 de refonte reste un brouillon. La fusion dans `main) attend les validations techniques, visuelles, fonctionnelles et le contrôle du déploiement.
+- Les contrôles `npx tsc --noEmit`, `npx vitest run` et `npm run build` n'ont pas été exécutés dans cette session après les ajouts des migrations. Ils restent obligatoires avant fusion.
+- Le parcours réel d'import des 53 références, le test mobile du Hero et les parcours visiteur contre Supabase restent à valider.
 

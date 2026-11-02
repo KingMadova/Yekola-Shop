@@ -98,7 +98,6 @@ Variables d'environnement actuelles (`.env.example`) :
 ### EN COURS — refonte UX/UI mobile-first
 
 - Première passe intégrée sur la branche `feat/mobile-first-natural-redesign` : palette vert forêt / ivoire / or doux, en-tête mobile compact, bandeau d'annonce masqué sur petit écran, Hero raccourci, copywriting principal, sections d'accueil, cartes produits et bouton WhatsApp flottant plus discret.- Le Hero a été conçu pour tenir dans le premier écran mobile sans hauteur fixe artificielle. **La conformité réelle à 360 × 800 et 390 × 844 reste à mesurer dans un navigateur** ; ne pas considérer ce critère comme validé avant test.- Les contrôles `npx tsc --noEmit`, `npx vitest run` et `npm run build` n'ont pas encore été exécutés sur cette branche. La documentation Next.js installée sous `node_modules/next/dist/docs/` n'était pas accessible depuis l'édition GitHub ; aucune API Next.js n'a été modifiée.
-
 ### EN COURS — pages commerciales et tarifs officiels
 
 - La grille `data/liste-prix-officielle.json` contient 53 références avec prix public et prix client privilégié exacts.
@@ -197,8 +196,7 @@ Ajouts de la phase 1 : `supabase/{schema,seed}.sql` · `scripts/import-products.
 
 ### Contexte de boutique
 `ShopContext` fourni par `app/p/[partner]/layout.tsx` : partenaire (slug, nom, WhatsApp, n° FBO, photo, texte d'accueil, note de livraison), `href(path)` (préfixe `/p/{slug}`, vide pour la maison) et `whatsappUrl(message)`. Les composants n'utilisent plus **jamais** un numéro global : `buildWhatsAppUrl(message, number)` rend le numéro **obligatoire** (un oubli devient une erreur de compilation).
-| Commun à toutes les boutiques | Propre à chaque boutique |
-|---|---|
+| Commun à toutes les boutiques | Propre à chaque boutique ||---|---|
 | Produits, prix, promos, packs, offres, textes légaux, design | Numéro WhatsApp, nom, photo, texte d'accueil, note de livraison, n° FBO, leads, commandes, panier du navigateur, état du pop-up |
 
 - **Attribution (v1) :** la boutique visitée = le partenaire. Aucune ambiguïté possible. Cookie « parrain » plus tard (Q-P4).
@@ -298,7 +296,6 @@ Ordre conseillé : 0, 1, **2, 3, 4, 5, 6, 7, 8, 9**. La phase 8 (PWA) est indép
 2. **Packs :** un pack est un produit (`is_pack`) avec composition (`pack_items`) et son **propre prix**.3. **Offres :** bannières d'accueil (titre, sous-titre, image, lien, dates, ordre) : composant `OfferBanners`.
 4. Tests : promo + palier (A1).
 - **Fait quand :** l'admin lance une promo datée ; elle s'affiche dans **toutes** les boutiques, s'applique au panier et disparaît seule.
-
 ### Phase 6 : Espace partenaire (NOUVELLE)
 1. Connexion partenaire (mot de passe ou lien magique) via l'invitation de l'admin ; `requirePartner()` dans chaque Server Action ; RLS en seconde barrière.
 2. `/espace` (tableau de bord) : lien de la boutique avec bouton « Copier » et **QR code**, nombre de leads, derniers leads, commandes (phase 7).
@@ -397,7 +394,6 @@ Format : `https://DOMAINE/?besoin=SLUG&utm_source=facebook&utm_medium=cpc&utm_ca
 `besoin=` est le signal fiable ; le nom de campagne sert de repli (mots-clés reconnus dans `src/lib/interest.ts`). Changer `utm_source` (`instagram`, `tiktok`, `whatsapp`) et `utm_medium` (`cpc`, `statut`) selon la plateforme. Quand le catalogue sera complet, remplacer `/?besoin=` par `/catalogue?besoin=`.
 
 ## Annexe C : Schéma cible Supabase (à créer en phase 1)
-
 ```sql
 create table products (
   id uuid primary key default gen_random_uuid(),
@@ -497,8 +493,7 @@ create table partners (
   delivery_note text check (char_length(delivery_note) <= 200),
   is_house boolean not null default false,
   status text not null default 'pending' check (status in ('pending','active','suspended')),
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now(),
+  created_at timestamptz not null default now(),  updated_at timestamptz not null default now(),
   constraint partners_slug_reserved check (slug not in (
     'admin','api','p','espace','partenaire','catalogue','produit','connexion','login','logout',
     'hors-ligne','confidentialite','livraison-paiement','sitemap','robots','manifest','www'))
@@ -597,8 +592,7 @@ Même format que l'annexe B avec le chemin de la boutique : `https://DOMAINE/p/S
 
 Créer un langage visuel original qui combine :
 - **A — Luxe minimaliste :** hiérarchie typographique nette, composition éditoriale, espaces maîtrisés, détails sobres et finitions soignées.
-- **B — E-commerce premium :** produits et prix immédiatement compréhensibles, visuels forts, promotions lisibles, actions d'achat évidentes et parcours sans friction.
-- **C — Wellness naturel :** chaleur, sérénité, matière organique et univers végétal, sans tomber dans le cliché « feuille verte partout ».
+- **B — E-commerce premium :** produits et prix immédiatement compréhensibles, visuels forts, promotions lisibles, actions d'achat évidentes et parcours sans friction.- **C — Wellness naturel :** chaleur, sérénité, matière organique et univers végétal, sans tomber dans le cliché « feuille verte partout ».
 
 La direction finale est un **premium wellness naturel et commercial** : élégante et épurée, mais clairement conçue pour vendre et conseiller.
 
@@ -697,7 +691,6 @@ Réviser aussi les titres de sections, descriptions des besoins, cartes produits
 - **Limite non résolue :** les privilèges par défaut de `supabase_admin` n'ont pas pu être modifiés depuis le SQL Editor (permission refusée). Ne pas considérer ce point comme corrigé.
 - `partners_public` est techniquement une vue automatiquement modifiable, mais les rôles navigateur ne disposent pas des privilèges INSERT/UPDATE/DELETE ; seule la lecture est accordée.
 - `is_admin()` reste exécutable par `anon`, car les politiques RLS du catalogue l'appellent ; sans utilisateur authentifié, elle renvoie false. `upsert_lead()` reste réservée à `service_role`.
-
 ### Suspension totale des partenaires
 
 - `current_partner_id()` ne retourne désormais que l'identifiant d'un partenaire dont le statut est `active` ; son `search_path` est vide et les objets sont qualifiés.
@@ -722,8 +715,8 @@ Réviser aussi les titres de sections, descriptions des besoins, cartes produits
 
 ### État Git et validations
 
-- Branche de travail : `feat/mobile-first-natural-redesign`. Elle est en avance de 103 commits sur `main`, sans commit en retard au moment de la comparaison.
+- Branche de travail : `feat/mobile-first-natural-redesign`. Elle est en avance de 107 commits sur `main`, sans commit en retard au moment de la comparaison.
 - `feat/supabase-lead-capture` n'apporte pas de changement fonctionnel supplémentaire à la branche de refonte : le PDF catalogue et la correction de la route leads sont déjà présents. Ne pas fusionner cette ancienne branche séparément.
-- La PR #4 de refonte reste un brouillon. La fusion dans `main` attend les validations techniques, visuelles, fonctionnelles et le contrôle du déploiement.
+- La PR #4 de refonte reste un brouillon. La fusion dans `main` attend les validations techniques, visuelles et fonctionnelles. Le dernier statut Vercel vérifié sur le commit de tête `0d0f031` est en échec ; consulter les logs du déploiement avant toute fusion.
 - Les contrôles `npx tsc --noEmit`, `npx vitest run` et `npm run build` n'ont pas été exécutés dans cette session après les ajouts des migrations. Ils restent obligatoires avant fusion.
 - Le parcours réel d'import des 53 références, le test mobile du Hero et les parcours visiteur contre Supabase restent à valider.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isValidPartnerSlug } from "../data/partners";
+import { isValidPartnerSlug } from "../partner-slug";
 
 describe("isValidPartnerSlug", () => {
   it("accepte les slugs conformes à la règle des partenaires", () => {

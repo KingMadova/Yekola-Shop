@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { AnnouncementBar } from "@/components/layout/AnnouncementBar";
 import { FloatingWhatsAppButton } from "@/components/layout/FloatingWhatsAppButton";
@@ -26,26 +26,45 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { themeColor: "#123D32" };
 
-export default async function RootLayout({ children }: { children: ReactNode }) {
+/** Le catalogue n'est chargé que pour les éléments qui consomment son contexte. */
+async function CatalogHeader() {
   const products = await getCatalog();
 
   return (
+    <CatalogProvider products={products}>
+      <Header />
+      <LeadCaptureModal />
+    </CatalogProvider>
+  );
+}
+
+function HeaderFallback() {
+  return (
+    <div aria-hidden="true" className="h-16 border-b border-[#e8e5dc] bg-[#fbfaf6]">
+      <div className="mx-auto flex h-full max-w-7xl items-center px-4">
+        <div className="h-6 w-32 animate-pulse rounded-full bg-[#e9e5d9]" />
+      </div>
+    </div>
+  );
+}
+
+export default function RootLayout({ children }: { children: ReactNode }) {
+  return (
     <html lang="fr" data-scroll-behavior="smooth">
       <body className={`${font.className} flex min-h-dvh flex-col bg-[#fbfaf6] text-[#26392e] antialiased`}>
-        <CatalogProvider products={products}>
-          <a href="#contenu" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-white focus:p-3">
-            Aller au contenu
-          </a>
-          <AnnouncementBar />
-          <Header />
-          <main id="contenu" className="flex-1">{children}</main>
-          <Footer />
-          <CartDrawer />
-          <FloatingWhatsAppButton />
-          <LeadCaptureModal />
-          <CartHydrator />
-          <InterestTracker />
-        </CatalogProvider>
+        <a href="#contenu" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-white focus:p-3">
+          Aller au contenu
+        </a>
+        <AnnouncementBar />
+        <Suspense fallback={<HeaderFallback />}>
+          <CatalogHeader />
+        </Suspense>
+        <main id="contenu" className="flex-1">{children}</main>
+        <Footer />
+        <CartDrawer />
+        <FloatingWhatsAppButton />
+        <CartHydrator />
+        <InterestTracker />
       </body>
     </html>
   );

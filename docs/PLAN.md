@@ -996,3 +996,23 @@ Ces modules viendront après la connexion admin et la gestion fiable des boutiqu
 - **Validation non effectuée dans cette session :** aucune exécution locale de TypeScript, Vitest, build ou navigateur n'a été possible depuis l'édition GitHub. Le propriétaire doit récupérer les commits, vérifier le rendu à 320/360/390/430 px et sur desktop, puis exécuter les contrôles du dépôt.
 - **Prochaine étape UX :** tester l'ensemble du parcours Accueil → recherche/filtre → fiche produit → panier → formulaire → WhatsApp, contrôler les performances sur réseau lent et corriger les irritants observés avant d'étendre les changements aux autres pages publiques.
 - Les modifications restent sur `feat/mobile-first-natural-redesign`. Aucun merge dans `main`. Le chantier back-office garde sa priorité de validation ; l'espace partenaire `/espace` ne démarre pas avant cette validation.
+
+
+## Direction artistique Yekola Business — 3 novembre 2026 (brief validé)
+
+- Nouvelle charte officielle fournie par le propriétaire : orange solaire `#F9A825`, orange vif `#FF6A1A`, orange profond `#C1440E`, ivoire `#FFF9F3`. Dégradé principal de `#F9A825` vers `#C1440E`.
+- Typographies de marque : Montserrat pour titres et accents, Poppins pour le corps. Conserver des solutions de repli locales/système afin de ne pas bloquer le rendu sur connexion lente.
+- **Logo Yekola Business fourni : intouchable.** Ne pas redessiner, recolorer, retaper, vectoriser, déformer ni altérer le ratio. Réutiliser le visuel original tel quel. La version « icon only » fournie dans la planche sert aux petites surfaces (favicon / icône PWA) sans recréer le symbole.
+- La marque Yekola Business remplace l'ancienne direction vert forêt / ivoire / or dans la boutique. Tous les composants publics (header, navigation mobile, boutons, badges, cartes, hero, footer, états vides, focus) devront être harmonisés à cette charte ; préserver le contraste et la lisibilité.
+- Sur une boutique partenaire, afficher au-dessus du header un message de bienvenue explicite : « Bienvenue dans la boutique de [nom du partenaire] ». Le nom doit venir du profil partenaire actif, jamais d'une valeur codée en dur. Ne pas afficher cette formule sur la boutique maison sauf demande ultérieure.
+- Le hero doit agrandir visuellement le visuel du pack sans augmenter artificiellement la hauteur de la section ; privilégier un cadrage `object-contain` et une mise à l'échelle interne dans un conteneur de dimensions stables.
+- Remplacer la mise en avant statique d'un seul pack par un carrousel horizontal « Nos offres du moment », prioritairement alimenté par les références ayant une promotion réelle (prix barré / badge promo) puis par les packs ou sélections réellement disponibles. Ne jamais inventer une remise, une urgence ou une date de fin.
+- Ajouter l'onglet « Nos offres » dans les navigations mobile et desktop, ainsi qu'une page boutique dédiée `/offres`. Les offres doivent être filtrables/consultables au toucher, sans dépendance à un carrousel lourd.
+- Mobile-first renforcé : réduire les espaces verticaux excessifs sur mobile, préserver les zones tactiles, la navigation au pouce et les safe areas. Ne pas agrandir le hero pour compenser un visuel trop petit.
+- Vérification obligatoire après intégration : 320/360/390/430 px, desktop, parcours offre → produit → panier → WhatsApp, isolation des données partenaire, accessibilité clavier et réduction des animations.
+- Les actifs de marque doivent être utilisés pour favicon, icône d'installation et PWA. Les formats/tailles requis doivent être produits à partir du logo source sans retoucher le dessin ; si un format binaire ne peut pas être généré via l'édition GitHub, documenter cette limite et demander un commit local plutôt que fabriquer une version approximative.
+
+### Journal — refonte Yekola Business
+- Brief visuel source : planche « Yekola Business » fournie le 3 novembre 2026.
+- Priorité : appliquer la nouvelle identité visuelle et améliorer le parcours d'achat mobile. Cette évolution ne change pas les règles de prix, de commandes WhatsApp ni l'isolation multi-boutiques.
+- Tests locaux et vérification visuelle non exécutés par l'assistant ; validation par le propriétaire requise avant de considérer cette refonte comme terminée.

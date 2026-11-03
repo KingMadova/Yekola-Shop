@@ -26,6 +26,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: PartnerLayoutProps): Promise<Metadata> {
+  "use cache";
   const { partner: slug } = await params;
   const partner = await getPartner(slug);
   if (!partner || partner.isHouse) return {};

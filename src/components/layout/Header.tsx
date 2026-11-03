@@ -22,8 +22,8 @@ export function Header() {
     <header className="sticky top-0 z-30 border-b border-[#f4ddca] bg-[#fff9f3]/95 shadow-[0_2px_14px_rgba(120,55,20,0.06)] backdrop-blur">
       <div className={`${container} flex h-[58px] items-center gap-2 sm:h-16 sm:gap-3`}>
         <ShopLink href="/" className={`flex min-w-0 shrink items-center gap-2 text-[16px] font-extrabold tracking-[-0.04em] text-[#c1440e] sm:text-lg ${focusRing}`}>
-          <Image src="/yekola-business-icon.svg" alt="" width={30} height={26} priority className="h-[26px] w-[31px] shrink-0 object-contain" />
-          <span className="block truncate">{partner.displayName}</span>
+          <Image src={partner.isHouse ? "/yekola-business-logo.svg" : "/yekola-business-icon.svg"} alt="Yekola Business" width={partner.isHouse ? 48 : 30} height={partner.isHouse ? 50 : 26} priority className={partner.isHouse ? "h-[48px] w-[47px] shrink-0 object-contain" : "h-[26px] w-[31px] shrink-0 object-contain"} />
+          {!partner.isHouse && <span className="block truncate">{partner.displayName}</span>}
         </ShopLink>
         <nav aria-label="Navigation principale" className="ml-4 hidden items-center gap-1 md:flex">
           {LINKS.map((link) => <ShopLink key={link.href} href={link.href} className={linkClass}>{link.label}</ShopLink>)}

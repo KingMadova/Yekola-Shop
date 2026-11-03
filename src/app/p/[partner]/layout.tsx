@@ -13,6 +13,9 @@ import { ShopProvider } from "@/components/providers/ShopContext";
 import { SITE_URL } from "@/lib/config";
 import { getActivePartnerSlugs, getPartner } from "@/lib/data/partners";
 
+// Le contexte boutique dépend du slug et doit être résolu avant le rendu partagé.
+export const instant = false;
+
 interface PartnerLayoutProps {
   children: ReactNode;
   params: Promise<{ partner: string }>;

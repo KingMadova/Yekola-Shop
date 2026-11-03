@@ -7,9 +7,9 @@ import { useCartHydrated, useCartTotals } from "@/store/useCartStore";
 
 const ITEMS = [
   { label: "Accueil", href: "/", icon: Home, matches: (path: string, home: string) => path === home },
-  { label: "Catalogue", href: "/catalogue", icon: LayoutGrid, matches: (path: string) => path.endsWith("/catalogue") || path.includes("/produit/") },
-  { label: "Packs", href: "/packs", icon: Package, matches: (path: string) => path.endsWith("/packs") },
-  { label: "Panier", href: "/panier", icon: ShoppingBag, matches: (path: string) => path.endsWith("/panier") },
+  { label: "Catalogue", href: "/catalogue", icon: LayoutGrid, matches: (path: string, _home: string) => path.endsWith("/catalogue") || path.includes("/produit/") },
+  { label: "Packs", href: "/packs", icon: Package, matches: (path: string, _home: string) => path.endsWith("/packs") },
+  { label: "Panier", href: "/panier", icon: ShoppingBag, matches: (path: string, _home: string) => path.endsWith("/panier") },
 ] as const;
 
 /** Navigation principale persistante, conçue pour le pouce sur les petits écrans. */

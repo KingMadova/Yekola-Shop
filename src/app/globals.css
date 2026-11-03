@@ -2,20 +2,21 @@
 
 :root {
   color-scheme: light;
-  --background: #f7f6f0;
-  --foreground: #1d2923;
-  --forest: #173f35;
-  --forest-deep: #10352d;
-  --ivory: #f7f6f0;
-  --gold: #c5a15a;
-  --muted: #66736b;
+  --background: #fff9f3;
+  --foreground: #30231d;
+  --brand-yellow: #f9a825;
+  --brand-orange: #ff6a1a;
+  --brand-deep: #c1440e;
+  --brand-ivory: #fff9f3;
+  --brand-gradient: linear-gradient(110deg, #f9a825 0%, #ff6a1a 52%, #c1440e 100%);
+  --muted: #71645d;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-poppins);
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 html {
@@ -27,18 +28,24 @@ body {
   min-height: 100%;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-poppins), Arial, Helvetica, sans-serif;
+}
+
+h1, h2, h3, h4, .font-brand {
+  font-family: var(--font-montserrat), Arial, Helvetica, sans-serif;
 }
 
 ::selection {
-  background: #d8c69d;
-  color: #173f35;
+  background: #ffd49a;
+  color: #7f2808;
+}
+
+:focus-visible {
+  outline-color: #c1440e;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     scroll-behavior: auto !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;

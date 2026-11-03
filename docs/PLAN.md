@@ -782,3 +782,15 @@ Réviser aussi les titres de sections, descriptions des besoins, cartes produits
 - `npm run build` : **réussi** avec Next.js 16.4.3 (Turbopack). Compilation, vérification TypeScript, collecte des données et génération des 77 pages terminées sans erreur.
 - Les erreurs de types générés dans `.next/dev/types` ont disparu après suppression du cache ; les deux erreurs de paramètres dans `src/app/error.tsx` ont été corrigées.
 - **État : validation technique locale réussie pour le commit récupéré.** Cela ne remplace pas les tests fonctionnels et visuels : vérifier les URL historiques, `/p/yekola`, une boutique partenaire active, les coordonnées WhatsApp propres à chaque boutique, l'isolation des paniers et le parcours mobile. La fusion dans `main` reste soumise à ces vérifications et à l'accord explicite du propriétaire.
+
+
+## Journal de développement — 3 novembre 2026 (correction du proxy multi-boutiques)
+
+- Le propriétaire a confirmé que le commit local était `954763d`, que l'arbre Git était propre et que `proxy.ts` était suivi à la racine du dépôt.
+- Les tests HTTP montrent que `/p/yekola` et `/p/yekola/catalogue` répondent `200 OK`, tandis que `/` et `/catalogue` répondent `404`.
+- Diagnostic : les routes App Router sont dans `src/app/`, mais le proxy était à la racine du dépôt. La convention Next.js exige que `proxy.ts` soit au même niveau que `app` lorsqu'on utilise le dossier `src`. Le proxy n'était donc pas placé à l'emplacement conventionnel reconnu pour cette structure.
+- Correction appliquée sur `feat/mobile-first-natural-redesign` : déplacement logique du proxy vers `src/proxy.ts`, avec import ajusté de `./src/lib/config` vers `./lib/config`, puis suppression de l'ancien `proxy.ts` racine.
+- Commits de correction : `13663bc` (création de `src/proxy.ts`) puis `7ee8e2d` (suppression de `proxy.ts` racine).
+- **À valider localement après pull :** `/` doit répondre `200` et afficher la boutique Yekola ; `/catalogue` doit répondre `200) ; les routes explicites `/p/yekola` et `/p/yekola/catalogue` doivent rester fonctionnelles. Vérifier aussi qu'une route réservée telle que `/api/leads` n'est pas réécrite.
+- **Point restant distinct :** Next.js 16.4.3 affiche en développement un avertissement d'instant navigation dans `src/app/p/[partner]/layout.tsx` lors de `await params`. Il n'a pas été modifié dans ce correctif de routage. Examiner séparément l'option documentée `export const instant = false` ou une architecture Suspense adaptée, sans confondre cet avertissement avec le 404 des anciennes URL.
+- Ne pas fusionner dans `main` avant validation locale et tests fonctionnels/mobile, avec accord explicite du propriétaire.

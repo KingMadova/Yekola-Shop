@@ -9,7 +9,7 @@ import { buildSingleProductMessage } from "@/lib/whatsapp";
 import { useCartStore } from "@/store/useCartStore";
 
 const stepperButton =
-  "inline-flex size-11 items-center justify-center rounded-xl border border-[#deded4] bg-white text-[#26392e] hover:bg-[#f6f3ea] disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-[#173f35]";
+  "inline-flex size-11 items-center justify-center rounded-xl border border-[#deded4] bg-white text-[#30231d] hover:bg-[#fff5e9] disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-[#c1440e]";
 
 /** Double bouton d'achat : « Ajouter au panier » et « Commander en 1 clic via WhatsApp » (sans passer par le panier). */
 export function ProductActions({ product }: { product: Product }) {
@@ -55,7 +55,7 @@ export function ProductActions({ product }: { product: Product }) {
         <button
           type="button"
           onClick={() => addItem(product, quantity)}
-          className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#173f35] px-5 font-semibold text-white hover:bg-[#10352d] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
+          className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#c1440e] px-5 font-semibold text-white hover:bg-[#a9360b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
         >
           <ShoppingCart aria-hidden className="size-5" />
           Ajouter au panier

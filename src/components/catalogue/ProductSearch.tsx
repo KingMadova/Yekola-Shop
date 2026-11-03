@@ -65,11 +65,11 @@ export function ProductSearch({
             aria-expanded={showSuggestions}
             aria-controls={id + "-suggestions"}
             placeholder="Un produit, un code, une gamme…"
-            className={"min-h-11 w-full rounded-xl border border-[#deded4] bg-white pl-10 pr-3 text-base text-[#26392e] placeholder:text-[#879087] " + focusRing + (compact ? " rounded-full text-sm" : "")}
+            className={"min-h-11 w-full rounded-xl border border-[#deded4] bg-white pl-10 pr-3 text-base text-[#30231d] placeholder:text-[#879087] " + focusRing + (compact ? " rounded-full text-sm" : "")}
           />
         </div>
         {!compact && (
-          <button type="submit" className={"inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl bg-[#173f35] px-4 text-sm font-semibold text-white hover:bg-[#10352d] " + focusRing}>
+          <button type="submit" className={"inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl bg-[#c1440e] px-4 text-sm font-semibold text-white hover:bg-[#a9360b] " + focusRing}>
             Rechercher
           </button>
         )}
@@ -88,20 +88,20 @@ export function ProductSearch({
                     className="flex min-h-14 items-center justify-between gap-3 px-4 py-3 hover:bg-[#f7f6f0] focus-visible:bg-[#f7f6f0] focus-visible:outline-none"
                   >
                     <span className="min-w-0">
-                      <span className="block truncate text-sm font-semibold text-[#26392e]">{product.name}</span>
+                      <span className="block truncate text-sm font-semibold text-[#30231d]">{product.name}</span>
                       <span className="block text-xs text-[#778178]">{product.code} · {product.category}</span>
                     </span>
-                    <span className="shrink-0 text-sm font-semibold text-[#173f35]">{formatFCFA(product.pricePublic)}</span>
+                    <span className="shrink-0 text-sm font-semibold text-[#c1440e]">{formatFCFA(product.pricePublic)}</span>
                   </ShopLink>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="px-4 py-4 text-sm text-[#68756c]">Aucun produit ne correspond à « {query} ».</p>
+            <p className="px-4 py-4 text-sm text-[#71645d]">Aucun produit ne correspond à « {query} ».</p>
           )}
           <ShopLink
             href={searchHref}
-            className="flex min-h-11 items-center justify-center border-t border-[#eeeae0] bg-[#fbfaf6] px-4 text-sm font-semibold text-[#173f35] hover:bg-[#f3f0e7]"
+            className="flex min-h-11 items-center justify-center border-t border-[#eeeae0] bg-[#fff9f3] px-4 text-sm font-semibold text-[#c1440e] hover:bg-[#f3f0e7]"
           >
             Voir tous les résultats
           </ShopLink>

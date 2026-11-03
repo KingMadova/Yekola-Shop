@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Suspense } from "react";
+import { connection } from "next/server";
 import { requireAdmin } from "@/lib/auth/admin";
 import { updatePartnerStoreStatus } from "./actions";
 
@@ -6,7 +8,14 @@ export const metadata = { title: "Boutiques | Administration Yekola Shop", robot
 
 type SearchParams = Promise<{ succes?: string; erreur?: string }>;
 
-export default async function AdminStoresPage({ searchParams }: { searchParams: SearchParams }) {
+export default function AdminStoresPage({ searchParams }: { searchParams: SearchParams }) {
+  return <Suspense fallback={<main className="min-h-screen bg-slate-50 px-5 py-10 text-slate-500">Chargement des boutiques…</main>}>
+    <AdminStoresContent searchParams={searchParams} />
+  </Suspense>;
+}
+
+async function AdminStoresContent({ searchParams }: { searchParams: SearchParams }) {
+  await connection();
   const { supabase } = await requireAdmin();
   const params = await searchParams;
   const { data: stores, error } = await supabase.from("partners")

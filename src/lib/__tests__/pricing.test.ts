@@ -88,8 +88,9 @@ describe("WhatsApp", () => {
   });
 
   it("reprend le tarif privilégié exact dans la commande 1 clic d'un pack > 65 000 F", () => {
-    const message = plain(buildSingleProductMessage(makeProduct(68_543, 65_116)));
+    const message = plain(buildSingleProductMessage(makeProduct(68_543, 65_116), 1, "Yekola Shop"));
     expect(message).toContain("65 116 F");
     expect(message).toContain("client privilégié");
+    expect(message).toContain("Bonjour Yekola Shop");
   });
 });

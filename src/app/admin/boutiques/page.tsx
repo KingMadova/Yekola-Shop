@@ -2,7 +2,6 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/auth/admin";
 import { updatePartnerStoreStatus } from "./actions";
 
-export const dynamic = "force-dynamic";
 export const metadata = { title: "Boutiques | Administration Yekola Shop", robots: { index: false, follow: false } };
 
 type SearchParams = Promise<{ succes?: string; erreur?: string }>;

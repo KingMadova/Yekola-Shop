@@ -7,7 +7,7 @@ const NOW = new Date("2026-11-10T12:00:00Z");
 
 const product = (id: string, price: number, over: Partial<ProductRow> = {}): ProductRow => ({
   id, code: id.toUpperCase(), slug: id, name: `Produit ${id}`, category: "Boissons", health_goals: [],
-  price_public: price, short_desc: "", duration: null, usage_advice: null, benefits: [], images: [],
+  price_public: price, price_vip: Math.round(price * 0.95), short_desc: "", duration: null, usage_advice: null, benefits: [], images: [],
   is_best_seller: false, is_pack: false, sort_order: 0, ...over,
 });
 
@@ -21,7 +21,7 @@ const rows = (products: ProductRow[], promotions: PromotionRow[] = []): CatalogR
 });
 
 describe("promotions", () => {
-  it("applique un pourcentage et calcule le prix VIP sur le prix promo", () => {
+  it("applique une promotion dans la même proportion aux deux tarifs officiels", () => {
     const [p] = buildCatalog(rows([product("a", 40_000)], [promo("a", { percent_off: 25 })]), NOW);
     expect(p?.pricePublic).toBe(30_000);
     expect(p?.compareAtPrice).toBe(40_000);
@@ -29,7 +29,7 @@ describe("promotions", () => {
     expect(p?.priceVip).toBe(28_500);
   });
 
-  it("applique un prix fixe avec badge personnalisé", () => {
+  it("applique un prix promo fixe et conserve la proportion entre les deux tarifs", () => {
     const [p] = buildCatalog(rows([product("a", 40_000)], [promo("a", { percent_off: null, promo_price: 35_000, badge: "Offre de lancement" })]), NOW);
     expect(p?.pricePublic).toBe(35_000);
     expect(p?.promoBadge).toBe("Offre de lancement");
@@ -53,7 +53,7 @@ describe("promotions", () => {
   });
 });
 
-describe("palier VIP avec promos (hypothèse A1 : le palier se mesure aux prix de vente)", () => {
+describe("palier client privilégié avec promos (mesuré aux prix de vente)", () => {
   it("applique le VIP sur les prix promo quand le total promo atteint 65 000 F", () => {
     const items = buildCatalog(rows([product("a", 50_000)], [promo("a", { percent_off: 30 })]), NOW);
     const totals = computeCartTotals([{ product: items[0]!, quantity: 2 }]); // 2 x 35 000 = 70 000

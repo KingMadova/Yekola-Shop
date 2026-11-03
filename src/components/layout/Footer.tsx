@@ -1,85 +1,45 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { MessageCircle } from 'lucide-react';
-import { COPY, DISTRIBUTOR_MENTION, SITE_NAME, WHATSAPP_NUMBER } from '@/lib/config';
+import { useState, useEffect } from "react";
+import { ShopLink, ShopWhatsAppLink, useShop } from "@/components/providers/ShopContext";
+import { MessageCircle } from "lucide-react";
+import { COPY, DISTRIBUTOR_MENTION } from "@/lib/config";
 
 export function Footer() {
   const [currentYear, setCurrentYear] = useState(2026);
-
-  useEffect(() => {
-    setCurrentYear(new Date().getFullYear());
-  }, []);
+  useEffect(() => setCurrentYear(new Date().getFullYear()), []);
+  const { partner } = useShop();
 
   return (
-    <footer className="bg-[#059669] text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Colonne 1 : À propos */}
+    <footer className="mt-8 bg-[#7f2b0b] pb-[calc(6rem_+_env(safe-area-inset-bottom))] text-[#fff9f3] md:pb-0">
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-11">
+        <div className="grid gap-7 md:grid-cols-[1.2fr_1fr_1fr]">
           <div>
-            <h3 className="text-lg font-bold mb-4">{SITE_NAME}</h3>
-            <p className="text-sm text-green-50 mb-4">{COPY.footer.about}</p>
-            <p className="text-sm text-green-50 font-semibold">
-              {DISTRIBUTOR_MENTION}
-            </p>
+            <h2 className="text-xl font-extrabold tracking-tight">{partner.displayName}</h2>
+            <p className="mt-3 max-w-sm text-sm leading-relaxed text-[#ffe5d2]">{COPY.footer.about}</p>
+            <p className="mt-4 text-xs font-semibold text-[#ffd18a]">{DISTRIBUTOR_MENTION}{partner.fboId ? ` · FBO ${partner.fboId}` : ""}</p>
           </div>
-
-          {/* Colonne 2 : Liens utiles */}
-          <div>
-            <h3 className="text-lg font-bold mb-4">Informations</h3>
-            <ul className="space-y-3">
-              <li>
-                <Link
-                  href="/catalogue"
-                  className="text-sm text-green-50 hover:text-white transition-colors inline-flex items-center min-h-[44px]"
-                >
-                  Catalogue complet
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/livraison-paiement"
-                  className="text-sm text-green-50 hover:text-white transition-colors inline-flex items-center min-h-[44px]"
-                >
-                  {COPY.legal.footerDelivery}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/confidentialite"
-                  className="text-sm text-green-50 hover:text-white transition-colors inline-flex items-center min-h-[44px]"
-                >
-                  {COPY.legal.footerPrivacy}
-                </Link>
-              </li>
+          <nav aria-label="Liens utiles">
+            <h2 className="text-sm font-bold uppercase tracking-[0.14em] text-[#ffd18a]">Explorer</h2>
+            <ul className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1">
+              {[
+                ["Catalogue", "/catalogue"], ["Nos offres", "/offres"], ["Packs", "/packs"],
+                ["Vos besoins", "/besoins"], ["Panier", "/panier"], ["Devenir partenaire", "/devenir-partenaire"],
+                ["Livraison et paiement", "/livraison-paiement"], ["Confidentialité", "/confidentialite"],
+              ].map(([label, href]) => <li key={href}><ShopLink href={href} className="inline-flex min-h-10 items-center text-sm text-[#ffe5d2] hover:text-white hover:underline">{label}</ShopLink></li>)}
             </ul>
-          </div>
-
-          {/* Colonne 3 : Contact */}
+          </nav>
           <div>
-            <h3 className="text-lg font-bold mb-4">Contact</h3>
-            <p className="text-sm text-green-50 mb-4">{COPY.footer.contact}</p>
-            <a
-              href={`https://wa.me/${WHATSAPP_NUMBER}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-[#059669] font-medium rounded-lg hover:bg-green-50 transition-colors min-h-[44px]"
-            >
-              <MessageCircle className="w-5 h-5" aria-hidden="true" />
-              Nous contacter
-            </a>
+            <h2 className="text-sm font-bold uppercase tracking-[0.14em] text-[#ffd18a]">Une question ?</h2>
+            <p className="mt-3 text-sm leading-relaxed text-[#ffe5d2]">{COPY.footer.contact}</p>
+            <ShopWhatsAppLink kind="advice" className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#fff9f3] px-4 font-semibold text-[#9b310d] hover:bg-white">
+              <MessageCircle aria-hidden className="size-5" /> Nous écrire
+            </ShopWhatsAppLink>
           </div>
         </div>
-
-        {/* Barre de copyright */}
-        <div className="mt-12 pt-8 border-t border-green-600">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-green-50">
-              © {currentYear} {SITE_NAME}. Tous droits réservés.
-            </p>
-            <p className="text-xs text-green-100">{COPY.footer.tagline}</p>
-          </div>
+        <div className="mt-8 flex flex-col gap-2 border-t border-white/20 pt-5 text-xs text-[#ffe5d2] sm:flex-row sm:items-center sm:justify-between">
+          <p>© {currentYear} {partner.displayName}. Tous droits réservés.</p>
+          <p>{COPY.footer.tagline}</p>
         </div>
       </div>
     </footer>

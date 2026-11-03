@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { ShopLink } from "@/components/providers/ShopContext";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { ProductGrid } from "@/components/catalogue/ProductGrid";
 import { ProductViewSignal } from "@/components/lead/ProductViewSignal";
@@ -23,10 +24,19 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     title: product.name,
     description: product.shortDesc,
     openGraph: { title: product.name, description: product.shortDesc, images: product.images.slice(0, 1) },
+    alternates: { canonical: `${SITE_URL}/produit/${product.slug}` },
   };
 }
 
-export default async function ProductPage({ params }: ProductPageProps) {
+export default function ProductPage({ params }: ProductPageProps) {
+  return (
+    <Suspense fallback={<ProductPageSkeleton />}>
+      <ProductPageContent params={params} />
+    </Suspense>
+  );
+}
+
+async function ProductPageContent({ params }: ProductPageProps) {
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   if (!product) notFound();
@@ -55,11 +65,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\\\u003c") }} />
       <ProductViewSignal code={product.code} goals={product.healthGoals} />
 
       <nav aria-label="Fil d'Ariane" className={`${container} pt-6 text-sm text-gray-800`}>
-        <Link href="/" className="hover:underline">Accueil</Link> / <Link href="/catalogue" className="hover:underline">Catalogue</Link> /{" "}
+        <ShopLink href="/" className="hover:underline">Accueil</ShopLink> / <ShopLink href="/catalogue" className="hover:underline">Catalogue</ShopLink> /{" "}
         <span aria-current="page" className="font-medium text-gray-900">{product.name}</span>
       </nav>
 
@@ -72,5 +82,22 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </section>
       )}
     </>
+  );
+}
+
+function ProductPageSkeleton() {
+  return (
+    <div className={`${container} space-y-6 py-8`} aria-label="Chargement de la fiche produit" aria-busy="true">
+      <div className="h-4 w-48 animate-pulse rounded bg-[#e9e5d9]" />
+      <div className="grid gap-8 md:grid-cols-2">
+        <div className="aspect-square animate-pulse rounded-2xl bg-[#f0eee7]" />
+        <div className="space-y-4">
+          <div className="h-8 w-3/4 animate-pulse rounded bg-[#e9e5d9]" />
+          <div className="h-5 w-1/3 animate-pulse rounded bg-[#e9e5d9]" />
+          <div className="h-24 animate-pulse rounded bg-[#f0eee7]" />
+          <div className="h-12 w-full animate-pulse rounded-xl bg-[#e9e5d9]" />
+        </div>
+      </div>
+    </div>
   );
 }

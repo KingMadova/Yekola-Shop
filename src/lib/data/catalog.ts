@@ -18,11 +18,20 @@ export async function getCatalog(): Promise<Product[]> {
   cacheLife({ stale: 60, revalidate: 300, expire: 86_400 });
 
   const rows = await loadRows();
-  if (rows) return buildCatalog(rows, new Date());
-  if (!seedAllowed()) {
+  if (rows && rows.products.length > 0) return buildCatalog(rows, new Date());
+
+  // Une connexion Supabase peut réussir tout en ne renvoyant aucun produit valide
+  // (par exemple, uniquement d'anciennes lignes de démonstration sans tarif VIP).
+  // Le catalogue JSON officiel n'est utilisé qu'en développement ou sur activation explicite.
+  if (seedAllowed()) {
+    if (rows) console.warn("[catalogue] aucune ligne Supabase valide ; utilisation du catalogue officiel de secours.");
+    return [...SEED_PRODUCTS];
+  }
+
+  if (!rows) {
     throw new Error("Supabase n'est pas configuré (NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY).");
   }
-  return [...SEED_PRODUCTS];
+  throw new Error("Le catalogue Supabase est vide ou ne contient aucune référence valide. Importez la grille officielle ou activez temporairement CATALOG_FALLBACK=seed.");
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | undefined> {

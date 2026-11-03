@@ -1,6 +1,6 @@
 # Plan de projet : Boutique Forever (dépôt `yekola-shop`)
 
-Dernière mise à jour : 1er novembre 2026. Propriétaire : Alvine YOKA (Pointe-Noire). Interface, textes et commentaires en français.
+Dernière mise à jour : 3 novembre 2026 (back-office et expérience boutique mobile-first). Propriétaire : Alvine YOKA (Pointe-Noire). Interface, textes et commentaires en français.
 
 ## 0. À lire en premier (reprise par une autre personne)
 
@@ -24,21 +24,44 @@ Direction visuelle (références fournies : NovaTrend, NimbleCart) : bandeau d'a
 | # | Règle |
 |---|---|
 | R1 | Monnaie : FCFA, **entiers**. Format d'affichage `65 000 F` avec espaces insécables. |
-| R2 | **Remise VIP 5 %** : prix VIP = prix de vente × 95 %, arrondi au franc. Elle s'applique à **toute la commande** si le total atteint **65 000 F**, **jamais en dessous**. |
-| R3 | **Une promo ne bloque pas la remise VIP** (décision du 31/10/2026). Le VIP se calcule sur le prix promo. **Hypothèse A1, à confirmer :** le palier de 65 000 F se mesure sur le total aux **prix de vente** (promo comprise, avant VIP). |
+| R2 | **Prix publics et prix client privilégié :** les prix publics sont affichés normalement. Le tarif client privilégié exact provient de la grille officielle ; il n'est pas affiché systématiquement à tous les visiteurs. L'accès VIP est présenté par une invitation dédiée en plein écran. |
+| R3 | **Accès VIP :** un client devient VIP à vie après une commande d'au moins **65 000 F effectivement payée**, une fois le paiement confirmé par l'administrateur. La simple création ou l'envoi d'une commande ne donne pas le statut VIP. Le seuil et la confirmation sont évalués côté serveur. |
 | R4 | Commande par message WhatsApp pré-formaté vers le numéro du distributeur (+242…). Aucun paiement en ligne. |
 | R5 | Règlement proposé : Espèces à la livraison, MTN Mobile Money, Airtel Money. La mention de réassurance est « **Paiement mobile accepté** ». L'ancienne mention « Paiement à la réception après vérification du colis » a été **retirée volontairement** : ne pas la remettre. |
 | R6 | Mention obligatoire : « Entrepreneur Forever Indépendant Agréé ». Vocabulaire bien-être, **aucune allégation de guérison médicale**. |
 | R7 | 7 catégories, dans cet ordre : Combo / Packs, Boissons, Produits de la Ruche, Compléments Alimentaires, Gestion du Poids, Soins Personnels, Soins de la Peau. 6 besoins santé (voir `src/lib/types.ts`). |
 | R8 | Livraison express 24 h à Brazzaville et Pointe-Noire ; province via agences de transport ; retrait sur rendez-vous. |
 | R9 | **Slugs d'URL figés** (utilisés par les publicités) : `digestion`, `articulations`, `vitalite`, `peau`, `detox`, `immunite`. Ne pas les renommer. |
-| R10 | **Une boutique par partenaire**, mêmes produits, mêmes prix, mêmes promos, même règle VIP. Ces données sont gérées **uniquement par l'admin**. |
+| R10 | **Une boutique par partenaire**, mêmes produits, mêmes tarifs officiels, mêmes promos et même seuil client privilégié. Ces données sont gérées **uniquement par l'admin**. |
 | R11 | Chaque boutique envoie ses messages WhatsApp **uniquement au numéro de son partenaire**. Aucun numéro par défaut implicite. |
 | R12 | Un partenaire ne voit **que ses propres** leads et commandes. Jamais ceux d'un autre. |
 | R13 | *(Hypothèse à confirmer, Q-P2)* Un partenaire est un FBO Forever agréé ; son numéro FBO est affiché et la mention « Entrepreneur Forever Indépendant Agréé » s'applique à lui. |
 | R14 | *(Hypothèse à confirmer, Q-P8)* Le site **ne calcule aucune commission** : la rémunération relève de Forever. |
 | R15 | Slug d'un partenaire : 3 à 30 caractères, minuscules, chiffres et tirets ; mots réservés interdits (annexe F). |
 | R16 | **Localisation des visiteurs : GPS facultatif uniquement.** Aucun champ ville/quartier, aucune géolocalisation par adresse IP. Le GPS n'est demandé qu'après une action explicite ; le refus n'empêche jamais l'envoi du formulaire ni le téléchargement du catalogue. |
+| R17 | **Codes promo partenaires :** un code créé par un partenaire est valable exclusivement dans la boutique de ce partenaire, et dans aucune autre boutique. Il ne peut jamais être utilisé sur la boutique d'un autre partenaire. |
+| R18 | **Réduction des codes partenaires :** réduction en pourcentage comprise entre 1 % et 20 % maximum, appliquée au prix public. Le code possède une période de validité, une limite d'utilisations et un périmètre de produits configurable. Le partenaire peut gérer ses codes ; l'administrateur peut également les désactiver. Chaque utilisation est enregistrée et attribuée au partenaire propriétaire. |
+| R19 | **Non-cumul :** un code promo partenaire ne se cumule pas avec une promotion globale déjà appliquée. Les promotions, packs et offres configurés par l'administrateur restent globaux à toutes les boutiques ; les codes partenaires constituent un mécanisme distinct et limité à une seule boutique. |
+| R20 | **Pas de commission automatique :** Yekola Shop enregistre l'utilisation des codes et l'attribution, mais ne calcule ni ne verse de commission. |
+| R21 | **Validation commerciale :** le paiement et la commande sont confirmés manuellement par l'administrateur après le parcours WhatsApp. Le statut VIP et les compteurs d'utilisation concernés ne doivent être validés qu'après confirmation du paiement. |
+
+## Décisions commerciales confirmées — 2 novembre 2026
+
+Cette section complète les règles R2, R3 et R17 à R21. Elle doit être lue avant toute implémentation des promotions, codes promo, commandes ou du statut VIP.
+
+- **Prix affichés :** les visiteurs voient les prix publics. Les prix client privilégié ne sont pas affichés systématiquement dans le catalogue.
+- **Invitation VIP :** présenter l'accès VIP au moyen d'une invitation dédiée en plein écran, plutôt que d'afficher en permanence les tarifs VIP à tous les visiteurs.
+- **Obtention du VIP :** le client obtient le statut VIP à vie après une commande d'au moins 65 000 F effectivement payée et confirmée manuellement par l'administrateur.
+- **Codes promo partenaires :** chaque partenaire peut créer des codes promotionnels pour sa propre boutique. Un code est strictement limité à cette boutique : il est invalide sur toute autre boutique, même si le client connaît le code.
+- **Paramètres des codes :** remise de 1 à 20 % maximum, période de validité, nombre maximal d'utilisations, périmètre de produits configurable, activation/désactivation et historique des utilisations attribué au partenaire propriétaire.
+- **Base de réduction :** le code partenaire réduit le prix public, pas le tarif VIP.
+- **Non-cumul :** un code partenaire n'est pas cumulable avec une promotion globale. Les promotions, packs et offres créés par l'administrateur restent globaux à toutes les boutiques.
+- **Gestion des commandes :** le parcours client reste une commande WhatsApp sans paiement en ligne. L'administrateur vérifie et confirme manuellement le paiement ; la confirmation déclenche les traitements métier qui en dépendent, notamment l'attribution du VIP.
+- **Commissions :** le site ne calcule ni ne verse automatiquement de commission ; il conserve les informations d'utilisation et d'attribution des codes.
+
+**À ne pas inventer lors du développement :** la base de calcul des 65 000 F en présence d'une réduction reste à trancher (montant réellement payé après remise ou total avant remise). La priorité technique entre promotion globale et code doit respecter le non-cumul et être définie sans appliquer deux remises.
+
+---
 
 ## 3. Stack
 
@@ -48,7 +71,6 @@ Variables d'environnement actuelles (`.env.example`) :
 
 | Variable | Rôle |
 |---|---|
-| `NEXT_PUBLIC_WHATSAPP_NUMBER` | Numéro de la boutique maison, format international sans « + » (ex. `242061234567`). **Transitoire : disparaît en phase 2** (le numéro vient de la base, par partenaire) |
 | `NEXT_PUBLIC_SITE_URL` | URL publique (métadonnées, données structurées). En dev : `http://localhost:3001` |
 | `NEXT_PUBLIC_SUPABASE_URL` | URL du projet Supabase |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clé anon ou publishable (publique, protégée par RLS) |
@@ -64,7 +86,7 @@ Variables d'environnement actuelles (`.env.example`) :
 | Bloc | Contenu | Fichiers clés |
 |---|---|---|
 | Types et règles | Catégories, besoins, produit, lignes de panier, totaux, lead | `src/lib/types.ts`, `src/lib/config.ts` |
-| Moteur de prix | Prix VIP, palier strict, formatage FCFA, bornes de quantité | `src/lib/pricing.ts` |
+| Moteur de prix | Tarifs client privilégié officiels, seuil strict, formatage FCFA, bornes de quantité | `src/lib/pricing.ts` |
 | Panier | Zustand persistant, ne stocke que `code` + `quantité`, hydratation manuelle | `src/store/useCartStore.ts`, `components/providers/CartHydrator.tsx` |
 | WhatsApp | Commande panier, commande 1 clic, demande de catalogue, conseil, VIP, distributeur | `src/lib/whatsapp.ts`, `src/lib/phone.ts` |
 | Composants | Galerie, barre VIP, bouton WhatsApp flottant, fiche produit à double bouton, tiroir panier + formulaire | `src/components/product/*`, `cart/*`, `layout/FloatingWhatsAppButton.tsx` |
@@ -75,8 +97,7 @@ Variables d'environnement actuelles (`.env.example`) :
 | Correctif | `globals.css` minimal (le fichier généré écrasait les couleurs en mode sombre) | `src/app/globals.css` |
 | Exécution locale | Le site tourne chez l'utilisateur (Windows, port 3001) | n/a |
 | Phase 0 — Pages légales | `/confidentialite`, `/livraison-paiement`, liens depuis le pied de page | `src/app/confidentialite/page.tsx`, `src/app/livraison-paiement/page.tsx`, `src/components/layout/Footer.tsx` |
-| Phase 0 — SEO technique | `sitemap.ts` ; `robots.ts` exclut `/admin`, `/api/`, `/hors-ligne` | `src/app/sitemap.ts`, `src/app/robots.ts` |
-| Phase 0 — Page 404 | 404 personnalisée : accueil, catalogue, contact WhatsApp | `src/app/not-found.tsx` |
+| Phase 0 — SEO technique | `sitemap.ts` ; `robots.ts` exclut `/admin`, `/api/`, `/hors-ligne` | `src/app/sitemap.ts`, `src/app/robots.ts` || Phase 0 — Page 404 | 404 personnalisée : accueil, catalogue, contact WhatsApp | `src/app/not-found.tsx` |
 | Phase 0 — Marque et textes | `SITE_NAME` = « Yekola Shop » ; `SITE_URL` par défaut `http://localhost:3001` ; textes du pied de page et des pages légales dans `COPY.legal` et `COPY.footer` | `src/lib/config.ts` |
 | Correctif Next 16 | `/catalogue` : lecture de `searchParams` dans `CatalogueContent`, enveloppé par `<Suspense>`. Route en Partial Prerender | `src/app/catalogue/page.tsx` |
 | Correctif Next 16 | `Footer` en composant client, année du copyright calculée dans `useEffect` (`new Date()` interdit au prérendu, y compris côté client) | `src/components/layout/Footer.tsx` |
@@ -86,11 +107,27 @@ Variables d'environnement actuelles (`.env.example`) :
 
 **Phase 1 — état au 01/11/2026 (code) :** typage strict et build validés ; les tests globaux du dépôt sont désormais à **31 tests réussis**. La configuration Supabase réelle a été renseignée par le propriétaire. La vérification des données réelles du catalogue et du rafraîchissement après modification reste à effectuer.
 
-**Phases 2 et 3 — état après fusion du 01/11/2026 :** la capture des leads et ses migrations sont fusionnées dans `main` (PR #1). Les migrations `002_partners.sql` et `003_leads.sql` ainsi que les variables Supabase/Vercel ont été configurées par le propriétaire. L'API serveur, la validation, l'upsert/dédoublonnage par boutique et numéro, le GPS facultatif déclenché après clic et le formulaire asynchrone sont intégrés. Le catalogue réel est présent dans `public/catalogue-forever.pdf` ; une copie documentaire est conservée dans `docs/catalogue-forever.pdf`. Le téléchargement automatique doit encore être vérifié dans un parcours utilisateur complet. Le routage public multi-boutiques et les espaces `/admin` et `/espace` ne sont pas encore implémentés.
+**Phases 2 et 3 — état après fusion du 01/11/2026 :** la capture des leads et ses migrations sont fusionnées dans `main` (PR #1). Les migrations `002_partners.sql` et `003_leads.sql` ainsi que les variables Supabase/Vercel ont été configurées par le propriétaire. L'API serveur, la validation, l'upsert/dédoublonnage par boutique et numéro, le GPS facultatif déclenché après clic et le formulaire asynchrone sont intégrés. Le catalogue réel est présent dans `public/catalogue-forever.pdf` ; la grille de prix clients fournie est structurée dans `data/liste-prix-officielle.json` (53 références). Le téléchargement automatique doit encore être vérifié dans un parcours utilisateur complet. Le routage public multi-boutiques et les espaces `/admin` et `/espace` ne sont pas encore implémentés.
+
+### Correctif Next 16 — catalogue du layout (validation locale requise)
+
+- `RootLayout` reste synchrone. `getCatalog()` est appelé dans `CatalogApp`, sous un `Suspense` explicite.
+- Le `CatalogProvider` englobe tous les consommateurs du contexte : en-tête/recherche, pages, tiroir panier et modale de capture. Cette portée évite l'erreur `useCatalog doit être utilisé sous <CatalogProvider>`.
+- Le fallback affiche une structure de chargement de la boutique pendant la récupération du catalogue. Le build et le rendu navigateur restent à vérifier localement.
+- `/packs` : le titre et l'introduction restent dans le shell ; `PacksContent` charge le catalogue sous un `<Suspense>` local avec un squelette de grille, conformément au correctif Stream de l'Insight `instant-shell-url-data`. Le comportement en navigation doit encore être confirmé dans le navigateur.
+
+### EN COURS — refonte UX/UI mobile-first
+
+- Première passe intégrée sur la branche `feat/mobile-first-natural-redesign` : palette vert forêt / ivoire / or doux, en-tête mobile compact, bandeau d'annonce masqué sur petit écran, Hero raccourci, copywriting principal, sections d'accueil, cartes produits et bouton WhatsApp flottant plus discret.- Le Hero a été conçu pour tenir dans le premier écran mobile sans hauteur fixe artificielle. **La conformité réelle à 360 × 800 et 390 × 844 reste à mesurer dans un navigateur** ; ne pas considérer ce critère comme validé avant test.- Les contrôles `npx tsc --noEmit`, `npx vitest run` et `npm run build` n'ont pas encore été exécutés sur cette branche. La documentation Next.js installée sous `node_modules/next/dist/docs/` n'était pas accessible depuis l'édition GitHub ; aucune API Next.js n'a été modifiée.### EN COURS — pages commerciales et tarifs officiels
+
+- La grille `data/liste-prix-officielle.json` contient 53 références avec prix public et prix client privilégié exacts.
+- Le modèle de données, la migration `004_official_vip_prices.sql` et le script d'import acceptent le tarif privilégié explicite.
+- Pages ajoutées : `/packs`, `/besoins`, `/panier`, `/devenir-partenaire` ; suggestions de produits dans la recherche du catalogue et de l'en-tête desktop.
+- **Reste à faire :** exécuter la migration puis l'import sur le projet Supabase réel, vérifier les pages dans le navigateur, compléter les descriptions/photos et associer les produits aux besoins après validation des informations produit.
 
 ### PAS ENCORE FAIT (résumé, détail en sections 6 bis et 7)
 
-À terminer : validation fonctionnelle complète contre Supabase réel (création/dédoublonnage des leads, RLS et parcours PDF), initialisation et routage public multi-boutiques, tests de bout en bout sur téléphone, exports CSV/PDF et espace partenaire, back-office `/admin`, interface de gestion des promos/packs/offres, compression d'images, PWA, page « Conditions générales de vente », photos et préparation de la mise en production.
+À terminer : **back-office `/admin` (priorité immédiate : accès administrateur sécurisé puis gestion des boutiques partenaires)**, validation fonctionnelle complète contre Supabase réel (création/dédoublonnage des leads, RLS et parcours PDF), validation locale du routage public multi-boutiques, tests de bout en bout sur téléphone, exports CSV/PDF et espace partenaire, interface de gestion des promos/packs/offres, compression d'images, PWA, page « Conditions générales de vente », photos et préparation de la mise en production.
 
 ### Limites actuelles à connaître
 
@@ -101,7 +138,7 @@ Variables d'environnement actuelles (`.env.example`) :
 - Pas de page « Conditions générales de vente ». Seules « Confidentialité » et « Livraison et paiement » existent. Un consentement court figure sous le pop-up.
 - Le pied de page est un composant client : l'année du copyright s'affiche après hydratation (valeur de repli 2026).
 - **Sans projet Supabase configuré**, le site utilise le catalogue de secours (2 packs) en développement ; **en production il refuse de démarrer** (voulu : jamais de prix périmés).
-- Deux décisions restent à confirmer par le propriétaire : l'hypothèse **A1** et la possibilité de mettre un pack en promo (questions 1 et 6 de la section 9). Les questions 2, 3 et 4 sont tranchées.
+- Les règles VIP, les codes promo partenaires, le non-cumul avec les promotions globales et la confirmation manuelle des paiements sont consignés en R2, R3 et R17 à R21. Le montant exact à prendre en compte pour le seuil VIP lorsqu'une remise a été appliquée reste à confirmer (section 9). La possibilité de mettre un pack en promotion reste également à confirmer.
 
 - **Un seul numéro WhatsApp** (variable d'environnement) pour tout le site : à remplacer par un numéro par partenaire (phase 2).
 - Textes de livraison (« 24 h à Brazzaville et Pointe-Noire ») identiques partout : à rendre propres à chaque partenaire.
@@ -159,7 +196,6 @@ Ajouts de la phase 1 : `supabase/{schema,seed}.sql` · `scripts/import-products.
 *Statut au 01/11/2026 : conception décidée ; migrations partenaires/leads et capture initiale fusionnées dans `main`, configuration Supabase/Vercel déclarée terminée. Le routage public multi-boutiques et l'espace partenaire ne sont pas encore implémentés. Hypothèses sur les points marqués Q-P : section 9.*
 
 **Vocabulaire.** *Admin* = Alvine. *Boutique maison* = la boutique d'Alvine (aussi un partenaire, avec `is_house`). *Partenaire* = un filleul. *Client* = visiteur final.
-
 ### Droits
 
 | Action | Admin | Partenaire | Client |
@@ -178,13 +214,9 @@ Ajouts de la phase 1 : `supabase/{schema,seed}.sql` · `scripts/import-products.
 - **Pourquoi un chemin et non un sous-domaine :** pas de domaine acheté, et un chemin marche partout (aperçus Vercel). Un sous-domaine `awa.domaine.com` pourra être ajouté plus tard par simple réécriture, sans refonte.
 
 ### Contexte de boutique
-
 `ShopContext` fourni par `app/p/[partner]/layout.tsx` : partenaire (slug, nom, WhatsApp, n° FBO, photo, texte d'accueil, note de livraison), `href(path)` (préfixe `/p/{slug}`, vide pour la maison) et `whatsappUrl(message)`. Les composants n'utilisent plus **jamais** un numéro global : `buildWhatsAppUrl(message, number)` rend le numéro **obligatoire** (un oubli devient une erreur de compilation).
-
-| Commun à toutes les boutiques | Propre à chaque boutique |
-|---|---|
+| Commun à toutes les boutiques | Propre à chaque boutique ||---|---|
 | Produits, prix, promos, packs, offres, textes légaux, design | Numéro WhatsApp, nom, photo, texte d'accueil, note de livraison, n° FBO, leads, commandes, panier du navigateur, état du pop-up |
-
 - **Attribution (v1) :** la boutique visitée = le partenaire. Aucune ambiguïté possible. Cookie « parrain » plus tard (Q-P4).
 - **Panier et pop-up par boutique :** clés `forever-cart-v1:{slug}` et `forever-lead-status-v1:{slug}`.
 - **Messages WhatsApp :** commencent par « Bonjour {nom du partenaire} » ; le message de commande indique la boutique.
@@ -229,7 +261,7 @@ Ordre conseillé : 0, 1, **2, 3, 4, 5, 6, 7, 8, 9**. La phase 8 (PWA) est indép
 1. `supabase/schema.sql` (tables, RLS, bucket `site-images`, fonction `is_admin()`) et `supabase/seed.sql` (les 2 packs).
 2. Client public `src/lib/supabase/public.ts` (lecture anonyme, sans cookies). Les clients `server`/`browser` avec session viendront en **phase 4**.
 3. Couche de données `src/lib/data/` : `rows.ts` (validation des lignes), `mapper.ts` (produit « effectif »), `source.ts` (lecture), `catalog.ts` (`getCatalog()` en `use cache`, étiquette `catalog`, revalidation 5 min).
-4. **Produit effectif :** `pricePublic` = prix de vente (promo comprise), `priceVip` = prix de vente -5 %, `compareAtPrice` = prix barré, `promoBadge`. Le moteur de prix (`pricing.ts`) n'a pas changé : l'hypothèse A1 s'applique d'elle-même.
+4. **Produit effectif :** `pricePublic` = prix public effectif (promo comprise), `priceVip` = tarif client privilégié effectif, `compareAtPrice` = prix barré, `promoBadge`. Une promotion réduit les deux tarifs dans la même proportion ; le tarif privilégié de base reste celui de la grille officielle.
 5. `CatalogProvider` + `useCatalog()` remplacent `getProductByCode` côté navigateur ; le panier retire les produits disparus (`prune`).
 6. Prix barré, badge promo et composition des packs affichés (`ProductCard`, `ProductDetail`, `CartLineItem`).
 7. `scripts/import-products.mjs` (essai à blanc par défaut, `--apply` pour écrire).
@@ -240,7 +272,7 @@ Ordre conseillé : 0, 1, **2, 3, 4, 5, 6, 7, 8, 9**. La phase 8 (PWA) est indép
 2. SQL Editor : exécuter `supabase/schema.sql`, puis `supabase/seed.sql`.
 3. Project Settings > API : copier l'URL et la clé anon/publishable dans `.env.local` (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`) ; `npm i @supabase/supabase-js` ; redémarrer.
 4. Vérifier : le site affiche les mêmes 2 packs ; modifier un prix dans Table Editor, il change sur le site en 5 minutes au plus.
-5. Importer la vraie liste de prix : `node --env-file=.env.local scripts/import-products.mjs liste.json` (essai à blanc), puis `--apply`. **Si le JSON nettoyé n'a pas le format attendu** (en tête du script), fournir un échantillon et adapter le script.
+5. Exécuter `supabase/migrations/004_official_vip_prices.sql`, puis importer les 53 références officielles : `node --env-file=.env.local scripts/import-products.mjs data/liste-prix-officielle.json` (essai à blanc), puis ajouter `--apply` pour écrire dans Supabase. Les deux tarifs sont importés tels qu'indiqués dans le PDF ; le script réactive les références de la grille et ne recalcule pas le prix client privilégié.
 6. Au déploiement : reporter les variables dans Vercel.
 
 **Fait quand :** le site lit Supabase, la liste de prix est importée, le build passe. `SEED_PRODUCTS` (`src/data/products.ts`) reste comme catalogue de secours de développement.
@@ -248,12 +280,22 @@ Ordre conseillé : 0, 1, **2, 3, 4, 5, 6, 7, 8, 9**. La phase 8 (PWA) est indép
 ### Phase 2 : Multi-boutiques, côté public (NOUVELLE)
 1. Migration `supabase/migrations/002_partners.sql` (annexe F) fusionnée dans `main` et déclarée configurée par le propriétaire : table `partners`, vue publique `partners_public`, slugs réservés et RLS. **À valider :** vérifier les politiques et les données dans le projet Supabase réel. Ne pas modifier `schema.sql` (déjà exécuté chez le propriétaire).
 2. `src/lib/data/partners.ts` : `getPartner(slug)` (`use cache`, étiquette `partner:{slug}`, 5 min), `getActivePartnerSlugs()`.
+
+**Avancement du 02/11/2026 — première brique de phase 2 :**
+- [x] Audit Supabase réel : boutique maison `yekola` active ; RLS activée ; politiques de lecture/modification propres au partenaire ; permissions de la vue publique limitées à SELECT pour `anon` et `authenticated`.
+- [x] `src/lib/partner-slug.ts` : validation stricte des slugs (3 à 30 caractères, minuscules/chiffres/tirets) et rejet des chemins réservés.
+- [x] `src/lib/data/partners.ts` : lecture de `partners_public` uniquement ; `getPartner(slug)` avec cache isolé par `partner:{slug}` ; `getActivePartnerSlugs()` ; validation défensive des champs publics et du numéro WhatsApp.
+- [x] `src/lib/__tests__/partners.test.ts` : tests unitaires des slugs valides, invalides et réservés.
+- [x] `src/lib/shop-path.ts` : génération des chemins propres à chaque boutique ; les URL de la boutique maison restent inchangées.
+- [x] `src/components/providers/ShopContext.tsx` : `ShopProvider`, `useShop()` et `ShopLink`, avec numéro WhatsApp explicite provenant du partenaire.
+- [x] `src/lib/__tests__/shop-path.test.ts` : tests des chemins maison/partenaire et rejet des chemins externes.
+- [ ] Validation locale à faire par le propriétaire : `npx tsc --noEmit`, `npx vitest run`, `npm run build`. Ces commandes n'ont pas été exécutées dans cet environnement.
+- **Important :** le fournisseur n'est pas encore monté dans les routes et les composants existants n'utilisent pas encore `ShopLink`. Aucune route, page, donnée Supabase ou interface existante n'a été modifiée. La restructuration du routage est la prochaine étape.
 3. **Restructurer les routes :** déplacer accueil, catalogue, produit, confidentialité, livraison-paiement sous `src/app/p/[partner]/…` ; le `layout` racine ne garde que `html`/`body`/police et `CatalogProvider` ; `app/p/[partner]/layout.tsx` porte le « chrome » boutique (bandeau, en-tête, pied de page, tiroir panier, WhatsApp flottant, pop-up, suivi) et `ShopProvider`. `proxy.ts` réécrit les chemins publics vers la boutique maison. Slug inconnu ou suspendu : `notFound()`.
-4. `ShopContext` et `<ShopLink>` ; remplacer **tous** les liens internes et tous les usages du numéro global (liste en annexe F).
+4. `ShopContext`, `<ShopLink>` et `buildShopHref()` sont créés ; **reste à faire** : monter le fournisseur dans le layout boutique, remplacer tous les liens internes et tous les usages du numéro global (liste en annexe F).
 5. Panier et pop-up par boutique (clés avec slug) ; `CartHydrator` reçoit le slug.
 6. Métadonnées : `noindex` + `canonical` pour les partenaires. Sitemap : maison seulement.
-7. Textes dépendants du partenaire : note de livraison, annonces, « Devenir distributeur », « Client VIP », mention FBO dans le pied de page.
-8. Tests : construction des liens, messages WhatsApp avec le numéro du partenaire, validation des slugs, réécriture de `proxy.ts`.
+7. Textes dépendants du partenaire : note de livraison, annonces, « Devenir distributeur », « Client VIP », mention FBO dans le pied de page.8. Tests : construction des liens, messages WhatsApp avec le numéro du partenaire, validation des slugs, réécriture de `proxy.ts`.
 9. En attendant l'admin, Alvine crée les partenaires dans le Table Editor (exemple SQL en annexe F).
 - **Fait quand :** `/p/test` affiche la boutique du partenaire « test » avec **son** numéro partout (flottant, commande, 1 clic, pop-up, distributeur, VIP) ; `/` est inchangé ; les paniers sont distincts par boutique ; build OK ; test manuel sur téléphone.
 
@@ -272,33 +314,35 @@ Ordre conseillé : 0, 1, **2, 3, 4, 5, 6, 7, 8, 9**. La phase 8 (PWA) est indép
 2. Routes : `/admin/login`, `/admin`, `/admin/produits`, `/admin/produits/nouveau`, `/admin/produits/[id]`, **`/admin/partenaires`** (liste, invitation par e-mail, activation/suspension, parrain, numéro WhatsApp, n° FBO, lien de la boutique, aperçu des leads).
    - Ajouter `/admin/leads` : liste filtrable, détail, dates/heures de première visite et de soumission, statut, notes, filtres par partenaire/période/besoin/source ; export CSV propre et PDF lisible, réservé à l'admin.
 3. **Protection à deux niveaux :** `proxy.ts` (renouvelle la session, redirige) **et** `requireAdmin()` au début de **chaque** Server Action. L'interface seule ne suffit jamais. `/admin` en `noindex`. Les clients Supabase `server`/`browser` (cookies) sont créés ici.
-4. Formulaire produit (validation `zod`) : nom, slug, catégorie, besoins, prix public, textes, bienfaits, visible/masqué, meilleure vente. **Prix VIP en lecture seule.** Aperçu de la carte.
+4. Formulaire produit (validation `zod`) : nom, slug, catégorie, besoins, prix public, textes, bienfaits, visible/masqué, meilleure vente. **Prix client privilégié en lecture seule, saisi selon la grille officielle.** Aperçu de la carte.
 5. **Images :** compression dans le navigateur (annexe D), envoi direct vers Supabase Storage par URL signée, réordonner, supprimer.
 6. Après chaque enregistrement : `updateTag("catalog")` (ou `partner:{slug}`).
 - **Fait quand :** l'admin crée un produit avec photos et invite un partenaire ; le site public change en moins d'une minute.
 
-### Phase 5 : Promos, packs et offres (ancienne phase 3)
-Inchangé, avec une précision : **les promos, packs et offres sont globaux** et s'appliquent à toutes les boutiques (R10).
-1. **Promos :** par produit, prix promo **ou** pourcentage, dates de début et de fin, badge, interrupteur. Expiration à la lecture. Liste des promos actives et à venir.
-2. **Packs :** un pack est un produit (`is_pack`) avec composition (`pack_items`) et son **propre prix**.
+### Phase 5 : Promos, packs et offres (globales — administrateur)
+Les promotions, packs et offres configurés par l'administrateur sont **globaux** et s'appliquent à toutes les boutiques. Les codes promo créés par les partenaires sont un mécanisme séparé, strictement limité à la boutique de leur créateur (R17 à R20).
+1. **Promotions globales :** par produit, prix promo ou pourcentage, dates de début et de fin, badge et activation/désactivation. Expiration vérifiée côté serveur. Elles s'appliquent à toutes les boutiques.
+2. **Packs :** un pack est un produit (`is_pack`) avec composition (`pack_items`) et son propre prix. Les packs et leur gestion restent sous le contrôle de l'administrateur.
 3. **Offres :** bannières d'accueil (titre, sous-titre, image, lien, dates, ordre) : composant `OfferBanners`.
-4. Tests : promo + palier (A1).
-- **Fait quand :** l'admin lance une promo datée ; elle s'affiche dans **toutes** les boutiques, s'applique au panier et disparaît seule.
-
+4. **Non-cumul :** un code promo partenaire ne s'ajoute pas à une promotion globale. Définir et tester explicitement la règle de priorité au calcul du panier ; ne jamais appliquer deux réductions sur la même ligne.
+5. **Tests :** dates, activation, périmètre global, code partenaire limité à son partenaire, limite d'utilisations, produits éligibles, non-cumul et prix VIP.
+- **Fait quand :** l'administrateur crée une promotion datée visible dans toutes les boutiques ; elle s'applique au panier et expire seule ; un code partenaire ne fonctionne que dans sa boutique et respecte ses limites.
 ### Phase 6 : Espace partenaire (NOUVELLE)
-1. Connexion partenaire (mot de passe ou lien magique) via l'invitation de l'admin ; `requirePartner()` dans chaque Server Action ; RLS en seconde barrière.
-2. `/espace` (tableau de bord) : lien de la boutique avec bouton « Copier » et **QR code**, nombre de leads, derniers leads, commandes (phase 7).
+1. Connexion partenaire (mot de passe ou lien magique) via l'invitation de l'admin ; `requirePartner()` dans chaque Server Action ; RLS en seconde barrière.2. `/espace` (tableau de bord) : lien de la boutique avec bouton « Copier » et **QR code**, nombre de leads, derniers leads, commandes (phase 7).
 3. `/espace/leads` : liste filtrable (besoin, statut), changement de **statut** (Nouveau, Contacté, Intéressé, Client, Perdu), **note**, bouton WhatsApp vers le lead, export CSV et PDF. Les partenaires ne voient **que leurs leads** (R12) ; l'export applique exactement le même périmètre d'accès.
 4. `/espace/profil` : nom affiché, photo (compression, annexe D), texte d'accueil (300 caractères), note de livraison, numéro WhatsApp (avec journal et alerte à l'admin, Q-P3). Aucune modification de produits ni de prix.
 5. `/espace/liens` : **liens publicitaires générés** pour les 6 besoins avec leur slug et des paramètres `utm_*` (annexe B).
-6. Tests d'isolation : un partenaire ne peut ni lire ni modifier les données d'un autre (requêtes avec deux comptes).
+6. **Codes promo du partenaire :** création et gestion de codes réservés à sa boutique ; remise de 1 à 20 % sur le prix public, dates de validité, nombre maximal d'utilisations, produits éligibles et activation/désactivation. Historique des utilisations et attribution au partenaire. Le code d'un partenaire doit être refusé sur toutes les autres boutiques, y compris côté API.
+7. Tests d'isolation : un partenaire ne peut ni lire ni modifier les données d'un autre (requêtes avec deux comptes), ni utiliser ou administrer les codes promo d'un autre partenaire.
 - **Fait quand :** deux partenaires de test se connectent, voient chacun uniquement leurs leads, modifient leur profil, et la boutique publique reflète ces changements en moins de 5 minutes.
 
 ### Phase 7 : Réglages, contenu et journal des commandes (ancienne phase 4 + commandes)
 - Table `settings` (clés publiques) : annonces par défaut, textes de réassurance. `config.ts` lit la base avec repli.
 - Témoignages : liste, envoi d'image, visible/masqué (globaux).
-- **Journal `orders`** (annexe F) : à « Confirmer ma commande », enregistrer l'instantané (articles, prix unitaires, total, VIP appliqué) rattaché au partenaire **avant** d'ouvrir WhatsApp ; statuts Nouveau, Confirmé, Livré, Annulé ; vue partenaire (`/espace/commandes`) et vue admin (tout).
-- **Fait quand :** changer une annonce se fait sans redéploiement ; chaque commande WhatsApp laisse une trace chez le bon partenaire.
+- **Journal `orders`** (annexe F) : enregistrer l'instantané (articles, prix unitaires, total, réduction, code promo éventuel, partenaire propriétaire du code, VIP appliqué) avant d'ouvrir WhatsApp ; statuts Nouveau, Confirmé, Livré, Annulé ; vue partenaire (`/espace/commandes`) et vue admin (tout).
+- **Confirmation manuelle :** l'administrateur confirme le paiement et la commande après vérification. Conserver la date, l'identité de l'administrateur et le montant effectivement payé. Ne pas accorder le statut VIP sur une commande simplement créée ou envoyée.
+- **Qualification VIP :** après confirmation d'un paiement d'au moins 65 000 F, attribuer au client le statut VIP à vie. Le montant de référence (avant ou après remise) doit être confirmé dans les questions ouvertes avant d'implémenter cette règle.
+- **Fait quand :** chaque commande WhatsApp laisse une trace chez le bon partenaire ; l'administrateur confirme le paiement ; le statut VIP n'est attribué qu'après confirmation et respecte le seuil convenu.
 
 ### Phase 8 : PWA (iOS et Android) (ancienne phase 5)
 1. **Un manifeste par boutique** : route `/p/{slug}/manifest.webmanifest` : `name` = « {Nom du partenaire} · Yekola Shop », `start_url: "/p/{slug}?source=pwa"`, `scope: "/p/{slug}/"` (boutique maison : `/`). `display: "standalone"`, `lang: "fr"`, `theme_color: "#059669"`, `background_color: "#F9FAFB"`, icônes (annexe E).
@@ -326,11 +370,11 @@ Typage strict sans `any` · tests ajoutés pour toute règle de prix · aucun te
 ## 9. Questions ouvertes (à trancher avec le propriétaire)
 
 **Générales**
-1. **A1 :** le palier de 65 000 F se mesure-t-il sur le total aux prix de vente promo comprise ? (hypothèse retenue : oui)
+1. **Seuil VIP après remise :** pour qualifier un client VIP, les 65 000 F minimum correspondent-ils au montant effectivement payé après application éventuelle d'un code promo ou d'une promotion globale, ou au total avant remise ? La règle confirmée est « commande d'au moins 65 000 F payée », mais cette base de calcul doit être précisée.
 2. Résolu : marque **Yekola Shop** ; connexion admin **mot de passe et lien magique** ; hébergement **Vercel** ; domaine **à acheter plus tard**.
 3. Adresse(s) e-mail des administrateurs (au minimum celle d'Alvine).
 4. Garder « Espèces à la livraison » dans le formulaire ? (conservé pour l'instant)
-5. Un pack peut-il être en promo en plus de son prix de pack ? (prévu : oui, comme tout produit)
+5. Un pack peut-il être en promo en plus de son prix de pack ? (à confirmer avant implémentation).
 
 **Partenaires** (hypothèses de travail entre parenthèses ; elles guident les phases 2 à 6)
 - **Q-P1.** Qui livre et encaisse ? (chaque partenaire, pour les commandes reçues sur sa boutique)
@@ -350,8 +394,7 @@ Typage strict sans `any` · tests ajoutés pour toute règle de prix · aucun te
 - `globals.css` : ne pas remettre la règle `body { background… }` du modèle de départ (elle prend le dessus sur les classes Tailwind).
 - Format des numéros congolais : 9 chiffres avec le 0 initial après `242` (ex. `242061234567`).
 - Les messages WhatsApp utilisent des espaces insécables dans les montants ; les tests normalisent avant de comparer.
-- Les liens WhatsApp ouverts après un `await` peuvent être bloqués par le navigateur : ouvrir `window.open` **dans le gestionnaire du clic**, avant tout appel réseau.
-- Un `localhost:3000` déjà utilisé par une autre application peut laisser des données et des erreurs (ex. `manifest.webmanifest` 404) : utiliser le port 3001.
+- Les liens WhatsApp ouverts après un `await` peuvent être bloqués par le navigateur : ouvrir `window.open` **dans le gestionnaire du clic**, avant tout appel réseau.- Un `localhost:3000` déjà utilisé par une autre application peut laisser des données et des erreurs (ex. `manifest.webmanifest` 404) : utiliser le port 3001.
 - Ne jamais préfixer par `NEXT_PUBLIC_` une clé secrète (notamment `SUPABASE_SERVICE_ROLE_KEY`).
 - Un build de production sans Supabase configuré **échoue volontairement** (voir décision 10). Pour essayer un build local sans base : `CATALOG_FALLBACK=seed`.
 - Une nouvelle ligne de la table `products` doit respecter `category` (les 7 valeurs exactes) : sinon la base la refuse (contrainte `check`).
@@ -377,20 +420,16 @@ Format : `https://DOMAINE/?besoin=SLUG&utm_source=facebook&utm_medium=cpc&utm_ca
 |---|---|---|
 | Digestion & Ventre plat | `digestion` | `digestion-30-jours` |
 | Articulations & Mobilité | `articulations` | `articulations-confort` |
-| Vitalité & Forme Masculine | `vitalite` | `vitalite-masculine` |
-| Peau & Teint Éclatant | `peau` | `peau-eclatante` |
+| Vitalité & Forme Masculine | `vitalite` | `vitalite-masculine` || Peau & Teint Éclatant | `peau` | `peau-eclatante` |
 | Détox & Perte de Poids | `detox` | `detox-c9` |
 | Défenses Immunitaires | `immunite` | `immunite-tonus` |
-
 `besoin=` est le signal fiable ; le nom de campagne sert de repli (mots-clés reconnus dans `src/lib/interest.ts`). Changer `utm_source` (`instagram`, `tiktok`, `whatsapp`) et `utm_medium` (`cpc`, `statut`) selon la plateforme. Quand le catalogue sera complet, remplacer `/?besoin=` par `/catalogue?besoin=`.
 
 ## Annexe C : Schéma cible Supabase (à créer en phase 1)
-
 ```sql
 create table products (
   id uuid primary key default gen_random_uuid(),
-  code text unique not null,
-  slug text unique not null,
+  code text unique not null,  slug text unique not null,
   name text not null,
   category text not null check (category in ('Combo / Packs','Boissons','Produits de la Ruche',
     'Compléments Alimentaires','Gestion du Poids','Soins Personnels','Soins de la Peau')),
@@ -455,7 +494,6 @@ create table admins (user_id uuid primary key references auth.users on delete ca
 - **Dans l'admin (automatique, avant envoi) :** redimensionner à **1600 px** maximum sur le grand côté, convertir en **WebP qualité 88** (visuellement sans perte), supprimer les métadonnées EXIF, viser **≤ 300 Ko** par image. Refuser les fichiers non image ou > 15 Mo à l'entrée.
 - **Script par lots `scripts/compress-images.mjs` (Node + `sharp`) :** mêmes réglages pour les images déjà sur disque (`public/images`) ; ne jamais écraser l'original (sortie dans un dossier séparé) ; afficher le poids avant et après.
 - Le rendu public passe par `next/image`, qui sert déjà des tailles adaptées.
-
 ## Annexe E : Spécification PWA
 
 | Élément | Valeur |
@@ -477,23 +515,19 @@ create table partners (
   user_id uuid unique references auth.users on delete set null,   -- compte de connexion (phase 6)
   parent_id uuid references partners on delete set null,           -- parrain (arbre, phase 10)
   slug text unique not null check (slug ~ '^[a-z0-9][a-z0-9-]{1,28}[a-z0-9]$'),
-  display_name text not null,
-  email text,
+  display_name text not null,  email text,
   whatsapp_number text not null check (whatsapp_number ~ '^242[0-9]{9}$'),
   fbo_id text,
   city text,
-  photo_url text,
-  welcome_text text check (char_length(welcome_text) <= 300),
+  photo_url text,  welcome_text text check (char_length(welcome_text) <= 300),
   delivery_note text check (char_length(delivery_note) <= 200),
   is_house boolean not null default false,
   status text not null default 'pending' check (status in ('pending','active','suspended')),
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now(),
+  created_at timestamptz not null default now(),  updated_at timestamptz not null default now(),
   constraint partners_slug_reserved check (slug not in (
     'admin','api','p','espace','partenaire','catalogue','produit','connexion','login','logout',
     'hors-ligne','confidentialite','livraison-paiement','sitemap','robots','manifest','www'))
-);
-create unique index partners_one_house on partners (is_house) where is_house;
+);create unique index partners_one_house on partners (is_house) where is_house;
 
 -- Vue publique : uniquement les colonnes affichables, uniquement les boutiques actives.
 create view partners_public as
@@ -559,7 +593,6 @@ create table orders (
 - GPS visiteur : `latitude`, `longitude`, `location_accuracy_m`, `location_consent_at`, tous `NULL` si le visiteur n'a pas autorisé ou si le navigateur ne fournit pas la position. `location_consent_at` est généré côté serveur à réception des coordonnées.
 - **GPS facultatif uniquement :** demande déclenchée après clic explicite ; aucun champ ville/quartier, aucune géolocalisation IP, aucun blocage du formulaire en cas de refus.
 - Fuseau d'affichage des dates/heures : `Africa/Brazzaville`. Stockage des timestamps en `timestamptz` (UTC côté base).
-
 ### Téléchargement du catalogue
 
 - Le téléchargement intervient uniquement après confirmation de l'enregistrement du lead dans Supabase.
@@ -578,24 +611,20 @@ create table orders (
 - L'export respecte les filtres et ne doit jamais permettre de contourner la RLS ou l'isolation entre partenaires.
 
 ## Annexe H : Liens publicitaires par partenaire
-
 Même format que l'annexe B avec le chemin de la boutique : `https://DOMAINE/p/SLUG/?besoin=SLUG_BESOIN&utm_source=facebook&utm_medium=cpc&utm_campaign=CAMPAGNE&utm_content=video-1`. Pour la boutique maison, le chemin reste `https://DOMAINE/?besoin=…`. Les slugs de besoins (R9) ne changent pas. L'espace partenaire (phase 6) génère ces liens automatiquement.
 
 ## 8 bis. Refonte UX/UI mobile-first — Yekola Shop (priorité immédiate)
 
-**Statut : spécification validée à implémenter.** Cette section devient le brief de référence pour la refonte visuelle. Mettre à jour ce plan avant toute modification de composants ou de styles.
-
+**Statut : première passe de refonte intégrée sur `feat/mobile-first-natural-redesign` ; validation visuelle et contrôles techniques encore à effectuer.** Cette section reste le brief de référence. Le Hero, l'en-tête, la palette, les textes principaux, les sections d'accueil, les cartes produits et les éléments flottants ont reçu une première adaptation mobile-first.
 ### Direction artistique
 
 Créer un langage visuel original qui combine :
 - **A — Luxe minimaliste :** hiérarchie typographique nette, composition éditoriale, espaces maîtrisés, détails sobres et finitions soignées.
-- **B — E-commerce premium :** produits et prix immédiatement compréhensibles, visuels forts, promotions lisibles, actions d'achat évidentes et parcours sans friction.
-- **C — Wellness naturel :** chaleur, sérénité, matière organique et univers végétal, sans tomber dans le cliché « feuille verte partout ».
+- **B — E-commerce premium :** produits et prix immédiatement compréhensibles, visuels forts, promotions lisibles, actions d'achat évidentes et parcours sans friction.- **C — Wellness naturel :** chaleur, sérénité, matière organique et univers végétal, sans tomber dans le cliché « feuille verte partout ».
 
 La direction finale est un **premium wellness naturel et commercial** : élégante et épurée, mais clairement conçue pour vendre et conseiller.
 
 ### Palette et principes graphiques
-
 Palette de départ à appliquer de façon cohérente (à vérifier en contraste WCAG AA avant validation) :
 - Vert forêt : `#123D32` — marque, titres forts, navigation et actions principales.
 - Ivoire naturel : `#F6F3EA` — fonds doux et grandes surfaces.
@@ -632,7 +661,7 @@ Réviser aussi les titres de sections, descriptions des besoins, cartes produits
 - aucune allégation de guérison, de prévention ou de traitement médical ;
 - ne pas présenter un complément comme substitut à un avis médical ;
 - ne pas inventer de résultats, d'avis clients, de certifications, de délais ou de zones de livraison ;
-- conserver les règles de prix VIP, promotions, commande WhatsApp et paiement définies en section 2 ;
+- conserver les règles de prix client privilégié, promotions, commande WhatsApp et paiement définies en section 2 ;
 - conserver la mention légale « Entrepreneur Forever Indépendant Agréé » au bon endroit ;
 - textes partagés et réutilisés centralisés dans `COPY` de `src/lib/config.ts` lorsque pertinent.
 
@@ -641,7 +670,7 @@ Réviser aussi les titres de sections, descriptions des besoins, cartes produits
 1. **En-tête compact :** une seule ligne utile, marque, panier et accès recherche/navigation ; supprimer la double rangée mobile actuelle si elle encombre le premier écran. Prévoir une navigation basse uniquement si elle améliore réellement l'accès aux destinations principales et ne masque pas le contenu.
 2. **Accueil :** Hero complet au premier écran, puis réassurance, besoins/catégories, meilleures ventes, packs, témoignages authentiques (section masquée si aucune preuve réelle), conseil et pied de page.
 3. **Catalogue :** recherche facilement accessible, filtres mobiles compacts (panneau ou tiroir si nécessaire), nombre de résultats lisible et grille adaptée aux petits écrans.
-4. **Cartes produits :** photo cohérente, nom lisible, prix public/promo/VIP sans ambiguïté, action tactile claire ; pas de densité excessive.
+4. **Cartes produits :** photo cohérente, nom lisible, prix public/promo/client privilégié sans ambiguïté, action tactile claire ; pas de densité excessive.
 5. **Fiche produit :** galerie adaptée au mobile, informations et prix hiérarchisés, contenu scannable, quantité simple, CTA d'achat accessible sans masquer les informations.
 6. **Panier/commande :** récapitulatif clair, contrôle des quantités facile, formulaire lisible et CTA WhatsApp évident ; respecter les règles métier existantes.
 7. **Éléments flottants :** WhatsApp, tiroirs, modales et éventuelle navigation fixe ne doivent jamais recouvrir les actions, champs ou contenus importants.
@@ -662,7 +691,6 @@ Réviser aussi les titres de sections, descriptions des besoins, cartes produits
 **Étape 2 — système visuel :** définir tokens de couleurs, typographie, espacements, rayons, bordures, boutons, champs, cartes et états interactifs.
 
 **Étape 3 — accueil et Hero :** refondre en premier l'en-tête et le Hero, puis vérifier impérativement l'intégralité du premier écran sur 360 × 800 et 390 × 844.
-
 **Étape 4 — parcours d'achat :** catalogue, cartes, fiche produit, panier et commande WhatsApp.
 
 **Étape 5 — finition :** autres sections de l'accueil, pages légales, états vides/erreur, navigation, footer, tablette et desktop.
@@ -679,3 +707,344 @@ Réviser aussi les titres de sections, descriptions des besoins, cartes produits
 - Avant toute fusion : `npx tsc --noEmit`, `npx vitest run`, `npm run build` ; ajouter/adapter des tests si une logique change.
 - À la fin de la session de code, actualiser la section 4 « État d'avancement » et les phases concernées.
 
+## Journal de suivi — 2 novembre 2026
+
+### Audit et durcissement Supabase
+
+- Audit des neuf tables du schéma public : RLS activé sur toutes. Les privilèges SQL navigateur ont été réduits ; les rôles `anon` et `authenticated` n'ont pas de droits d'écriture généraux sur les tables métier.- Lecture publique conservée uniquement pour `offers`, `pack_items`, `products`, `promotions`, `settings`, `testimonials` et la vue `partners_public`.
+- `authenticated` conserve la lecture de son profil partenaire et des leads selon RLS, avec mise à jour limitée aux colonnes `partners` autorisées et à `leads.status/note`.
+- Les privilèges de colonnes et de séquences ont également été contrôlés. Les privilèges par défaut des objets créés par `postgres` dans `public` ont été durcis pour `anon` et `authenticated`.
+- **Limite non résolue :** les privilèges par défaut de `supabase_admin` n'ont pas pu être modifiés depuis le SQL Editor (permission refusée). Ne pas considérer ce point comme corrigé.
+- `partners_public` est techniquement une vue automatiquement modifiable, mais les rôles navigateur ne disposent pas des privilèges INSERT/UPDATE/DELETE ; seule la lecture est accordée.
+- `is_admin()` reste exécutable par `anon`, car les politiques RLS du catalogue l'appellent ; sans utilisateur authentifié, elle renvoie false. `upsert_lead()` reste réservée à `service_role`.
+### Suspension totale des partenaires
+
+- `current_partner_id()` ne retourne désormais que l'identifiant d'un partenaire dont le statut est `active` ; son `search_path` est vide et les objets sont qualifiés.
+- Les politiques de lecture et de modification du profil partenaire exigent aussi `status = 'active'`.
+- Les politiques administrateur restent inchangées. Les politiques des leads continuent de s'appuyer sur `current_partner_id()` : un partenaire suspendu ne peut donc plus lire ou modifier ses leads via ces politiques.
+- La contrainte `partners_status_check` autorise déjà `pending`, `active` et `suspended`. Au moment du contrôle, un seul partenaire était actif et aucun partenaire suspendu n'était présent.
+- La table `settings` était vide au moment de l'audit ; ne stocker dans cette table que des paramètres destinés à être publics.
+### Migrations versionnées sur la branche de travail
+
+- `supabase/migrations/005_harden_public_privileges.sql` : enregistre les corrections des privilèges de tables, colonnes, séquences, fonctions et privilèges par défaut de `postgres`.
+- `supabase/migrations/006_enforce_suspended_partner_access.sql` : enregistre la suspension totale et le durcissement de `current_partner_id()`.
+- Ces corrections avaient été exécutées par le propriétaire depuis le SQL Editor Supabase avant l'ajout des fichiers. Les migrations sont réexécutables ; vérifier l'historique `supabase_migrations.schema_migrations` avant toute commande de déploiement de migrations afin de savoir si ces versions sont déjà enregistrées.
+- Les scripts 005/006 ne modifient pas les privilèges par défaut de `supabase_admin`.
+
+### Points de sécurité restant à traiter
+
+- **API Next.js utilisant `service_role` :** cette clé contourne RLS. Chaque route serveur privilégiée doit authentifier l'appelant et vérifier son rôle/statut avant toute opération. La revue complète des routes API reste à faire.
+- Vérifier en particulier que les endpoints partenaires refusent un partenaire suspendu, même lorsqu'ils utilisent le client admin Supabase.
+- Les fonctions SECURITY DEFINER `is_admin()` et `upsert_lead()` utilisent encore `search_path = public` ; examiner leur durcissement dans une migration dédiée, sans modifier leur comportement métier.
+- Les privilèges par défaut de `supabase_admin` restent à traiter avec un rôle autorisé.
+
+### État Git et validations
+
+- Branche de travail : `feat/mobile-first-natural-redesign`. Elle est en avance de plus de 100 commits sur `main`, sans commit en retard au moment de la comparaison.
+- `feat/supabase-lead-capture` n'apporte pas de changement fonctionnel supplémentaire à la branche de refonte : le PDF catalogue et la correction de la route leads sont déjà présents. Ne pas fusionner cette ancienne branche séparément.
+- La PR #4 de refonte reste un brouillon. La fusion dans `main` attend les validations techniques, visuelles et fonctionnelles. Le dernier statut Vercel vérifié sur le commit de tête `0d0f031` est en échec ; consulter les logs du déploiement avant toute fusion.
+- Les contrôles `npx tsc --noEmit`, `npx vitest run` et `npm run build` n'ont pas été exécutés dans cette session après les ajouts des migrations. Ils restent obligatoires avant fusion.
+- Le parcours réel d'import des 53 références, le test mobile du Hero et les parcours visiteur contre Supabase restent à valider.
+
+## Journal de développement — 3 novembre 2026
+
+### Phase 2 — première implémentation du routage public multi-boutiques
+
+- Ajout de `proxy.ts` : les URL publiques historiques sont réécrites vers la boutique maison `/p/yekola`, tandis que `/p/:slug`, `/api`, `/admin`, `/espace` et les ressources statiques sont préservés.
+- Déplacement des pages publiques (accueil, catalogue, produit, packs, besoins, panier, devenir partenaire et pages légales) sous `src/app/p/[partner]/`. Le contenu n'est plus dupliqué dans les routes racine.
+- Le layout partenaire charge le profil public Supabase, refuse les boutiques inconnues/inactives et monte le `ShopProvider` avec l'en-tête, le pied de page et les composants de boutique.
+- Les liens internes et les actions WhatsApp utilisent le contexte de la boutique ; les messages de commande commencent par le nom de la boutique.
+- Les clés locales du panier, du suivi d'intérêt et des états de capture de lead sont séparées par slug. Les anciennes clés du panier et du suivi d'intérêt sont migrées vers la boutique maison ; les anciennes clés de lead restent lues pour préserver l'état des visiteurs existants.
+- Les boutiques partenaires reçoivent les métadonnées `noindex, follow` et un canonical vers le site maison. Le sitemap reste limité aux URL publiques de la boutique maison.
+- Le numéro WhatsApp n'est plus une variable d'environnement globale : il provient du profil public du partenaire.
+
+**Statut : code préparé sur la branche de travail, validation locale obligatoire avant de considérer cette étape comme terminée.** À exécuter sur le poste du propriétaire : `npx tsc --noEmit`, `npx vitest run`, `npm run build`, puis vérifier `/`, `/p/yekola`, une boutique partenaire active, le numéro WhatsApp, l'isolation des paniers et le parcours mobile. Ne pas fusionner la PR avant ces vérifications et l'accord explicite du propriétaire.
+
+## Journal de développement — 3 novembre 2026 (correctifs de validation)
+
+- Correction du test `src/lib/__tests__/pricing.test.ts` : `buildSingleProductMessage` exige désormais explicitement `product`, `quantity` et `partnerName`. Le test de commande 1 clic passe ces trois arguments et vérifie aussi le nom du partenaire dans le message. Aucun calcul ni tarif de production n'a été modifié.
+- Le contrôle local fourni par le propriétaire indique 40 tests réussis sur 41 ; le test WhatsApp échouait à cause de l'ancien appel de test incomplet. Le résultat après correction reste à confirmer localement.
+- Les erreurs TypeScript concernent des fichiers générés dans `.next/dev/types/` avec du contenu syntaxiquement tronqué. Hypothèse à vérifier : cache Next.js local corrompu/incomplet. Ne pas modifier ni versionner ces fichiers générés et ne pas contourner le contrôle en excluant les types Next.js. Procédure de vérification locale : arrêter `next dev`, supprimer `.next` avec `rm -rf .next`, puis relancer typage, tests et build.
+- **État :** correctif du test poussé sur `feat/mobile-first-natural-redesign`. Les commandes `npx tsc --noEmit`, `npx vitest run` et `npm run build` doivent encore être exécutées sur le poste du propriétaire ; aucune fusion dans `main` n'est autorisée avant leur réussite.
+
+## Journal de développement — 3 novembre 2026 (correction de la page d'erreur)
+
+- Les contrôles locaux du propriétaire confirment désormais **41 tests réussis sur 41** après la correction du test de commande 1 clic.
+- La suppression de `.next` a éliminé les erreurs de syntaxe des types générés. Le typage et le build ont ensuite révélé deux erreurs réelles dans `src/app/error.tsx` : cet écran global appelait `buildAdviceMessage()` sans nom de partenaire et `buildWhatsAppUrl()` sans numéro.
+- Correction poussée : la page d'erreur globale ne propose plus un contact WhatsApp sans contexte de boutique. Elle propose de réessayer ou de revenir à l'accueil. Le parcours WhatsApp des boutiques reste géré par `ShopContext`, qui utilise le nom et le numéro de la boutique active.
+- **À revalider localement après récupération du commit :** `npx tsc --noEmit`, `npx vitest run` et `npm run build`. Le succès des tests est confirmé avant ce dernier correctif ; le typage et le build après correction restent à confirmer par le propriétaire. Ne pas fusionner dans `main` avant les trois validations.
+
+## Journal de développement — 3 novembre 2026 (validation technique réussie)
+
+- Après récupération des commits de correction, le propriétaire a exécuté les trois contrôles sur son poste.
+- `npx tsc --noEmit` : **réussi**, sans erreur TypeScript.
+- `npx vitest run` : **7 fichiers de test réussis, 41 tests sur 41**.
+- `npm run build` : **réussi** avec Next.js 16.4.3 (Turbopack). Compilation, vérification TypeScript, collecte des données et génération des 77 pages terminées sans erreur.
+- Les erreurs de types générés dans `.next/dev/types` ont disparu après suppression du cache ; les deux erreurs de paramètres dans `src/app/error.tsx` ont été corrigées.
+- **État : validation technique locale réussie pour le commit récupéré.** Cela ne remplace pas les tests fonctionnels et visuels : vérifier les URL historiques, `/p/yekola`, une boutique partenaire active, les coordonnées WhatsApp propres à chaque boutique, l'isolation des paniers et le parcours mobile. La fusion dans `main` reste soumise à ces vérifications et à l'accord explicite du propriétaire.
+
+
+## Journal de développement — 3 novembre 2026 (correction du proxy multi-boutiques)
+
+- Le propriétaire a confirmé que le commit local était `954763d`, que l'arbre Git était propre et que `proxy.ts` était suivi à la racine du dépôt.
+- Les tests HTTP montrent que `/p/yekola` et `/p/yekola/catalogue` répondent `200 OK`, tandis que `/` et `/catalogue` répondent `404`.
+- Diagnostic : les routes App Router sont dans `src/app/`, mais le proxy était à la racine du dépôt. La convention Next.js exige que `proxy.ts` soit au même niveau que `app` lorsqu'on utilise le dossier `src`. Le proxy n'était donc pas placé à l'emplacement conventionnel reconnu pour cette structure.
+- Correction appliquée sur `feat/mobile-first-natural-redesign` : déplacement logique du proxy vers `src/proxy.ts`, avec import ajusté de `./src/lib/config` vers `./lib/config`, puis suppression de l'ancien `proxy.ts` racine.
+- Commits de correction : `13663bc` (création de `src/proxy.ts`) puis `7ee8e2d` (suppression de `proxy.ts` racine).
+- **À valider localement après pull :** `/` doit répondre `200` et afficher la boutique Yekola ; `/catalogue` doit répondre `200) ; les routes explicites `/p/yekola` et `/p/yekola/catalogue` doivent rester fonctionnelles. Vérifier aussi qu'une route réservée telle que `/api/leads` n'est pas réécrite.
+- **Point restant distinct :** Next.js 16.4.3 affiche en développement un avertissement d'instant navigation dans `src/app/p/[partner]/layout.tsx` lors de `await params`. Il n'a pas été modifié dans ce correctif de routage. Examiner séparément l'option documentée `export const instant = false` ou une architecture Suspense adaptée, sans confondre cet avertissement avec le 404 des anciennes URL.
+- Ne pas fusionner dans `main` avant validation locale et tests fonctionnels/mobile, avec accord explicite du propriétaire.
+
+
+## Journal de développement — 3 novembre 2026 (navigation du layout partenaire)
+
+- Le propriétaire a confirmé par tests HTTP que les quatre URL `/`, `/catalogue`, `/p/yekola` et `/p/yekola/catalogue` répondent toutes `200 OK`. Les deux anciennes URL sont bien réécrites vers la boutique maison par `src/proxy.ts`.
+- Un avertissement distinct Next.js 16.4.3 subsiste dans `src/app/p/[partner]/layout.tsx` : le layout doit lire `params.partner` pour charger le partenaire et construire le `ShopProvider`, indispensable à l'isolation du catalogue, du panier et du numéro WhatsApp.
+- Correction appliquée : ajout de `export const instant = false` au layout partenaire. Ce choix assume explicitement un rendu bloquant pour ce segment, plutôt que de promettre un shell instantané qui ne peut pas être construit correctement avant de connaître le partenaire. Il ne désactive pas le prérendu des routes.
+- Commit de correction : `22ba61e9abb47171f5ce4b9ba5ccae8baec6da85`.
+- **Validation locale encore requise :** arrêter puis relancer le serveur de développement, ouvrir `/`, `/catalogue`, `/p/yekola` et `/p/yekola/catalogue`, puis vérifier que l'avertissement `instant-shell-url-data` a disparu et que le contexte de chaque boutique reste correct. Le comportement de navigation client et les performances doivent être contrôlés dans le navigateur.
+- Ne pas considérer ce correctif comme validé avant ces tests ; ne pas fusionner dans `main` sans les validations techniques, fonctionnelles et l'accord explicite du propriétaire.
+
+
+## Journal de développement — 3 novembre 2026 (métadonnées multi-boutiques)
+
+- Après le correctif `instant = false`, les pages testées par le propriétaire répondent `200 OK` et l'avertissement du layout principal n'apparaît plus.
+- Un avertissement distinct a été observé dans `generateMetadata()` : la fonction lit `params.partner` pour décider si la boutique est la boutique maison ou une boutique partenaire. Cette distinction est nécessaire pour préserver l'indexation de Yekola et le `noindex` des boutiques partenaires.
+- Correction appliquée : ajout de la directive `"use cache"` au début de `generateMetadata()`. Les paramètres de route déterminent la clé de cache ; les métadonnées sont donc calculées séparément par slug. La fonction `getPartner(slug)` utilise déjà le cache Next.js et son tag `partner:<slug>`.
+- Commit : `823f4b0acef912a75dd4dc5b7782fe6f3cb8eb94`.
+- **Validation locale requise :** `git pull --ff-only`, redémarrer `npm run dev`, ouvrir les routes maison et partenaire, vérifier l'absence de l'avertissement `blocking-prerender-metadata-runtime`, puis inspecter les balises robots/canonical : Yekola doit rester indexable ; les partenaires doivent rester `noindex, follow` avec canonical vers le site maison.
+- Ne pas fusionner dans `main` avant validations techniques et SEO réelles.
+
+
+## Réorientation du plan — 3 novembre 2026 : priorité au back-office
+
+### Décision du propriétaire
+
+Le développement public multi-boutiques ne peut pas avancer correctement tant que le propriétaire ne dispose pas d'un moyen clair et sécurisé de se connecter à l'administration. À ce jour, le propriétaire ne sait pas comment accéder à l'espace admin ; la base Supabase contient la table `admins`, mais aucun parcours d'administration utilisable n'a encore été confirmé.
+
+**La prochaine phase de développement est donc le back-office.** La correction secondaire de l'avertissement de métadonnées Next.js est mise en attente, sans abandon des exigences SEO déjà définies.
+
+### Objectif de la phase
+
+Depuis une interface protégée, le propriétaire doit pouvoir se connecter à l'administration et créer, consulter, modifier, activer ou suspendre les boutiques partenaires, sans éditer directement les tables Supabase.
+
+### Ordre obligatoire des travaux
+
+1. **Audit de l'existant, sans modification préalable :**
+   - inventorier les routes `/admin`, les composants et les API déjà présents ou absents ;
+   - examiner la table `admins`, les migrations, les politiques RLS, la fonction `is_admin()` et les mécanismes Supabase Auth ;
+   - vérifier comment un administrateur est actuellement identifié et comment un premier compte peut être provisionné ;
+   - repérer toutes les routes serveur qui utilisent `SUPABASE_SERVICE_ROLE_KEY` et vérifier leur authentification/autorisation.
+2. **Définir et mettre en place l'accès initial de manière sécurisée :**
+   - page de connexion admin, gestion de session, protection serveur de toutes les pages et actions admin, déconnexion ;
+   - procédure documentée de création ou d'invitation du premier administrateur ;
+   - aucun mot de passe, jeton ou secret codé en dur ; aucune clé `service_role` dans le navigateur ; aucune inscription admin publique.
+3. **Livrer un tableau de bord admin minimal :**
+   - accès évident à la gestion des boutiques ;
+   - états de chargement, erreurs, absence de données et confirmation des actions ;
+   - interface responsive et en français.
+4. **Livrer la gestion des boutiques partenaires :**
+   - liste avec recherche et statut ;
+   - création avec validation du slug unique, nom public et numéro WhatsApp obligatoire, puis champs facultatifs selon le modèle existant ;
+   - modification des informations autorisées ;
+   - activation et suspension avec confirmation ;
+   - aucune modification des règles métier, du catalogue global ou des prix sans décision explicite du propriétaire.
+5. **Vérifier les autorisations et l'isolation :**
+   - visiteur non connecté : accès admin refusé ;
+   - partenaire connecté : accès admin refusé ;
+   - administrateur autorisé : actions permises selon son rôle ;
+   - une boutique ne peut pas modifier les données d'une autre boutique ;
+   - les routes API vérifient elles-mêmes les droits côté serveur, même si l'interface masque les boutons.
+6. **Valider dans le navigateur et avec Supabase réel**, puis mettre à jour ce plan avant de passer aux autres modules du back-office.
+
+### Dépendance obligatoire : espace partenaire après le back-office
+
+Le propriétaire précise l'ordre de livraison suivant : **l'espace partenaire ne commence qu'après la livraison complète du back-office**, lorsque le propriétaire peut s'y connecter et que toutes les fonctionnalités administrateur prévues sont opérationnelles.
+
+En conséquence :
+- La phase back-office doit être terminée et validée avant d'ouvrir le chantier partenaire.
+- La phase suivante sera la connexion sécurisée des partenaires à leur propre espace `/espace`, associé à leur boutique.
+- Chaque partenaire pourra accéder uniquement aux fonctionnalités qui lui sont attribuées et aux données de sa boutique (notamment ses leads et, selon le périmètre validé, les informations de sa boutique).
+- Les contrôles d'accès doivent être vérifiés côté serveur et par RLS ; masquer une page ou un bouton ne constitue jamais une protection suffisante.
+- Un partenaire ne doit jamais pouvoir consulter ou modifier les leads, commandes, paramètres ou données d'un autre partenaire.
+- Le parcours de connexion partenaire, la récupération d'accès et la procédure d'activation du compte seront définis à partir du modèle Supabase Auth et des données partenaires existants, sans création de comptes fictifs en production.
+
+**Ordre global confirmé :**
+1. Back-office administrateur complet et opérationnel (connexion, tableau de bord, gestion des boutiques et autres fonctionnalités prévues).
+2. Espace partenaire complet (connexion, accès à sa boutique et à ses données, fonctionnalités autorisées).
+3. Validation de bout en bout du modèle multi-boutiques, puis poursuite des modules secondaires et préparation de la mise en production.
+
+### Hors périmètre de la première livraison
+
+- L'espace partenaire `/espace` et le suivi des leads par les partenaires.
+- La gestion des produits, prix, promotions, packs et offres.
+- Les exports CSV/PDF, la PWA et les autres fonctionnalités secondaires.
+
+Ces modules viendront après la connexion admin et la gestion fiable des boutiques.
+
+### État de départ confirmé le 3 novembre 2026
+
+- La table `public.partners` contient uniquement la boutique maison `yekola`, avec `is_house = true` et `status = active`.
+- La vue `public.partners_public` retourne ce même enregistrement unique.
+- Aucun partenaire secondaire n'est actuellement enregistré ; il n'existe donc pas encore de boutique partenaire réelle pour tester son SEO.
+- Le propriétaire a confirmé ne pas savoir comment se connecter au back-office. Le premier livrable doit résoudre ce blocage avant de demander la création de boutiques dans Supabase.
+- Ne créer aucune donnée partenaire fictive pour les besoins des tests ; utiliser des données de test isolées ou un environnement dédié si nécessaire.
+
+### Critères d'acceptation de la première livraison
+
+- Le propriétaire dispose d'une procédure de connexion et de récupération/provisionnement initiale compréhensible et testée.
+- `/admin` redirige ou refuse proprement l'accès lorsqu'aucune session administrateur valide n'existe.
+- Un administrateur connecté peut consulter et gérer les boutiques partenaires depuis l'interface.
+- Les contrôles d'accès sont appliqués côté serveur et couverts par des tests.
+- Les migrations SQL, politiques RLS et éventuelles procédures d'amorçage sont documentées et réexécutables sans exposer de secret.
+- Les commandes `npx tsc --noEmit`, `npx vitest run` et `npm run build` passent avant toute fusion ; les tests manuels Supabase et navigateur sont consignés séparément.
+- Tout le travail reste sur `feat/mobile-first-natural-redesign`. Aucune fusion dans `main` sans l'accord explicite du propriétaire.
+
+
+## Journal de développement — 3 novembre 2026 (socle initial du back-office)
+
+- Création de la page de connexion `/admin/connexion` avec authentification e-mail/mot de passe via Supabase Auth ; aucun parcours d'inscription publique n'est exposé.
+- Ajout des clients Supabase SSR serveur/navigateur et actualisation des cookies de session dans `src/proxy.ts`.
+- Ajout de `requireAdmin()` : les pages protégées valident l'utilisateur avec `auth.getUser()`, puis vérifient son rattachement à `public.admins` côté serveur.
+- Création du premier tableau de bord `/admin` : compteurs et liste des boutiques, avec les données lues via le client serveur authentifié soumis aux politiques RLS.
+- Ajout de `docs/ADMIN_SETUP.md` décrivant la création du premier compte Auth et son rattachement à `public.admins`, sans exposer de secret.
+- Dépendance `@supabase/ssr` ajoutée à `package.json`. **Le fichier `package-lock.json` doit être régénéré localement par `npm install`** après récupération des changements.
+- Limites de ce premier lot : la gestion CRUD des boutiques, les modules produits/offres/promotions/commandes/clients, la récupération de mot de passe et les tests automatisés dédiés ne sont pas encore livrés.
+- **Validation non exécutée depuis GitHub :** TypeScript, Vitest, build et parcours réel Supabase restent à vérifier sur le poste du propriétaire. Ne pas considérer la connexion comme opérationnelle tant que le premier compte n'a pas été provisionné et testé.
+- Les changements restent sur `feat/mobile-first-natural-redesign`. Aucun merge dans `main`.
+
+### État du back-office
+
+1. [x] Socle initial de connexion et vérification du rôle côté serveur.
+2. [x] Tableau de bord initial et lecture de la liste des boutiques.
+3. [ ] Création, modification, activation et suspension des boutiques — **première implémentation ajoutée sur la branche, validation locale et navigateur en attente**.
+4. [ ] Modules de gestion du catalogue, des prix, packs, promotions, offres et témoignages.
+5. [ ] Gestion des leads, commandes et paramètres.
+6. [ ] Tests sécurité, RLS, parcours navigateur et validation bout en bout.
+
+**Lot livré dans cette session (validation requise avant de cocher l'étape) :**
+- Ajout de `/admin/boutiques` pour lister les boutiques, voir leur URL et changer leur statut.
+- Ajout de `/admin/boutiques/nouvelle` et `/admin/boutiques/[id]` pour créer et modifier les boutiques partenaires.
+- Le formulaire valide le slug réservé/format, le numéro WhatsApp congolais et l'adresse e-mail.
+- Les mutations serveur appellent d'abord `requireAdmin()`, puis utilisent le client privilégié uniquement côté serveur. La boutique maison est exclue des modifications et changements de statut.
+- Le tableau de bord pointe vers le module de gestion des boutiques.
+- **À valider localement :** TypeScript, Vitest, build, création/modification/activation/suspension sur Supabase réel, unicité des slugs et comportement RLS. Aucune création de boutique réelle n'a été effectuée par l'assistant.
+
+**L'espace partenaire `/espace` reste bloqué jusqu'à la livraison et validation de tous les modules administrateur prévus.**
+
+
+## Journal de développement — 3 novembre 2026 (correction de compatibilité Cache Components)
+
+- Les premières vérifications locales du module de gestion des boutiques ont confirmé 41 tests Vitest réussis, mais ont révélé des erreurs TypeScript sur la validation du formulaire et des types de routes générés dans .next/dev/types.
+- Le build a identifié une incompatibilité certaine : les exports de segment dynamic = force-dynamic ne sont pas autorisés lorsque cacheComponents: true est activé. Ces exports ont été retirés des pages admin ; leur contenu reste protégé par requireAdmin() et les données utilisateur ne sont pas mises en cache publiquement.
+- Le type de retour de la validation des boutiques est désormais une union discriminée explicite. Les expressions régulières du numéro WhatsApp et de l'adresse e-mail ont également été corrigées pour reconnaître les espaces et caractères attendus.
+- À valider localement après récupération : arrêter le serveur Next.js, supprimer le cache généré avec rm -rf .next, puis exécuter npx tsc --noEmit, npx vitest run et npm run build. Cette suppression est destinée uniquement aux fichiers générés, pas aux sources.
+- Les contrôles précédents montrent 41 tests réussis ; ils ne valident pas encore le correctif présent. Aucun test navigateur ni mutation Supabase réelle n'a été effectué.
+- Les modifications restent sur feat/mobile-first-natural-redesign. Aucun merge dans main. L'espace partenaire /espace demeure bloqué jusqu'à la validation complète du back-office.
+
+
+## Journal de développement — 3 novembre 2026 (métadonnées dynamiques des boutiques)
+
+- Le propriétaire a signalé l'erreur Next.js `blocking-prerender-metadata-runtime` sur `/p/[partner]/devenir-partenaire`. La fonction `generateMetadata()` lit `params.partner` pour préserver les règles SEO distinctes entre la boutique maison et les boutiques partenaires.
+- Le correctif choisi est le marqueur dynamique officiel : un composant serveur dédié appelle `connection()` et est placé dans une frontière `<Suspense>` dans le layout partagé. Le contenu visuel existant reste hors de cette frontière ; elle ne remplace ni n'enveloppe le corps de page. Les métadonnées conditionnelles (Yekola indexable, partenaires `noindex, follow` avec canonical maison) sont conservées.
+- Le choix dynamique est volontaire : remplacer ces métadonnées par un objet statique unique risquerait d'appliquer la mauvaise règle d'indexation à l'une des catégories de boutiques.
+- **Validation navigateur non effectuée dans cette session** : aucun navigateur pilotable n'est disponible dans l'environnement d'édition GitHub. Après récupération, recharger `/p/yekola/devenir-partenaire` et contrôler le rendu visible ainsi que l'absence de l'Insight ; vérifier également une route sœur du layout, notamment `/p/yekola` et `/p/yekola/catalogue`. Ne pas considérer le correctif comme validé visuellement avant ce contrôle.
+- Les contrôles TypeScript, Vitest et build doivent être relancés après récupération. Les changements restent sur `feat/mobile-first-natural-redesign` ; aucun merge dans `main`.
+
+
+## Journal de développement — 3 novembre 2026 (placement du marqueur de métadonnées)
+
+- Le premier essai avait placé `DynamicMarker` dans le layout partagé `src/app/p/[partner]/layout.tsx`. Le navigateur du propriétaire a montré que l'Insight `blocking-prerender-metadata-runtime` persistait sur `generateMetadata()` de ce layout.
+- Relecture du guide officiel : le pattern « Mark the route as dynamic » demande un composant serveur qui appelle `await connection()`, rendu dans une frontière `<Suspense>` **dans le corps de la page concernée**. Le marqueur a donc été déplacé vers `src/app/p/[partner]/devenir-partenaire/page.tsx`. Le contenu principal reste directement dans le shell ; seule la sortie nulle du marqueur est sous `<Suspense>`.
+- Le marqueur mal placé a été retiré du layout partagé. Aucun changement aux règles SEO de `generateMetadata()` (boutique maison indexable ; partenaires `noindex, follow` avec canonical maison).
+- **Limite de validation :** aucun navigateur local pilotable n'est disponible depuis cette session. Il faut récupérer les commits, redémarrer le serveur Next, recharger `/p/yekola/devenir-partenaire` et confirmer que l'Insight disparaît et que le contenu est visible. Puis exécuter TypeScript, Vitest et build. Le rendu visuel n'est pas déclaré vérifié.
+- Seule la route signalée a été ciblée. Si le même Insight apparaît sur une autre route enfant du layout, appliquer le pattern à cette page précise après confirmation, sans envelopper tout son contenu dans `<Suspense>`.
+
+## Journal de développement — 3 novembre 2026 (rendu dynamique et Suspense du back-office)
+
+- À partir des logs Next.js 16.4.3, deux erreurs distinctes ont été isolées : `Date.now()` pendant le prérendu de `/admin` et `/admin/boutiques`, puis lecture de `searchParams` hors de `<Suspense>` sur `/admin/boutiques/nouvelle`.
+- `/admin` appelle désormais `await connection()` avant l'authentification et les lectures Supabase. Le tableau de bord est rendu à la requête, ce qui correspond à sa nature privée et personnalisée.
+- `/admin/boutiques` place le composant qui lit `searchParams` sous une frontière `<Suspense>` et utilise également `connection()` avant l'accès à la session et aux données. Le shell de chargement reste limité à cette page.
+- `/admin/boutiques/nouvelle` place également la lecture de `searchParams` sous `<Suspense>`. La page vérifie désormais explicitement `requireAdmin()` côté serveur avant d'afficher le formulaire, y compris en accès direct par URL.
+- Modifications poussées sur `feat/mobile-first-natural-redesign` : `d1fb1332`, `f570552c`, `73b2b2da`. Aucun merge dans `main`.
+- **Validation non effectuée depuis l'environnement GitHub.** Après récupération locale, arrêter le serveur, exécuter `rm -rf .next`, redémarrer `npm run dev`, puis recharger `/admin`, `/admin/boutiques` et `/admin/boutiques/nouvelle`. Vérifier que les deux erreurs signalées ont disparu, que l'accès direct à la création redirige un non-admin et que le formulaire reste visible pour l'administrateur.
+- Relancer ensuite `npx tsc --noEmit`, `npx vitest run` et `npm run build`. Aucun résultat de test n'est présumé ni déclaré réussi. L'espace partenaire `/espace` reste bloqué jusqu'à la livraison et validation complète du back-office.
+
+## Journal de développement — 3 novembre 2026 (stabilisation Suspense et refonte mobile premium du back-office)
+
+- Le propriétaire a remonté l'Insight `blocking-prerender-dynamic` sur `/admin` après l'ajout de `connection()`. La cause était l'absence d'une frontière `<Suspense>` au-dessus de l'appel. La page `/admin` est maintenant un composant synchrone qui place le composant serveur asynchrone `AdminDashboard` (appelant `connection()`, puis `requireAdmin()` et les requêtes Supabase) sous `<Suspense>`. Le fallback affiche une structure de chargement de l'application.
+- La page `/admin/boutiques` conserve son composant asynchrone sous `<Suspense>` ; `/admin/boutiques/nouvelle` conserve la lecture de `searchParams` et la vérification `requireAdmin()` dans le sous-arbre suspendu.
+- Refonte responsive : création de `src/app/admin/admin-shell.tsx` avec identité visuelle Yekola Shop, navigation desktop et barre de navigation mobile fixe, prise en compte de la zone de sécurité iOS, surfaces claires et accents vert profond.
+- Refonte du tableau de bord : panneau d'accueil, indicateurs hiérarchisés, cartes boutiques adaptées au tactile et affichage responsive.
+- Refonte de `/admin/boutiques` : cartes de boutiques sur mobile, tableau sur écran large, boutons tactiles et statuts plus lisibles.
+- Refonte du formulaire de création : champs hauts et tactiles, regroupement des informations, contraste et actions adaptées aux petits écrans. Le flux métier et les validations existantes sont conservés.
+- Le composant de déconnexion propose désormais une présentation compacte pour la barre mobile. Tous les changements restent sur `feat/mobile-first-natural-redesign`; aucun merge dans `main`.
+- Commits du lot : `b2550692`, `714d3769`, `23007ee7`, `c0c84dc5`, `80641d4a`, `fb46116f`, `472b27c6`.
+- **Non vérifié à ce stade :** aucune exécution locale de TypeScript, Vitest, build ni inspection navigateur n'a été faite par l'assistant. Après récupération, exécuter les contrôles et vérifier `/admin`, `/admin/boutiques` et `/admin/boutiques/nouvelle` en largeur mobile (environ 390 px) et desktop. Confirmer notamment l'absence de `blocking-prerender-dynamic`, la visibilité du shell, la barre mobile et l'absence de débordement horizontal.
+- Ne pas démarrer l'espace partenaire `/espace` avant validation complète du back-office par le propriétaire.
+
+
+## Journal de développement — 3 novembre 2026 (première passe mobile-first de la boutique publique)
+
+- Le propriétaire confirme que l'expérience principale doit être conçue pour les smartphones, en tenant compte d'une audience majoritairement mobile en Afrique. Le chiffre de 83 % est une hypothèse d'audience communiquée par le propriétaire, pas une mesure analytique vérifiée dans ce dépôt.
+- Ajout de `src/components/layout/MobileShopNav.tsx` : barre de navigation mobile persistante avec Accueil, Catalogue, Packs et Panier, état actif, compteur de panier après hydratation et respect de la zone de sécurité.
+- Le header mobile a été simplifié : marque de la boutique, accès rapide à la recherche/catalogue et panier. La navigation complète reste disponible sur desktop ; la barre mobile devient le moyen principal de navigation au pouce.
+- Le layout public des boutiques monte cette navigation, réserve de l'espace sous le contenu et garde la barre hors de la zone de lecture. Le pied de page reçoit également une marge basse mobile pour ne pas être masqué.
+- Le bouton WhatsApp flottant est positionné au-dessus de la barre mobile. Il continue d'utiliser le numéro de la boutique active via `ShopContext`, sans numéro global ni mélange entre partenaires. Les offsets et espacements du contenu/footer utilisent la zone de sécurité du terminal.
+- Le lien WhatsApp accepte désormais un libellé accessible `aria-label`, utilisé par le bouton flottant.
+- Les cartes produits, le catalogue, le panier et le formulaire de commande existants ont été audités à la lecture. Ils comportent déjà des éléments tactiles et une grille mobile à deux colonnes ; ils nécessitent encore une vérification réelle sur petits écrans et des tests de parcours complets.
+- **Validation non effectuée dans cette session :** aucune exécution locale de TypeScript, Vitest, build ou navigateur n'a été possible depuis l'édition GitHub. Le propriétaire doit récupérer les commits, vérifier le rendu à 320/360/390/430 px et sur desktop, puis exécuter les contrôles du dépôt.
+- **Prochaine étape UX :** tester l'ensemble du parcours Accueil → recherche/filtre → fiche produit → panier → formulaire → WhatsApp, contrôler les performances sur réseau lent et corriger les irritants observés avant d'étendre les changements aux autres pages publiques.
+- Les modifications restent sur `feat/mobile-first-natural-redesign`. Aucun merge dans `main`. Le chantier back-office garde sa priorité de validation ; l'espace partenaire `/espace` ne démarre pas avant cette validation.
+
+
+## Direction artistique Yekola Business — 3 novembre 2026 (brief validé)
+
+- Nouvelle charte officielle fournie par le propriétaire : orange solaire `#F9A825`, orange vif `#FF6A1A`, orange profond `#C1440E`, ivoire `#FFF9F3`. Dégradé principal de `#F9A825` vers `#C1440E`.
+- Typographies de marque : Montserrat pour titres et accents, Poppins pour le corps. Conserver des solutions de repli locales/système afin de ne pas bloquer le rendu sur connexion lente.
+- **Logo Yekola Business fourni : intouchable.** Ne pas redessiner, recolorer, retaper, vectoriser, déformer ni altérer le ratio. Réutiliser le visuel original tel quel. La version « icon only » fournie dans la planche sert aux petites surfaces (favicon / icône PWA) sans recréer le symbole.
+- La marque Yekola Business remplace l'ancienne direction vert forêt / ivoire / or dans la boutique. Tous les composants publics (header, navigation mobile, boutons, badges, cartes, hero, footer, états vides, focus) devront être harmonisés à cette charte ; préserver le contraste et la lisibilité.
+- Sur une boutique partenaire, afficher au-dessus du header un message de bienvenue explicite : « Bienvenue dans la boutique de [nom du partenaire] ». Le nom doit venir du profil partenaire actif, jamais d'une valeur codée en dur. Ne pas afficher cette formule sur la boutique maison sauf demande ultérieure.
+- Le hero doit agrandir visuellement le visuel du pack sans augmenter artificiellement la hauteur de la section ; privilégier un cadrage `object-contain` et une mise à l'échelle interne dans un conteneur de dimensions stables.
+- Remplacer la mise en avant statique d'un seul pack par un carrousel horizontal « Nos offres du moment », prioritairement alimenté par les références ayant une promotion réelle (prix barré / badge promo) puis par les packs ou sélections réellement disponibles. Ne jamais inventer une remise, une urgence ou une date de fin.
+- Ajouter l'onglet « Nos offres » dans les navigations mobile et desktop, ainsi qu'une page boutique dédiée `/offres`. Les offres doivent être filtrables/consultables au toucher, sans dépendance à un carrousel lourd.
+- Mobile-first renforcé : réduire les espaces verticaux excessifs sur mobile, préserver les zones tactiles, la navigation au pouce et les safe areas. Ne pas agrandir le hero pour compenser un visuel trop petit.
+- Vérification obligatoire après intégration : 320/360/390/430 px, desktop, parcours offre → produit → panier → WhatsApp, isolation des données partenaire, accessibilité clavier et réduction des animations.
+- Les actifs de marque doivent être utilisés pour favicon, icône d'installation et PWA. Les formats/tailles requis doivent être produits à partir du logo source sans retoucher le dessin ; si un format binaire ne peut pas être généré via l'édition GitHub, documenter cette limite et demander un commit local plutôt que fabriquer une version approximative.
+
+### Journal — refonte Yekola Business
+- Brief visuel source : planche « Yekola Business » fournie le 3 novembre 2026.
+- Priorité : appliquer la nouvelle identité visuelle et améliorer le parcours d'achat mobile. Cette évolution ne change pas les règles de prix, de commandes WhatsApp ni l'isolation multi-boutiques.
+- Tests locaux et vérification visuelle non exécutés par l'assistant ; validation par le propriétaire requise avant de considérer cette refonte comme terminée.
+
+## Journal de développement — 3 novembre 2026 (reprise du brief hero, offres et identité visuelle)
+
+- Reprise du brief existant : la charte Yekola Business orange/ivoire, les polices Montserrat/Poppins, l'interdiction absolue de modifier le logo, l'agrandissement interne du visuel du hero, le carrousel d'offres, le message de bienvenue partenaire et les exigences mobile-first restent les références.
+- Audit du code sur `feat/mobile-first-natural-redesign` : la page `/offres`, l'onglet mobile « Offres », le lien desktop « Nos offres », le composant `OffersCarousel` et `PartnerWelcomeBar` existent déjà. Le message de bienvenue utilise bien le nom du partenaire actif et ne s'affiche pas sur la boutique maison.
+- Le hero affiche encore une seule carte produit compacte ; c'est le point d'interface prioritaire à remplacer/faire évoluer. La palette orange/ivoire et les polices de la charte sont déjà présentes dans `globals.css` et le layout, mais plusieurs composants ont encore des couleurs écrites en dur : harmonisation à poursuivre.
+- Aucun fichier logo source ni icône favicon/PWA de marque n'a pu être localisé parmi les chemins publics habituels du dépôt. Ne pas fabriquer de logo de remplacement et ne pas modifier les fichiers de marque sans disposer du fichier original. L'utilisateur devra joindre à cette conversation le logo original (idéalement PNG transparent ou SVG) et la planche de charte si elle n'est pas déjà présente dans le dépôt.
+- Le travail doit conserver les règles multi-boutiques, les liens via `ShopLink`, les numéros WhatsApp propres à chaque partenaire et les offres réelles issues du catalogue. Aucune remise, urgence ou date de fin ne doit être inventée.
+- Validation locale et visuelle non effectuée depuis GitHub. Après récupération, exécuter TypeScript, Vitest et build, puis vérifier 320/360/390/430 px et desktop. Aucun merge dans `main`.
+
+### Mise en œuvre — 3 novembre 2026
+
+- Création de `src/components/home/HeroOffersCarousel.tsx` : carrousel tactile dans le hero, avec image agrandie à l'intérieur d'un conteneur de hauteur stable, prix, badge réel et navigation par balayage sur mobile / flèches sur desktop. Les indicateurs suivent la diapositive active.
+- Mise à jour de `src/components/home/Hero.tsx` : le visuel produit unique est remplacé par les promotions réelles du catalogue ; en l'absence de promotions, le carrousel utilise les packs et meilleures ventes disponibles. Le hero mobile réduit ses espacements sans augmenter la hauteur pour agrandir le visuel.
+- Mise à jour de `src/app/p/[partner]/page.tsx` : suppression du carrousel d'offres dupliqué sous le hero ; la mise en avant est désormais intégrée au hero. La page dédiée `/offres` et les onglets de navigation existants sont conservés.
+- Le bandeau de bienvenue partenaire et la page dédiée « Nos offres du moment » étaient déjà présents ; ils ont été vérifiés à la lecture et conservés. Le bandeau utilise le nom du partenaire actif et reste masqué pour la boutique maison.
+- Palette de marque existante : orange solaire `#F9A825`, orange vif `#FF6A1A`, orange profond `#C1440E`, ivoire `#FFF9F3` ; polices Montserrat/Poppins. Harmonisation visuelle complémentaire à poursuivre après contrôle des écrans.
+- **Blocage des actifs de marque :** le logo original et sa déclinaison icon-only ne sont pas présents dans les chemins publics vérifiés. Aucun favicon ni icône PWA ne sera inventé. Demander à l'utilisateur de joindre le logo original et la planche de charte dans la conversation pour pouvoir les installer à l'identique.
+- Modifications poussées sur `feat/mobile-first-natural-redesign`. Aucune validation TypeScript/Vitest/build ni inspection navigateur n'a été exécutée depuis GitHub. Le propriétaire doit récupérer les changements et lancer les contrôles locaux avant validation. Aucun merge dans `main`.
+
+
+## État effectif après mise en œuvre — 3 novembre 2026
+
+- **Hero mobile :** le composant actif est `HeroOffersCarousel` intégré directement au hero. Il donne priorité aux promotions réelles (prix comparé supérieur au prix actif) ; s'il n'y en a pas, il affiche les packs/meilleures ventes réellement présents. Le visuel produit est agrandi par mise à l'échelle interne dans un conteneur fixe ; la hauteur du hero reste compacte. Les interactions sont tactiles sur mobile et des flèches sont disponibles sur écran plus large.
+- **Offres :** page dédiée `/offres`, onglet « Nos offres » dans la navigation desktop et « Offres » dans la barre inférieure mobile. Le pied de page inclut aussi ce lien. Les réductions ne sont jamais inventées. Le carrousel de doublon hors du hero a été supprimé pour éviter de répéter la même section.
+- **Accueil partenaire :** `PartnerWelcomeBar` affiche « Bienvenue dans la boutique de [nom] » au-dessus de l'en-tête, à partir de `partner.displayName`. Le bandeau ne s'affiche pas sur la boutique maison.
+- **Charte :** variables globales et composants principaux harmonisés sur `#F9A825`, `#FF6A1A`, `#C1440E`, `#FFF9F3`, dégradé orange et typographies Montserrat/Poppins. Header, navigation mobile, hero, garanties, sélecteur de besoins, cartes produits, fiche produit, panier, actions d'ajout, pied de page et boutons de conversion ont été harmonisés. Le vert WhatsApp reste conservé uniquement pour identifier ce canal de communication.
+- **Logo :** le lockup primaire fourni est utilisé sur la boutique maison ; la déclinaison « icon only » fournie sert au favicon et aux icônes PWA. Les fichiers SVG encapsulent les visuels issus de la planche fournie ; aucun symbole n'a été redessiné ni recoloré. Le canevas de l'icône PWA est carré pour la compatibilité d'installation.
+- **PWA :** manifeste racine pour la boutique maison et manifeste dynamique `/p/[partner]/manifest.webmanifest` pour que l'installation d'une boutique partenaire ouvre son propre lien. Couleurs de thème et de fond alignées à la marque.
+- **Mobile :** navigation à cinq entrées, safe areas, espacements réduits dans le hero et les sections hautes, défilement horizontal avec snap pour les offres. Le parcours garde les routes `ShopLink` et les coordonnées WhatsApp propres à chaque boutique.
+- **Limite connue :** l'icône fournie est un SVG contenant le visuel raster issu de la planche. Une icône Apple dédiée PNG et les déclinaisons PNG 192/512 px pourront être ajoutées si l'installation iOS/Android sur appareils réels les exige ; ne pas recréer le logo pour les produire.
+- **Validation :** les fichiers ont été édités via GitHub. TypeScript, Vitest, build et inspection navigateur ne sont pas exécutés dans cette session. Il faut valider localement, surtout les polices `next/font/google`, les manifests et les dimensions 320/360/390/430 px. Aucun merge dans `main`.

@@ -1,27 +1,22 @@
+import { ArrowRight, MessageCircle } from "lucide-react";
+import { ShopWhatsAppLink } from "@/components/providers/ShopContext";
 import { btn, container } from "@/components/ui/styles";
 import { VIP_THRESHOLD } from "@/lib/config";
 import { formatFCFA } from "@/lib/pricing";
-import { buildDistributorMessage, buildVipInfoMessage, buildWhatsAppUrl } from "@/lib/whatsapp";
 
 export function DualConversion() {
-  return (
-    <section className={`${container} grid gap-4 py-12 md:grid-cols-2`}>
-      <div className="flex flex-col items-start gap-3 rounded-3xl bg-emerald-950 p-7 text-white">
-        <h2 className="text-2xl font-bold">Client VIP : 5 % de remise dès {formatFCFA(VIP_THRESHOLD)}</h2>
-        <p className="text-emerald-100">
-          Chaque commande qui atteint le palier bénéficie de la remise sur tous les articles, appliquée automatiquement dans votre panier.
-        </p>
-        <a href={buildWhatsAppUrl(buildVipInfoMessage())} target="_blank" rel="noopener noreferrer" className={`${btn} mt-2 bg-white text-emerald-950 hover:bg-emerald-50`}>
-          Profiter de la remise VIP
-        </a>
-      </div>
-      <div className="flex flex-col items-start gap-3 rounded-3xl bg-amber-100 p-7 text-amber-950">
-        <h2 className="text-2xl font-bold">Devenez distributeur Forever indépendant</h2>
-        <p>Créez votre activité au Congo, avec un accompagnement pas à pas pour démarrer.</p>
-        <a href={buildWhatsAppUrl(buildDistributorMessage())} target="_blank" rel="noopener noreferrer" className={`${btn} mt-2 bg-amber-900 text-white hover:bg-amber-950`}>
-          Parler à un distributeur
-        </a>
-      </div>
-    </section>
-  );
+  return <section className={`${container} grid gap-3 py-6 sm:grid-cols-2 sm:gap-4 sm:py-10`}>
+    <div className="flex flex-col items-start gap-3 rounded-3xl bg-gradient-to-br from-[#f9a825] to-[#c1440e] p-5 text-white sm:p-7">
+      <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-white/95">Avantage client</p>
+      <h2 className="text-xl font-extrabold leading-tight sm:text-2xl">Les prix client privilégié dès {formatFCFA(VIP_THRESHOLD)}</h2>
+      <p className="text-sm leading-relaxed text-white/95">À partir de ce montant, les tarifs client privilégié de la grille officielle s'appliquent automatiquement à votre commande.</p>
+      <ShopWhatsAppLink kind="vip" className={`${btn} mt-1 min-h-11 bg-[#fff9f3] text-sm text-[#a9360b] hover:bg-white`}>En savoir plus <ArrowRight aria-hidden className="size-4" /></ShopWhatsAppLink>
+    </div>
+    <div className="flex flex-col items-start gap-3 rounded-3xl border border-[#f2d7c2] bg-[#fff0df] p-5 text-[#57301f] sm:p-7">
+      <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#c1440e]">Projet professionnel</p>
+      <h2 className="text-xl font-extrabold leading-tight sm:text-2xl">Envie de développer votre activité ?</h2>
+      <p className="text-sm leading-relaxed text-[#71645d]">Découvrez le fonctionnement de l’activité de distributeur indépendant et l’accompagnement proposé.</p>
+      <ShopWhatsAppLink kind="distributor" className={`${btn} mt-1 min-h-11 bg-[#c1440e] text-sm text-white hover:bg-[#a9360b]`}>Échanger sur WhatsApp <MessageCircle aria-hidden className="size-4" /></ShopWhatsAppLink>
+    </div>
+  </section>;
 }

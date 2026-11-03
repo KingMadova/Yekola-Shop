@@ -1,69 +1,42 @@
-import Link from "next/link";
+"use client";
+
+import Image from "next/image";
+import { ShopLink, useShop } from "@/components/providers/ShopContext";
+import { Search } from "lucide-react";
+import { ProductSearch } from "@/components/catalogue/ProductSearch";
 import { CartButton } from "@/components/cart/CartButton";
 import { container, focusRing } from "@/components/ui/styles";
-import { SITE_NAME } from "@/lib/config";
-import { buildDistributorMessage, buildWhatsAppUrl } from "@/lib/whatsapp";
 
 const LINKS = [
   { label: "Catalogue", href: "/catalogue" },
-  { label: "Packs solutions", href: "/#packs" },
-  { label: "Besoins santé", href: "/#besoins" },
+  { label: "Nos offres", href: "/offres" },
+  { label: "Packs", href: "/packs" },
+  { label: "Vos besoins", href: "/besoins" },
 ] as const;
 
-const linkClass = `rounded-md py-2 text-sm font-medium text-gray-900 hover:text-emerald-800 ${focusRing}`;
+const linkClass = `rounded-full px-3 py-2 text-sm font-semibold text-[#57301f] transition-colors hover:bg-[#fff0df] hover:text-[#a9360b] ${focusRing}`;
 
 export function Header() {
-  const distributorUrl = buildWhatsAppUrl(buildDistributorMessage());
-
+  const { partner } = useShop();
   return (
-    <header className="sticky top-0 z-30 border-b border-gray-200 bg-white">
-      <div className={`${container} flex h-16 items-center gap-4`}>
-        <Link href="/" className={`text-lg font-extrabold text-emerald-900 ${focusRing}`}>
-          {SITE_NAME}
-        </Link>
-
-        <nav aria-label="Navigation principale" className="hidden items-center gap-5 md:flex">
-          {LINKS.map((link) => (
-            <Link key={link.href} href={link.href} className={linkClass}>
-              {link.label}
-            </Link>
-          ))}
-          <a href={distributorUrl} target="_blank" rel="noopener noreferrer" className={linkClass}>
-            Devenir distributeur
-          </a>
+    <header className="sticky top-0 z-30 border-b border-[#f4ddca] bg-[#fff9f3]/95 shadow-[0_2px_14px_rgba(120,55,20,0.06)] backdrop-blur">
+      <div className={`${container} flex h-[58px] items-center gap-2 sm:h-16 sm:gap-3`}>
+        <ShopLink href="/" className={`flex min-w-0 shrink items-center gap-2 text-[16px] font-extrabold tracking-[-0.04em] text-[#c1440e] sm:text-lg ${focusRing}`}>
+          <Image src={partner.isHouse ? "/yekola-business-logo.svg" : "/yekola-business-icon.svg"} alt="Yekola Business" width={partner.isHouse ? 48 : 30} height={partner.isHouse ? 50 : 26} priority className={partner.isHouse ? "h-[48px] w-[47px] shrink-0 object-contain" : "h-[26px] w-[31px] shrink-0 object-contain"} />
+          {!partner.isHouse && <span className="block truncate">{partner.displayName}</span>}
+        </ShopLink>
+        <nav aria-label="Navigation principale" className="ml-4 hidden items-center gap-1 md:flex">
+          {LINKS.map((link) => <ShopLink key={link.href} href={link.href} className={linkClass}>{link.label}</ShopLink>)}
+          <ShopLink href="/devenir-partenaire" className={linkClass}>Devenir partenaire</ShopLink>
         </nav>
-
-        <form action="/catalogue" role="search" className="mx-auto hidden w-full max-w-sm lg:block">
-          <label htmlFor="header-search" className="sr-only">
-            Rechercher un produit
-          </label>
-          <input
-            id="header-search"
-            name="q"
-            type="search"
-            placeholder="Rechercher un produit ou un besoin"
-            className={`min-h-11 w-full rounded-full border border-gray-300 bg-gray-100 px-4 text-sm ${focusRing}`}
-          />
-        </form>
-
-        <div className="ml-auto">
+        <div className="mx-auto hidden w-full max-w-xs lg:block"><ProductSearch compact /></div>
+        <div className="ml-auto flex shrink-0 items-center gap-1.5">
+          <ShopLink href="/catalogue" aria-label="Rechercher un produit" className={`inline-flex size-11 items-center justify-center rounded-full text-[#9b310d] hover:bg-[#fff0df] md:hidden ${focusRing}`}>
+            <Search aria-hidden className="size-5" />
+          </ShopLink>
           <CartButton />
         </div>
       </div>
-
-      <nav
-        aria-label="Navigation mobile"
-        className="flex gap-4 overflow-x-auto border-t border-gray-100 px-4 md:hidden"
-      >
-        {LINKS.map((link) => (
-          <Link key={link.href} href={link.href} className={`${linkClass} min-h-11 whitespace-nowrap`}>
-            {link.label}
-          </Link>
-        ))}
-        <a href={distributorUrl} target="_blank" rel="noopener noreferrer" className={`${linkClass} min-h-11 whitespace-nowrap`}>
-          Devenir distributeur
-        </a>
-      </nav>
     </header>
   );
 }

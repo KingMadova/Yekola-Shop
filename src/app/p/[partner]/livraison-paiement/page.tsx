@@ -1,8 +1,10 @@
 import { Metadata } from 'next';
+import { ShopDeliveryNote } from '@/components/providers/ShopContext';
 
 export const metadata: Metadata = {
   title: 'Livraison et paiement | Yekola Shop',
   description: 'Livraison express 24h à Brazzaville et Pointe-Noire. Paiement mobile accepté (MTN, Airtel, espèces).',
+  alternates: { canonical: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3001'}/livraison-paiement` },
 };
 
 export default function LivraisonPaiementPage() {
@@ -19,6 +21,7 @@ export default function LivraisonPaiementPage() {
             <p>
               Nous proposons plusieurs options de livraison adaptées à votre localisation :
             </p>
+            <ShopDeliveryNote />
             
             <div className="grid gap-6 sm:grid-cols-2 not-prose">
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">

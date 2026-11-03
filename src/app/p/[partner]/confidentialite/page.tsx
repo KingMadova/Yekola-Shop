@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Politique de confidentialité | Yekola Shop",
   description: "Découvrez comment Yekola Shop collecte et protège les données personnelles liées à vos demandes et commandes.",
+  alternates: { canonical: `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3001"}/confidentialite` },
 };
 
 export default function ConfidentialitePage() {

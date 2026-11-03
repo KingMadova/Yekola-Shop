@@ -4,7 +4,8 @@ import { Check, MapPin, X } from "lucide-react";
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { focusRing } from "@/components/ui/styles";
 import { useCatalog } from "@/components/providers/CatalogContext";
-import { CATALOG_PDF_PATH, COPY, HEALTH_GOAL_META, HOUSE_PARTNER_SLUG, LEAD_MODAL_DELAY_MS } from "@/lib/config";
+import { CATALOG_PDF_PATH, COPY, HEALTH_GOAL_META, LEAD_MODAL_DELAY_MS } from "@/lib/config";
+import { useShop } from "@/components/providers/ShopContext";
 import { buildNeedProfile, ORIGIN_LABELS } from "@/lib/interest";
 import { readLeadStatus, retryPendingLead, sendLead, writeLeadStatus } from "@/lib/leadClient";
 import { normalizeCongoPhone } from "@/lib/phone";
@@ -50,6 +51,7 @@ export function LeadCaptureModal() {
   const nameRef = useRef<HTMLInputElement>(null);
   const phoneRef = useRef<HTMLInputElement>(null);
   const submitted = useRef(false);
+  const { partner } = useShop();
   const { getProductByCode } = useCatalog();
   const cartItems = useCartItems();
   const itemsRef = useRef(cartItems);
@@ -101,8 +103,8 @@ export function LeadCaptureModal() {
     };
 
     async function initialize() {
-      await retryPendingLead();
-      if (cancelled || readLeadStatus() !== null) return;
+      await retryPendingLead(partner.slug);
+      if (cancelled || readLeadStatus(partner.slug) !== null) return;
       timer = window.setTimeout(tryOpen, LEAD_MODAL_DELAY_MS);
     }
 
@@ -111,7 +113,7 @@ export function LeadCaptureModal() {
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, []);
+  }, [partner.slug]);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -121,7 +123,7 @@ export function LeadCaptureModal() {
   function handleClose() {
     setOpen(false);
     if (!submitted.current) {
-      writeLeadStatus("dismissed");
+      writeLeadStatus("dismissed", partner.slug);
       return;
     }
     window.setTimeout(() => {
@@ -176,7 +178,7 @@ export function LeadCaptureModal() {
       cartGoals: items.flatMap((item) => item.product.healthGoals),
     });
     const payload: LeadPayload = {
-      partnerSlug: HOUSE_PARTNER_SLUG,
+      partnerSlug: partner.slug,
       firstName: firstName.trim(),
       phone: normalized,
       need: profile.need,
@@ -203,7 +205,7 @@ export function LeadCaptureModal() {
     }
 
     submitted.current = true;
-    writeLeadStatus("submitted");
+    writeLeadStatus("submitted", partner.slug);
     setCatalogueDownloadReady(downloadCatalogue());
     setDone(true);
   }

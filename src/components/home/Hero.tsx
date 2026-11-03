@@ -1,65 +1,45 @@
-import Link from "next/link";
-import { ImageOff } from "lucide-react";
-import { SafeImage } from "@/components/ui/SafeImage";
+import { ShopLink, ShopWhatsAppLink, ShopWelcomeText } from "@/components/providers/ShopContext";
+import { ArrowRight, MessageCircle } from "lucide-react";
+import { HeroOffersCarousel } from "@/components/home/HeroOffersCarousel";
 import { btn, container } from "@/components/ui/styles";
 import { getCatalog } from "@/lib/data/catalog";
-import { COPY, DISTRIBUTOR_MENTION, VIP_THRESHOLD } from "@/lib/config";
-import { formatFCFA } from "@/lib/pricing";
-import { buildAdviceMessage, buildWhatsAppUrl } from "@/lib/whatsapp";
+import { COPY, DISTRIBUTOR_MENTION } from "@/lib/config";
 
 export async function Hero() {
   const products = await getCatalog();
-  const featured = products.find((product) => product.isPackSolution && product.isBestSeller) ?? products[0];
-  const photo = featured?.images[0];
-  const vipImmediate = featured ? featured.pricePublic >= VIP_THRESHOLD : false;
+  const promotions = products.filter((product) => product.compareAtPrice && product.compareAtPrice > product.pricePublic);
+  const offers = (promotions.length ? promotions : products.filter((product) => product.isPackSolution || product.isBestSeller)).slice(0, 6);
 
   return (
-    <section className="bg-emerald-950 text-white">
-      <div className={`${container} grid gap-8 py-12 lg:grid-cols-2 lg:items-center lg:py-16`}>
-        <div className="flex flex-col gap-5">
-          <h1 className="text-4xl font-extrabold leading-tight sm:text-5xl">
-            Le bien-être naturel, livré chez vous en 24 h
+    <section className="relative isolate overflow-hidden bg-gradient-to-br from-[#f9a825] via-[#ff6a1a] to-[#c1440e] text-white">
+      <div aria-hidden className="pointer-events-none absolute -right-20 -top-28 size-64 rounded-full border border-white/20 sm:size-80" />
+      <div aria-hidden className="pointer-events-none absolute -bottom-24 -left-20 size-64 rounded-full bg-[#fff9f3]/10 blur-3xl" />
+      <div className={`${container} relative grid gap-3 py-3 sm:grid-cols-[1.05fr_0.95fr] sm:items-center sm:gap-6 sm:py-7 lg:gap-10 lg:py-8`}>
+        <div className="flex flex-col items-start gap-2 sm:gap-3">
+          <p className="inline-flex items-center gap-2 text-[9px] font-extrabold uppercase tracking-[0.16em] text-white/95 sm:text-xs">
+            <span className="size-1.5 rounded-full bg-white" /> {COPY.heroEyebrow}
+          </p>
+          <h1 className="max-w-[17ch] text-[clamp(1.75rem,7vw,2.45rem)] font-extrabold leading-[1.04] tracking-[-0.045em] sm:text-4xl lg:text-[3.1rem]">
+            {COPY.heroTitle}
           </h1>
-          <p className="max-w-lg text-lg text-emerald-100">{COPY.heroSubtitle}</p>
-          <div className="flex flex-wrap gap-3">
-            <Link href="/catalogue" className={`${btn} bg-white text-emerald-950 hover:bg-emerald-50`}>
-              Voir le catalogue
-            </Link>
-            <a
-              href={buildWhatsAppUrl(buildAdviceMessage())}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`${btn} border border-white/60 text-white hover:bg-white/10`}
-            >
-              Commander sur WhatsApp
-            </a>
+          <p className="max-w-xl text-[11px] leading-relaxed text-white/95 sm:text-sm">
+            <ShopWelcomeText fallback={COPY.heroSubtitle} />
+          </p>
+          <div className="flex w-full flex-wrap gap-2 pt-0.5 sm:w-auto sm:gap-3">
+            <ShopLink href="/catalogue" className={`${btn} min-h-10 flex-1 bg-[#fff9f3] px-4 text-xs font-bold text-[#a9360b] hover:bg-white sm:flex-none sm:px-5 sm:text-sm`}>
+              {COPY.heroPrimaryCta} <ArrowRight aria-hidden className="size-4" />
+            </ShopLink>
+            <ShopWhatsAppLink kind="advice" className={`${btn} min-h-10 flex-1 border border-white/70 px-3 text-xs font-bold text-white hover:bg-white/10 sm:flex-none sm:px-4 sm:text-sm`}>
+              <MessageCircle aria-hidden className="size-4" /> {COPY.heroSecondaryCta}
+            </ShopWhatsAppLink>
           </div>
-          <p className="text-sm text-emerald-200">{DISTRIBUTOR_MENTION}</p>
+          <p className="text-[9px] leading-snug text-white/90 sm:text-[11px]">{DISTRIBUTOR_MENTION}</p>
         </div>
 
-        {featured && (
-          <Link
-            href={`/produit/${featured.slug}`}
-            className="group flex gap-4 rounded-2xl bg-white p-4 text-gray-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-          >
-            <div className="relative size-32 shrink-0 overflow-hidden rounded-xl bg-emerald-50 sm:size-40">
-              {photo ? (
-                <SafeImage src={photo} alt="" fill sizes="160px" className="object-cover" />
-              ) : (
-                <ImageOff aria-hidden className="absolute inset-0 m-auto size-8 text-emerald-800" />
-              )}
-            </div>
-            <div className="flex flex-col justify-center gap-1">
-              <p className="text-sm font-medium text-emerald-800">Pack du moment</p>
-              <p className="text-xl font-bold group-hover:underline">{featured.name}</p>
-              <p className="text-sm text-gray-800">{featured.shortDesc}</p>
-              <p className="mt-1 text-lg font-bold text-emerald-800">
-                {formatFCFA(vipImmediate ? featured.priceVip : featured.pricePublic)}
-                {vipImmediate && <span className="ml-2 text-sm font-medium text-gray-700">prix VIP</span>}
-              </p>
-            </div>
-          </Link>
-        )}
+        {offers.length > 0 && <div className="min-w-0 sm:pl-1">
+          <HeroOffersCarousel products={offers} />
+        </div>}
+        <p className="text-center text-[9px] text-white/95 sm:col-span-2 sm:text-left sm:text-[11px]">{COPY.heroReassurance}</p>
       </div>
     </section>
   );

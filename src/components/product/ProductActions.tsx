@@ -2,21 +2,23 @@
 
 import { MessageCircle, Minus, Plus, ShoppingCart } from "lucide-react";
 import { useState } from "react";
+import { useShop } from "@/components/providers/ShopContext";
 import { clampQuantity, computeCartTotals, formatFCFA } from "@/lib/pricing";
 import type { Product } from "@/lib/types";
-import { buildSingleProductMessage, buildWhatsAppUrl } from "@/lib/whatsapp";
+import { buildSingleProductMessage } from "@/lib/whatsapp";
 import { useCartStore } from "@/store/useCartStore";
 
 const stepperButton =
-  "inline-flex size-11 items-center justify-center rounded-xl border border-gray-400 bg-white text-gray-900 hover:bg-gray-100 disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-emerald-700";
+  "inline-flex size-11 items-center justify-center rounded-xl border border-[#deded4] bg-white text-[#30231d] hover:bg-[#fff5e9] disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-[#c1440e]";
 
 /** Double bouton d'achat : « Ajouter au panier » et « Commander en 1 clic via WhatsApp » (sans passer par le panier). */
 export function ProductActions({ product }: { product: Product }) {
   const [quantity, setQuantity] = useState(1);
   const addItem = useCartStore((state) => state.addItem);
+  const { partner, whatsappUrl } = useShop();
 
   const totals = computeCartTotals([{ product, quantity }]);
-  const whatsappUrl = buildWhatsAppUrl(buildSingleProductMessage(product, quantity));
+  const orderUrl = whatsappUrl(buildSingleProductMessage(product, quantity, partner.displayName));
 
   return (
     <div className="flex flex-col gap-4">
@@ -45,7 +47,7 @@ export function ProductActions({ product }: { product: Product }) {
         </div>
         <p className="text-sm text-gray-800">
           Total : <strong>{formatFCFA(totals.total)}</strong>
-          {totals.vipUnlocked && " (prix VIP appliqué)"}
+          {totals.vipUnlocked && " (tarif privilégié appliqué)"}
         </p>
       </div>
 
@@ -53,13 +55,13 @@ export function ProductActions({ product }: { product: Product }) {
         <button
           type="button"
           onClick={() => addItem(product, quantity)}
-          className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 font-semibold text-white hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
+          className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#c1440e] px-5 font-semibold text-white hover:bg-[#a9360b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
         >
           <ShoppingCart aria-hidden className="size-5" />
           Ajouter au panier
         </button>
         <a
-          href={whatsappUrl}
+          href={orderUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#075E54] px-5 text-center font-semibold text-white hover:bg-[#064c44] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"

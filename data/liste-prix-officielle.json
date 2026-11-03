@@ -1,0 +1,484 @@
+{
+  "source": "Liste de prix clients.pdf",
+  "currency": "XAF",
+  "vipThreshold": 65000,
+  "products": [
+    {
+      "code": "456",
+      "name": "VITAL 5 - PULPE",
+      "category": "Combo / Packs",
+      "priceVip": 193238,
+      "pricePublic": 201581,
+      "isPack": true,
+      "sortOrder": 10
+    },
+    {
+      "code": "634",
+      "name": "START YOUR JOURNEY",
+      "category": "Combo / Packs",
+      "priceVip": 296471,
+      "pricePublic": 309271,
+      "isPack": true,
+      "sortOrder": 20
+    },
+    {
+      "code": "15",
+      "name": "FOREVER ALOE VERA GEL",
+      "category": "Boissons",
+      "priceVip": 19322,
+      "pricePublic": 20156,
+      "isPack": false,
+      "sortOrder": 30
+    },
+    {
+      "code": "34",
+      "name": "FOREVER ALOE BERRY NECTAR",
+      "category": "Boissons",
+      "priceVip": 19322,
+      "pricePublic": 20156,
+      "isPack": false,
+      "sortOrder": 40
+    },
+    {
+      "code": "77",
+      "name": "FOREVER BITS N' PEACHES",
+      "category": "Boissons",
+      "priceVip": 19322,
+      "pricePublic": 20156,
+      "isPack": false,
+      "sortOrder": 50
+    },
+    {
+      "code": "196",
+      "name": "FOREVER FREEDOM",
+      "category": "Boissons",
+      "priceVip": 28221,
+      "pricePublic": 29439,
+      "isPack": false,
+      "sortOrder": 60
+    },
+    {
+      "code": "200",
+      "name": "ALOE BLOSSOM HERBAL TEA",
+      "category": "Boissons",
+      "priceVip": 13531,
+      "pricePublic": 14116,
+      "isPack": false,
+      "sortOrder": 70
+    },
+    {
+      "code": "721",
+      "name": "FAB",
+      "category": "Boissons",
+      "priceVip": 6685,
+      "pricePublic": 6974,
+      "isPack": false,
+      "sortOrder": 80
+    },
+    {
+      "code": "26",
+      "name": "FOREVER BEE POLLEN",
+      "category": "Produits de la Ruche",
+      "priceVip": 11591,
+      "pricePublic": 12091,
+      "isPack": false,
+      "sortOrder": 90
+    },
+    {
+      "code": "27",
+      "name": "FOREVER BEE PROPOLIS",
+      "category": "Produits de la Ruche",
+      "priceVip": 25122,
+      "pricePublic": 26207,
+      "isPack": false,
+      "sortOrder": 100
+    },
+    {
+      "code": "36",
+      "name": "FOREVER ROYAL JELLY",
+      "category": "Produits de la Ruche",
+      "priceVip": 25122,
+      "pricePublic": 26207,
+      "isPack": false,
+      "sortOrder": 110
+    },
+    {
+      "code": "207",
+      "name": "FOREVER BEE HONEY",
+      "category": "Produits de la Ruche",
+      "priceVip": 19144,
+      "pricePublic": 19970,
+      "isPack": false,
+      "sortOrder": 120
+    },
+    {
+      "code": "37",
+      "name": "FOREVER NATURE-MIN",
+      "category": "Compléments Alimentaires",
+      "priceVip": 13928,
+      "pricePublic": 14529,
+      "isPack": false,
+      "sortOrder": 130
+    },
+    {
+      "code": "48",
+      "name": "FOREVER ABSORBENT-C",
+      "category": "Compléments Alimentaires",
+      "priceVip": 13333,
+      "pricePublic": 13909,
+      "isPack": false,
+      "sortOrder": 140
+    },
+    {
+      "code": "65",
+      "name": "FOREVER GARLIC - THYME",
+      "category": "Compléments Alimentaires",
+      "priceVip": 13928,
+      "pricePublic": 14529,
+      "isPack": false,
+      "sortOrder": 150
+    },
+    {
+      "code": "68",
+      "name": "FOREVER FIELDS OF GREENS",
+      "category": "Compléments Alimentaires",
+      "priceVip": 9859,
+      "pricePublic": 10285,
+      "isPack": false,
+      "sortOrder": 160
+    },
+    {
+      "code": "72",
+      "name": "FOREVER LYCIUM PLUS",
+      "category": "Compléments Alimentaires",
+      "priceVip": 23192,
+      "pricePublic": 24194,
+      "isPack": false,
+      "sortOrder": 170
+    },
+    {
+      "code": "188",
+      "name": "FOREVER B-12 PLUS",
+      "category": "Compléments Alimentaires",
+      "priceVip": 11987,
+      "pricePublic": 12505,
+      "isPack": false,
+      "sortOrder": 180
+    },
+    {
+      "code": "206",
+      "name": "FOREVER CALCIUM",
+      "category": "Compléments Alimentaires",
+      "priceVip": 18925,
+      "pricePublic": 19742,
+      "isPack": false,
+      "sortOrder": 190
+    },
+    {
+      "code": "215",
+      "name": "FOREVER MULTI-MACA",
+      "category": "Compléments Alimentaires",
+      "priceVip": 20678,
+      "pricePublic": 21571,
+      "isPack": false,
+      "sortOrder": 200
+    },
+    {
+      "code": "264",
+      "name": "FOREVER ACTIVE HA",
+      "category": "Compléments Alimentaires",
+      "priceVip": 26280,
+      "pricePublic": 27415,
+      "isPack": false,
+      "sortOrder": 210
+    },
+    {
+      "code": "312",
+      "name": "FOREVER CARDIO HEALTH",
+      "category": "Compléments Alimentaires",
+      "priceVip": 25696,
+      "pricePublic": 26806,
+      "isPack": false,
+      "sortOrder": 220
+    },
+    {
+      "code": "354",
+      "name": "FOREVER KIDS",
+      "category": "Compléments Alimentaires",
+      "priceVip": 11591,
+      "pricePublic": 12091,
+      "isPack": false,
+      "sortOrder": 230
+    },
+    {
+      "code": "355",
+      "name": "FOREVER IMMUBLEND",
+      "category": "Compléments Alimentaires",
+      "priceVip": 17965,
+      "pricePublic": 18741,
+      "isPack": false,
+      "sortOrder": 240
+    },
+    {
+      "code": "374",
+      "name": "VITOLIZE MEN",
+      "category": "Compléments Alimentaires",
+      "priceVip": 23192,
+      "pricePublic": 24194,
+      "isPack": false,
+      "sortOrder": 250
+    },
+    {
+      "code": "375",
+      "name": "VITOLIZE WOMEN",
+      "category": "Compléments Alimentaires",
+      "priceVip": 24549,
+      "pricePublic": 25608,
+      "isPack": false,
+      "sortOrder": 260
+    },
+    {
+      "code": "376",
+      "name": "FOREVER ARCTIC SEA",
+      "category": "Compléments Alimentaires",
+      "priceVip": 23192,
+      "pricePublic": 24194,
+      "isPack": false,
+      "sortOrder": 270
+    },
+    {
+      "code": "439",
+      "name": "FOREVER DAILY",
+      "category": "Compléments Alimentaires",
+      "priceVip": 15462,
+      "pricePublic": 16129,
+      "isPack": false,
+      "sortOrder": 280
+    },
+    {
+      "code": "504",
+      "name": "ARGI+ENHANCED (STICK PACKS)",
+      "category": "Compléments Alimentaires",
+      "priceVip": 58549,
+      "pricePublic": 61077,
+      "isPack": false,
+      "sortOrder": 290
+    },
+    {
+      "code": "551",
+      "name": "FOREVER MOVE",
+      "category": "Compléments Alimentaires",
+      "priceVip": 48315,
+      "pricePublic": 50401,
+      "isPack": false,
+      "sortOrder": 300
+    },
+    {
+      "code": "610",
+      "name": "FOREVER ACTIVE PRO-B",
+      "category": "Compléments Alimentaires",
+      "priceVip": 28419,
+      "pricePublic": 29646,
+      "isPack": false,
+      "sortOrder": 310
+    },
+    {
+      "code": "622",
+      "name": "FOREVER FOCUS",
+      "category": "Compléments Alimentaires",
+      "priceVip": 64548,
+      "pricePublic": 67335,
+      "isPack": false,
+      "sortOrder": 320
+    },
+    {
+      "code": "624",
+      "name": "FOREVER IVISION",
+      "category": "Compléments Alimentaires",
+      "priceVip": 27063,
+      "pricePublic": 28231,
+      "isPack": false,
+      "sortOrder": 330
+    },
+    {
+      "code": "71",
+      "name": "FOREVER GARCINIA PLUS",
+      "category": "Gestion du Poids",
+      "priceVip": 23192,
+      "pricePublic": 24194,
+      "isPack": false,
+      "sortOrder": 340
+    },
+    {
+      "code": "470",
+      "name": "FOREVER LITE ULTRA W/A VANILLA",
+      "category": "Gestion du Poids",
+      "priceVip": 23589,
+      "pricePublic": 24607,
+      "isPack": false,
+      "sortOrder": 350
+    },
+    {
+      "code": "471",
+      "name": "FOREVER LITE ULTRA W/A CHOCOLATE",
+      "category": "Gestion du Poids",
+      "priceVip": 23589,
+      "pricePublic": 24607,
+      "isPack": false,
+      "sortOrder": 360
+    },
+    {
+      "code": "520",
+      "name": "FOREVER FAST BREAK BAR",
+      "category": "Gestion du Poids",
+      "priceVip": 4058,
+      "pricePublic": 4234,
+      "isPack": false,
+      "sortOrder": 370
+    },
+    {
+      "code": "547",
+      "name": "C9 - VANILLA",
+      "category": "Gestion du Poids",
+      "priceVip": 93145,
+      "pricePublic": 97166,
+      "isPack": true,
+      "sortOrder": 380
+    },
+    {
+      "code": "548",
+      "name": "C9 - CHOCOLATE",
+      "category": "Gestion du Poids",
+      "priceVip": 93145,
+      "pricePublic": 97166,
+      "isPack": true,
+      "sortOrder": 390
+    },
+    {
+      "code": "22",
+      "name": "ALOE LIPS",
+      "category": "Soins Personnels",
+      "priceVip": 4053,
+      "pricePublic": 4228,
+      "isPack": false,
+      "sortOrder": 400
+    },
+    {
+      "code": "28",
+      "name": "FOREVER BRIGHT TOOTHGEL",
+      "category": "Soins Personnels",
+      "priceVip": 8559,
+      "pricePublic": 8928,
+      "isPack": false,
+      "sortOrder": 410
+    },
+    {
+      "code": "40",
+      "name": "ALOE FIRST SPRAY",
+      "category": "Soins Personnels",
+      "priceVip": 15263,
+      "pricePublic": 15922,
+      "isPack": false,
+      "sortOrder": 420
+    },
+    {
+      "code": "67",
+      "name": "ALOE EVER-SHIELD DEODORANT",
+      "category": "Soins Personnels",
+      "priceVip": 8353,
+      "pricePublic": 8714,
+      "isPack": false,
+      "sortOrder": 430
+    },
+    {
+      "code": "284",
+      "name": "AVOCADO FACE & BODY SOAP",
+      "category": "Soins Personnels",
+      "priceVip": 5227,
+      "pricePublic": 5453,
+      "isPack": false,
+      "sortOrder": 440
+    },
+    {
+      "code": "633",
+      "name": "ALOE LIQUID SOAP",
+      "category": "Soins Personnels",
+      "priceVip": 23856,
+      "pricePublic": 24885,
+      "isPack": false,
+      "sortOrder": 450
+    },
+    {
+      "code": "51",
+      "name": "ALOE PROPOLIS CRÈME",
+      "category": "Soins de la Peau",
+      "priceVip": 14888,
+      "pricePublic": 15531,
+      "isPack": false,
+      "sortOrder": 460
+    },
+    {
+      "code": "61",
+      "name": "ALOE VERA GELLY",
+      "category": "Soins de la Peau",
+      "priceVip": 11205,
+      "pricePublic": 11689,
+      "isPack": false,
+      "sortOrder": 470
+    },
+    {
+      "code": "63",
+      "name": "ALOE MOISTURIZING LOTION",
+      "category": "Soins de la Peau",
+      "priceVip": 11205,
+      "pricePublic": 11689,
+      "isPack": false,
+      "sortOrder": 480
+    },
+    {
+      "code": "64",
+      "name": "ALOE HEAT LOTION",
+      "category": "Soins de la Peau",
+      "priceVip": 11205,
+      "pricePublic": 11689,
+      "isPack": false,
+      "sortOrder": 490
+    },
+    {
+      "code": "205",
+      "name": "ALOE MSM GEL",
+      "category": "Soins de la Peau",
+      "priceVip": 17965,
+      "pricePublic": 18741,
+      "isPack": false,
+      "sortOrder": 500
+    },
+    {
+      "code": "612",
+      "name": "ALOE ACTIVATOR",
+      "category": "Soins de la Peau",
+      "priceVip": 12363,
+      "pricePublic": 12897,
+      "isPack": false,
+      "sortOrder": 510
+    },
+    {
+      "code": "646",
+      "name": "ALOE BODY WASH",
+      "category": "Soins de la Peau",
+      "priceVip": 17392,
+      "pricePublic": 18142,
+      "isPack": false,
+      "sortOrder": 520
+    },
+    {
+      "code": "647",
+      "name": "ALOE BODY LOTION",
+      "category": "Soins de la Peau",
+      "priceVip": 17579,
+      "pricePublic": 18338,
+      "isPack": false,
+      "sortOrder": 530
+    }
+  ]
+}

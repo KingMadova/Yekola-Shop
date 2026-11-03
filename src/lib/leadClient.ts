@@ -1,38 +1,24 @@
-import { LEAD_DISMISS_DAYS } from "./config";
+import { HOUSE_PARTNER_SLUG, LEAD_DISMISS_DAYS } from "./config";
 import { isRecord, parseLeadPayload } from "./leads";
 import type { LeadPayload } from "./types";
 
-const PENDING_KEY = "forever-lead-pending-v1";
-const STATUS_KEY = "forever-lead-status-v1";
 type LeadStatus = "submitted" | "dismissed";
+const pendingKey = (slug: string) => `forever-lead-pending-v1:${slug}`;
+const statusKey = (slug: string) => `forever-lead-status-v1:${slug}`;
 
 function safeGet(key: string): string | null {
-  try {
-    return localStorage.getItem(key);
-  } catch {
-    return null;
-  }
+  try { return localStorage.getItem(key); } catch { return null; }
 }
-
 function safeSet(key: string, value: string): void {
-  try {
-    localStorage.setItem(key, value);
-  } catch {
-    /* navigation privée : on continue sans mémoire */
-  }
+  try { localStorage.setItem(key, value); } catch { /* stockage indisponible */ }
 }
-
 function safeRemove(key: string): void {
-  try {
-    localStorage.removeItem(key);
-  } catch {
-    /* stockage indisponible : sans effet */
-  }
+  try { localStorage.removeItem(key); } catch { /* stockage indisponible */ }
 }
 
-/** « submitted » pour toujours, « dismissed » pendant LEAD_DISMISS_DAYS jours. */
-export function readLeadStatus(): LeadStatus | null {
-  const raw = safeGet(STATUS_KEY);
+export function readLeadStatus(partnerSlug: string): LeadStatus | null {
+  const raw = safeGet(statusKey(partnerSlug))
+    ?? (partnerSlug === HOUSE_PARTNER_SLUG ? safeGet("forever-lead-status-v1") : null);
   if (!raw) return null;
   try {
     const { status, at } = JSON.parse(raw) as { status?: unknown; at?: unknown };
@@ -41,14 +27,14 @@ export function readLeadStatus(): LeadStatus | null {
       return Date.now() - at < LEAD_DISMISS_DAYS * 86_400_000 ? "dismissed" : null;
     }
   } catch {
-    /* valeur corrompue : ignorée */
+    // Valeur corrompue : ignorée.
   }
   return null;
 }
 
-export function writeLeadStatus(status: LeadStatus): void {
-  if (readLeadStatus() === "submitted") return;
-  safeSet(STATUS_KEY, JSON.stringify({ status, at: Date.now() }));
+export function writeLeadStatus(status: LeadStatus, partnerSlug: string): void {
+  if (readLeadStatus(partnerSlug) === "submitted") return;
+  safeSet(statusKey(partnerSlug), JSON.stringify({ status, at: Date.now() }));
 }
 
 async function post(payload: LeadPayload, honeypot = ""): Promise<boolean> {
@@ -59,31 +45,31 @@ async function post(payload: LeadPayload, honeypot = ""): Promise<boolean> {
       body: JSON.stringify({ ...payload, website: honeypot }),
       keepalive: true,
     });
-
     const result: unknown = await response.json().catch(() => null);
     if (!response.ok || !isRecord(result) || result.ok !== true) return false;
-
-    safeRemove(PENDING_KEY);
+    safeRemove(pendingKey(payload.partnerSlug));
+    if (payload.partnerSlug === HOUSE_PARTNER_SLUG) safeRemove("forever-lead-pending-v1");
     return true;
   } catch {
     return false;
   }
 }
 
-/** Attend la confirmation Supabase ; garde une copie locale si l'API échoue. */
 export async function sendLead(payload: LeadPayload, honeypot = ""): Promise<boolean> {
-  safeSet(PENDING_KEY, JSON.stringify(payload));
+  safeSet(pendingKey(payload.partnerSlug), JSON.stringify(payload));
   return post(payload, honeypot);
 }
 
-/** Reprend un envoi interrompu lors d'une visite ultérieure, sans afficher de faux succès. */
-export async function retryPendingLead(): Promise<void> {
-  const raw = safeGet(PENDING_KEY);
+export async function retryPendingLead(partnerSlug: string): Promise<void> {
+  const raw = safeGet(pendingKey(partnerSlug))
+    ?? (partnerSlug === HOUSE_PARTNER_SLUG ? safeGet("forever-lead-pending-v1") : null);
   if (!raw) return;
   try {
     const payload = parseLeadPayload(JSON.parse(raw));
-    if (payload && (await post(payload))) writeLeadStatus("submitted");
+    if (payload && payload.partnerSlug === partnerSlug && (await post(payload))) {
+      writeLeadStatus("submitted", partnerSlug);
+    }
   } catch {
-    /* valeur corrompue : ignorée */
+    // Valeur corrompue : ignorée.
   }
 }

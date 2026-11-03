@@ -1,6 +1,5 @@
 import {
   MAX_LINE_QUANTITY,
-  VIP_DISCOUNT_PERCENT,
   VIP_THRESHOLD,
 } from "./config";
 import type { CartItem, CartTotals, Product } from "./types";
@@ -15,11 +14,6 @@ export function formatFCFA(amount: number): string {
   return `${grouped}\u00a0F`;
 }
 
-/** Prix VIP = prix public -5 %, calculé en entiers puis arrondi au franc. */
-export function computeVipPrice(pricePublic: number): number {
-  return Math.round((pricePublic * (100 - VIP_DISCOUNT_PERCENT)) / 100);
-}
-
 export function getUnitPrice(product: Product, vipUnlocked: boolean): number {
   return vipUnlocked ? product.priceVip : product.pricePublic;
 }
@@ -30,8 +24,8 @@ export function clampQuantity(quantity: number): number {
 }
 
 /**
- * Règle stricte : la remise VIP s'applique à TOUTE la commande si, et seulement si,
- * le total au prix public atteint ou dépasse 65 000 F. En dessous : prix public.
+ * Règle stricte : les prix client privilégié s'appliquent à TOUTE la commande si, et seulement si,
+ * le total aux prix publics atteint ou dépasse 65 000 F. En dessous : prix public.
  */
 export function computeCartTotals(items: readonly CartItem[]): CartTotals {
   let itemCount = 0;

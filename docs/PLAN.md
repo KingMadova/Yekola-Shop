@@ -97,8 +97,7 @@ Variables d'environnement actuelles (`.env.example`) :
 | Correctif | `globals.css` minimal (le fichier généré écrasait les couleurs en mode sombre) | `src/app/globals.css` |
 | Exécution locale | Le site tourne chez l'utilisateur (Windows, port 3001) | n/a |
 | Phase 0 — Pages légales | `/confidentialite`, `/livraison-paiement`, liens depuis le pied de page | `src/app/confidentialite/page.tsx`, `src/app/livraison-paiement/page.tsx`, `src/components/layout/Footer.tsx` |
-| Phase 0 — SEO technique | `sitemap.ts` ; `robots.ts` exclut `/admin`, `/api/`, `/hors-ligne` | `src/app/sitemap.ts`, `src/app/robots.ts` |
-| Phase 0 — Page 404 | 404 personnalisée : accueil, catalogue, contact WhatsApp | `src/app/not-found.tsx` |
+| Phase 0 — SEO technique | `sitemap.ts` ; `robots.ts` exclut `/admin`, `/api/`, `/hors-ligne` | `src/app/sitemap.ts`, `src/app/robots.ts` || Phase 0 — Page 404 | 404 personnalisée : accueil, catalogue, contact WhatsApp | `src/app/not-found.tsx` |
 | Phase 0 — Marque et textes | `SITE_NAME` = « Yekola Shop » ; `SITE_URL` par défaut `http://localhost:3001` ; textes du pied de page et des pages légales dans `COPY.legal` et `COPY.footer` | `src/lib/config.ts` |
 | Correctif Next 16 | `/catalogue` : lecture de `searchParams` dans `CatalogueContent`, enveloppé par `<Suspense>`. Route en Partial Prerender | `src/app/catalogue/page.tsx` |
 | Correctif Next 16 | `Footer` en composant client, année du copyright calculée dans `useEffect` (`new Date()` interdit au prérendu, y compris côté client) | `src/components/layout/Footer.tsx` |
@@ -197,7 +196,6 @@ Ajouts de la phase 1 : `supabase/{schema,seed}.sql` · `scripts/import-products.
 *Statut au 01/11/2026 : conception décidée ; migrations partenaires/leads et capture initiale fusionnées dans `main`, configuration Supabase/Vercel déclarée terminée. Le routage public multi-boutiques et l'espace partenaire ne sont pas encore implémentés. Hypothèses sur les points marqués Q-P : section 9.*
 
 **Vocabulaire.** *Admin* = Alvine. *Boutique maison* = la boutique d'Alvine (aussi un partenaire, avec `is_house`). *Partenaire* = un filleul. *Client* = visiteur final.
-
 ### Droits
 
 | Action | Admin | Partenaire | Client |
@@ -297,8 +295,7 @@ Ordre conseillé : 0, 1, **2, 3, 4, 5, 6, 7, 8, 9**. La phase 8 (PWA) est indép
 4. `ShopContext`, `<ShopLink>` et `buildShopHref()` sont créés ; **reste à faire** : monter le fournisseur dans le layout boutique, remplacer tous les liens internes et tous les usages du numéro global (liste en annexe F).
 5. Panier et pop-up par boutique (clés avec slug) ; `CartHydrator` reçoit le slug.
 6. Métadonnées : `noindex` + `canonical` pour les partenaires. Sitemap : maison seulement.
-7. Textes dépendants du partenaire : note de livraison, annonces, « Devenir distributeur », « Client VIP », mention FBO dans le pied de page.
-8. Tests : construction des liens, messages WhatsApp avec le numéro du partenaire, validation des slugs, réécriture de `proxy.ts`.
+7. Textes dépendants du partenaire : note de livraison, annonces, « Devenir distributeur », « Client VIP », mention FBO dans le pied de page.8. Tests : construction des liens, messages WhatsApp avec le numéro du partenaire, validation des slugs, réécriture de `proxy.ts`.
 9. En attendant l'admin, Alvine crée les partenaires dans le Table Editor (exemple SQL en annexe F).
 - **Fait quand :** `/p/test` affiche la boutique du partenaire « test » avec **son** numéro partout (flottant, commande, 1 clic, pop-up, distributeur, VIP) ; `/` est inchangé ; les paniers sont distincts par boutique ; build OK ; test manuel sur téléphone.
 
@@ -397,8 +394,7 @@ Typage strict sans `any` · tests ajoutés pour toute règle de prix · aucun te
 - `globals.css` : ne pas remettre la règle `body { background… }` du modèle de départ (elle prend le dessus sur les classes Tailwind).
 - Format des numéros congolais : 9 chiffres avec le 0 initial après `242` (ex. `242061234567`).
 - Les messages WhatsApp utilisent des espaces insécables dans les montants ; les tests normalisent avant de comparer.
-- Les liens WhatsApp ouverts après un `await` peuvent être bloqués par le navigateur : ouvrir `window.open` **dans le gestionnaire du clic**, avant tout appel réseau.
-- Un `localhost:3000` déjà utilisé par une autre application peut laisser des données et des erreurs (ex. `manifest.webmanifest` 404) : utiliser le port 3001.
+- Les liens WhatsApp ouverts après un `await` peuvent être bloqués par le navigateur : ouvrir `window.open` **dans le gestionnaire du clic**, avant tout appel réseau.- Un `localhost:3000` déjà utilisé par une autre application peut laisser des données et des erreurs (ex. `manifest.webmanifest` 404) : utiliser le port 3001.
 - Ne jamais préfixer par `NEXT_PUBLIC_` une clé secrète (notamment `SUPABASE_SERVICE_ROLE_KEY`).
 - Un build de production sans Supabase configuré **échoue volontairement** (voir décision 10). Pour essayer un build local sans base : `CATALOG_FALLBACK=seed`.
 - Une nouvelle ligne de la table `products` doit respecter `category` (les 7 valeurs exactes) : sinon la base la refuse (contrainte `check`).
@@ -498,7 +494,6 @@ create table admins (user_id uuid primary key references auth.users on delete ca
 - **Dans l'admin (automatique, avant envoi) :** redimensionner à **1600 px** maximum sur le grand côté, convertir en **WebP qualité 88** (visuellement sans perte), supprimer les métadonnées EXIF, viser **≤ 300 Ko** par image. Refuser les fichiers non image ou > 15 Mo à l'entrée.
 - **Script par lots `scripts/compress-images.mjs` (Node + `sharp`) :** mêmes réglages pour les images déjà sur disque (`public/images`) ; ne jamais écraser l'original (sortie dans un dossier séparé) ; afficher le poids avant et après.
 - Le rendu public passe par `next/image`, qui sert déjà des tailles adaptées.
-
 ## Annexe E : Spécification PWA
 
 | Élément | Valeur |
@@ -598,7 +593,6 @@ create table orders (
 - GPS visiteur : `latitude`, `longitude`, `location_accuracy_m`, `location_consent_at`, tous `NULL` si le visiteur n'a pas autorisé ou si le navigateur ne fournit pas la position. `location_consent_at` est généré côté serveur à réception des coordonnées.
 - **GPS facultatif uniquement :** demande déclenchée après clic explicite ; aucun champ ville/quartier, aucune géolocalisation IP, aucun blocage du formulaire en cas de refus.
 - Fuseau d'affichage des dates/heures : `Africa/Brazzaville`. Stockage des timestamps en `timestamptz` (UTC côté base).
-
 ### Téléchargement du catalogue
 
 - Le téléchargement intervient uniquement après confirmation de l'enregistrement du lead dans Supabase.
@@ -697,7 +691,6 @@ Réviser aussi les titres de sections, descriptions des besoins, cartes produits
 **Étape 2 — système visuel :** définir tokens de couleurs, typographie, espacements, rayons, bordures, boutons, champs, cartes et états interactifs.
 
 **Étape 3 — accueil et Hero :** refondre en premier l'en-tête et le Hero, puis vérifier impérativement l'intégralité du premier écran sur 360 × 800 et 390 × 844.
-
 **Étape 4 — parcours d'achat :** catalogue, cartes, fiche produit, panier et commande WhatsApp.
 
 **Étape 5 — finition :** autres sections de l'accueil, pages légales, états vides/erreur, navigation, footer, tablette et desktop.
@@ -766,3 +759,10 @@ Réviser aussi les titres de sections, descriptions des besoins, cartes produits
 - Le numéro WhatsApp n'est plus une variable d'environnement globale : il provient du profil public du partenaire.
 
 **Statut : code préparé sur la branche de travail, validation locale obligatoire avant de considérer cette étape comme terminée.** À exécuter sur le poste du propriétaire : `npx tsc --noEmit`, `npx vitest run`, `npm run build`, puis vérifier `/`, `/p/yekola`, une boutique partenaire active, le numéro WhatsApp, l'isolation des paniers et le parcours mobile. Ne pas fusionner la PR avant ces vérifications et l'accord explicite du propriétaire.
+
+## Journal de développement — 3 novembre 2026 (correctifs de validation)
+
+- Correction du test `src/lib/__tests__/pricing.test.ts` : `buildSingleProductMessage` exige désormais explicitement `product`, `quantity` et `partnerName`. Le test de commande 1 clic passe ces trois arguments et vérifie aussi le nom du partenaire dans le message. Aucun calcul ni tarif de production n'a été modifié.
+- Le contrôle local fourni par le propriétaire indique 40 tests réussis sur 41 ; le test WhatsApp échouait à cause de l'ancien appel de test incomplet. Le résultat après correction reste à confirmer localement.
+- Les erreurs TypeScript concernent des fichiers générés dans `.next/dev/types/` avec du contenu syntaxiquement tronqué. Hypothèse à vérifier : cache Next.js local corrompu/incomplet. Ne pas modifier ni versionner ces fichiers générés et ne pas contourner le contrôle en excluant les types Next.js. Procédure de vérification locale : arrêter `next dev`, supprimer `.next` avec `rm -rf .next`, puis relancer typage, tests et build.
+- **État :** correctif du test poussé sur `feat/mobile-first-natural-redesign`. Les commandes `npx tsc --noEmit`, `npx vitest run` et `npm run build` doivent encore être exécutées sur le poste du propriétaire ; aucune fusion dans `main` n'est autorisée avant leur réussite.

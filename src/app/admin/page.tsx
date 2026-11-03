@@ -2,7 +2,6 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/auth/admin";
 import AdminSignOut from "./sign-out";
 
-export const dynamic = "force-dynamic";
 export const metadata = { title: "Administration | Yekola Shop", robots: { index: false, follow: false } };
 
 export default async function AdminPage() {

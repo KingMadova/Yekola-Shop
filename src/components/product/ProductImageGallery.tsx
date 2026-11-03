@@ -21,8 +21,14 @@ export function ProductImageGallery({ images, alt, bestseller = false }: Product
     if (!isExpanded) return;
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") setIsExpanded(false);
-      if (event.key === "ArrowRight") showNext();
-      if (event.key === "ArrowLeft") showPrevious();
+      if (event.key === "ArrowRight") {
+        setActiveIndex((current) => (current + 1) % images.length);
+        setThumbStart((current) => images.length > 5 ? (current + 1) % images.length : 0);
+      }
+      if (event.key === "ArrowLeft") {
+        setActiveIndex((current) => (current - 1 + images.length) % images.length);
+        setThumbStart((current) => images.length > 5 ? (current - 1 + images.length) % images.length : 0);
+      }
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);

@@ -6,7 +6,7 @@ export default async function manifest({ params }: { params: Promise<{ partner: 
     name: `Yekola Shop · ${partner}`,
     short_name: partner.slice(0, 12),
     description: "La boutique Yekola de votre partenaire.",
-    start_url: `/p/${partner}`,
+    start_url: `/p/${partner}/`,
     scope: `/p/${partner}/`,
     display: "standalone",
     background_color: "#FFF9F3",

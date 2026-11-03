@@ -1064,3 +1064,14 @@ Ces modules viendront après la connexion admin et la gestion fiable des boutiqu
 - Fichiers modifiés : `src/components/home/TrustBand.tsx` et `src/components/cart/CheckoutForm.tsx`.
 - Commits sur `feat/mobile-first-natural-redesign` : `10dfc2a2` et `619c7eeb`. Aucun merge dans `main`.
 - Validation locale non effectuée depuis cette session GitHub : après récupération, vérifier le bandeau à 320/360/390 px et sur desktop, puis confirmer la couleur du bouton dans le panier. Exécuter `npx tsc --noEmit`, `npx vitest run` et `npm run build`. Aucun résultat de test n'est présumé.
+
+## Refonte de la fiche produit — 3 novembre 2026
+
+- La fiche produit utilise désormais une grille à deux colonnes sur grand écran : galerie média à gauche, informations et actions d'achat à droite. Sur mobile, les blocs s'empilent naturellement sans réduire la zone utile de lecture.
+- Galerie : ratio vertical 4:5, image principale en `object-contain`, badge Bestseller conditionnel, commande d'agrandissement en plein écran, navigation précédente/suivante et cinq vignettes carrées visibles avec état actif.
+- Bloc d'achat : catégorie et référence en sur-titre, titre serif, description courte, prix public/promotionnel et prix client privilégié issus du catalogue, points forts issus exclusivement des données produit, composition des packs, informations d'utilisation et de durée si renseignées.
+- Quantité et actions : stepper tactile, total calculé, bouton principal « Ajouter au panier » orange de marque et action secondaire WhatsApp conservant le vert comme code du canal. Les liens et numéros restent résolus via la boutique active.
+- Rassurance : conseils personnalisés, paiement mobile et livraison selon la zone.
+- Les éléments propres à la maquette de jardinerie (tailles de pots, guide de tailles, avis/notes clients, « pet friendly », « air purifying », livraison gratuite et garantie 30 jours) ne sont pas repris : ces données ne figurent pas dans le modèle produit et ne doivent pas être inventées pour les produits Forever.
+- Fichiers modifiés : `ProductDetail.tsx`, `ProductImageGallery.tsx`, `ProductActions.tsx`, `ProductAccordion.tsx`. Commits : `757f97d2`, `3c0d3502`, `c88ada92`, `1123123f`.
+- Validation locale non effectuée depuis cette session GitHub : récupérer la branche, lancer TypeScript, Vitest et build, puis tester la galerie (y compris plein écran/échappement), l'ajout au panier, la commande WhatsApp et le rendu à 320/360/390/430 px et desktop. Aucun test n'est déclaré réussi. Aucun merge dans `main`.

@@ -14,7 +14,8 @@
     "next": "16.4.3",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "zustand": "^5.0.16"
+    "zustand": "^5.0.16",
+    "@supabase/ssr": "^0.7.0"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",

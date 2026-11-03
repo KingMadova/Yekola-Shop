@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { connection } from "next/server";
 import { requireAdmin } from "@/lib/auth/admin";
+import AdminShell from "../../admin-shell";
 import PartnerStoreForm from "../form";
 
 export const metadata = { title: "Nouvelle boutique | Administration Yekola Shop", robots: { index: false, follow: false } };
@@ -9,24 +10,19 @@ export const metadata = { title: "Nouvelle boutique | Administration Yekola Shop
 type SearchParams = Promise<{ erreur?: string }>;
 
 export default function NewPartnerStorePage({ searchParams }: { searchParams: SearchParams }) {
-  return <Suspense fallback={<main className="min-h-screen bg-slate-50 px-5 py-10 text-slate-500">Préparation du formulaire…</main>}>
-    <NewPartnerStoreContent searchParams={searchParams} />
-  </Suspense>;
+  return <Suspense fallback={<AdminShell active="create"><div className="h-64 animate-pulse rounded-3xl bg-white" /></AdminShell>}><NewPartnerStoreContent searchParams={searchParams} /></Suspense>;
 }
 
 async function NewPartnerStoreContent({ searchParams }: { searchParams: SearchParams }) {
   await connection();
-  await requireAdmin();
+  const { user } = await requireAdmin();
   const params = await searchParams;
 
-  return (
-    <main className="min-h-screen bg-slate-50 px-5 py-10 text-slate-900">
-      <div className="mx-auto max-w-4xl">
-        <Link href="/admin/boutiques" className="text-sm font-medium text-emerald-800 hover:underline">← Gestion des boutiques</Link>
-        <h1 className="mt-6 text-3xl font-bold">Créer une boutique partenaire</h1>
-        <p className="mb-8 mt-2 text-slate-600">La boutique sera créée en attente. Son partenaire ne pourra pas encore s'y connecter.</p>
-        <PartnerStoreForm error={params.erreur} />
-      </div>
-    </main>
-  );
+  return <AdminShell active="create" email={user.email ?? undefined}>
+    <div className="mx-auto max-w-3xl">
+      <Link href="/admin/boutiques" className="text-xs font-bold text-emerald-800 hover:underline">← Retour aux boutiques</Link>
+      <div className="mb-6 mt-5"><p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-emerald-700">Développer le réseau</p><h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Nouvelle boutique</h1><p className="mt-2 text-sm leading-6 text-slate-500">Renseignez les informations du partenaire. La boutique sera créée en attente et aucun accès partenaire ne sera ouvert automatiquement.</p></div>
+      <PartnerStoreForm error={params.erreur} />
+    </div>
+  </AdminShell>;
 }

@@ -38,7 +38,9 @@ export async function proxy(request: NextRequest) {
 
   const url = request.nextUrl.clone();
   url.pathname = `/p/${HOUSE_PARTNER_SLUG}${pathname === "/" ? "" : pathname}`;
-  return NextResponse.rewrite(url, response);
+  const rewriteResponse = NextResponse.rewrite(url);
+  response.cookies.getAll().forEach((cookie) => rewriteResponse.cookies.set(cookie));
+  return rewriteResponse;
 }
 
 export const config = { matcher: ["/:path*"] };

@@ -48,7 +48,7 @@ export default async function PartnerLayout({ children, params }: PartnerLayoutP
       <InterestTracker partnerSlug={partner.slug} />
       <AnnouncementBar />
       <Header />
-      <main id="contenu" className="flex-1 pb-24 md:pb-0">{children}</main>
+      <main id="contenu" className="flex-1 pb-[calc(6rem_+_env(safe-area-inset-bottom))] md:pb-0">{children}</main>
       <Footer />
       <MobileShopNav />
       <CartDrawer />

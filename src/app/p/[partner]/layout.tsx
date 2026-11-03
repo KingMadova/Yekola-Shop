@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import type { ReactNode } from "react";
+import { connection } from "next/server";
+import { Suspense, type ReactNode } from "react";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { AnnouncementBar } from "@/components/layout/AnnouncementBar";
 import { FloatingWhatsAppButton } from "@/components/layout/FloatingWhatsAppButton";
@@ -52,6 +53,14 @@ export default async function PartnerLayout({ children, params }: PartnerLayoutP
       <CartDrawer />
       <LeadCaptureModal />
       <FloatingWhatsAppButton />
+      <Suspense>
+        <DynamicMarker />
+      </Suspense>
     </ShopProvider>
   );
+}
+
+async function DynamicMarker() {
+  await connection();
+  return null;
 }

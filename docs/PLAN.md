@@ -969,3 +969,16 @@ Ces modules viendront après la connexion admin et la gestion fiable des boutiqu
 - Modifications poussées sur `feat/mobile-first-natural-redesign` : `d1fb1332`, `f570552c`, `73b2b2da`. Aucun merge dans `main`.
 - **Validation non effectuée depuis l'environnement GitHub.** Après récupération locale, arrêter le serveur, exécuter `rm -rf .next`, redémarrer `npm run dev`, puis recharger `/admin`, `/admin/boutiques` et `/admin/boutiques/nouvelle`. Vérifier que les deux erreurs signalées ont disparu, que l'accès direct à la création redirige un non-admin et que le formulaire reste visible pour l'administrateur.
 - Relancer ensuite `npx tsc --noEmit`, `npx vitest run` et `npm run build`. Aucun résultat de test n'est présumé ni déclaré réussi. L'espace partenaire `/espace` reste bloqué jusqu'à la livraison et validation complète du back-office.
+
+## Journal de développement — 3 novembre 2026 (stabilisation Suspense et refonte mobile premium du back-office)
+
+- Le propriétaire a remonté l'Insight `blocking-prerender-dynamic` sur `/admin` après l'ajout de `connection()`. La cause était l'absence d'une frontière `<Suspense>` au-dessus de l'appel. La page `/admin` est maintenant un composant synchrone qui place le composant serveur asynchrone `AdminDashboard` (appelant `connection()`, puis `requireAdmin()` et les requêtes Supabase) sous `<Suspense>`. Le fallback affiche une structure de chargement de l'application.
+- La page `/admin/boutiques` conserve son composant asynchrone sous `<Suspense>` ; `/admin/boutiques/nouvelle` conserve la lecture de `searchParams` et la vérification `requireAdmin()` dans le sous-arbre suspendu.
+- Refonte responsive : création de `src/app/admin/admin-shell.tsx` avec identité visuelle Yekola Shop, navigation desktop et barre de navigation mobile fixe, prise en compte de la zone de sécurité iOS, surfaces claires et accents vert profond.
+- Refonte du tableau de bord : panneau d'accueil, indicateurs hiérarchisés, cartes boutiques adaptées au tactile et affichage responsive.
+- Refonte de `/admin/boutiques` : cartes de boutiques sur mobile, tableau sur écran large, boutons tactiles et statuts plus lisibles.
+- Refonte du formulaire de création : champs hauts et tactiles, regroupement des informations, contraste et actions adaptées aux petits écrans. Le flux métier et les validations existantes sont conservés.
+- Le composant de déconnexion propose désormais une présentation compacte pour la barre mobile. Tous les changements restent sur `feat/mobile-first-natural-redesign`; aucun merge dans `main`.
+- Commits du lot : `b2550692`, `714d3769`, `23007ee7`, `c0c84dc5`, `80641d4a`, `fb46116f`, `472b27c6`.
+- **Non vérifié à ce stade :** aucune exécution locale de TypeScript, Vitest, build ni inspection navigateur n'a été faite par l'assistant. Après récupération, exécuter les contrôles et vérifier `/admin`, `/admin/boutiques` et `/admin/boutiques/nouvelle` en largeur mobile (environ 390 px) et desktop. Confirmer notamment l'absence de `blocking-prerender-dynamic`, la visibilité du shell, la barre mobile et l'absence de débordement horizontal.
+- Ne pas démarrer l'espace partenaire `/espace` avant validation complète du back-office par le propriétaire.

@@ -804,3 +804,13 @@ Réviser aussi les titres de sections, descriptions des besoins, cartes produits
 - Commit de correction : `22ba61e9abb47171f5ce4b9ba5ccae8baec6da85`.
 - **Validation locale encore requise :** arrêter puis relancer le serveur de développement, ouvrir `/`, `/catalogue`, `/p/yekola` et `/p/yekola/catalogue`, puis vérifier que l'avertissement `instant-shell-url-data` a disparu et que le contexte de chaque boutique reste correct. Le comportement de navigation client et les performances doivent être contrôlés dans le navigateur.
 - Ne pas considérer ce correctif comme validé avant ces tests ; ne pas fusionner dans `main` sans les validations techniques, fonctionnelles et l'accord explicite du propriétaire.
+
+
+## Journal de développement — 3 novembre 2026 (métadonnées multi-boutiques)
+
+- Après le correctif `instant = false`, les pages testées par le propriétaire répondent `200 OK` et l'avertissement du layout principal n'apparaît plus.
+- Un avertissement distinct a été observé dans `generateMetadata()` : la fonction lit `params.partner` pour décider si la boutique est la boutique maison ou une boutique partenaire. Cette distinction est nécessaire pour préserver l'indexation de Yekola et le `noindex` des boutiques partenaires.
+- Correction appliquée : ajout de la directive `"use cache"` au début de `generateMetadata()`. Les paramètres de route déterminent la clé de cache ; les métadonnées sont donc calculées séparément par slug. La fonction `getPartner(slug)` utilise déjà le cache Next.js et son tag `partner:<slug>`.
+- Commit : `823f4b0acef912a75dd4dc5b7782fe6f3cb8eb94`.
+- **Validation locale requise :** `git pull --ff-only`, redémarrer `npm run dev`, ouvrir les routes maison et partenaire, vérifier l'absence de l'avertissement `blocking-prerender-metadata-runtime`, puis inspecter les balises robots/canonical : Yekola doit rester indexable ; les partenaires doivent rester `noindex, follow` avec canonical vers le site maison.
+- Ne pas fusionner dans `main` avant validations techniques et SEO réelles.

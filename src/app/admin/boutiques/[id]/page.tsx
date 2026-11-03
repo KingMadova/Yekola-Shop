@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/admin";
 import PartnerStoreForm from "../form";
 
-export const dynamic = "force-dynamic";
 export const metadata = { title: "Modifier une boutique | Administration Yekola Shop", robots: { index: false, follow: false } };
 
 type Params = Promise<{ id: string }>;

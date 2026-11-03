@@ -16,7 +16,11 @@ function readText(formData: FormData, key: string) {
   return typeof value === "string" ? value.trim() : "";
 }
 
-function validateStore(formData: FormData) {
+type StoreValidation =
+  | { value: { display_name: string; slug: string; whatsapp_number: string; email: string | null; fbo_id: string | null; city: string | null } }
+  | { error: string };
+
+function validateStore(formData: FormData): StoreValidation {
   const displayName = readText(formData, "display_name");
   const slug = readText(formData, "slug").toLowerCase();
   const whatsappNumber = readText(formData, "whatsapp_number").replace(/[\\s+()-]/g, "");

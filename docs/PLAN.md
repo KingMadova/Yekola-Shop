@@ -941,3 +941,12 @@ Ces modules viendront après la connexion admin et la gestion fiable des boutiqu
 - À valider localement après récupération : arrêter le serveur Next.js, supprimer le cache généré avec rm -rf .next, puis exécuter npx tsc --noEmit, npx vitest run et npm run build. Cette suppression est destinée uniquement aux fichiers générés, pas aux sources.
 - Les contrôles précédents montrent 41 tests réussis ; ils ne valident pas encore le correctif présent. Aucun test navigateur ni mutation Supabase réelle n'a été effectué.
 - Les modifications restent sur feat/mobile-first-natural-redesign. Aucun merge dans main. L'espace partenaire /espace demeure bloqué jusqu'à la validation complète du back-office.
+
+
+## Journal de développement — 3 novembre 2026 (métadonnées dynamiques des boutiques)
+
+- Le propriétaire a signalé l'erreur Next.js `blocking-prerender-metadata-runtime` sur `/p/[partner]/devenir-partenaire`. La fonction `generateMetadata()` lit `params.partner` pour préserver les règles SEO distinctes entre la boutique maison et les boutiques partenaires.
+- Le correctif choisi est le marqueur dynamique officiel : un composant serveur dédié appelle `connection()` et est placé dans une frontière `<Suspense>` dans le layout partagé. Le contenu visuel existant reste hors de cette frontière ; elle ne remplace ni n'enveloppe le corps de page. Les métadonnées conditionnelles (Yekola indexable, partenaires `noindex, follow` avec canonical maison) sont conservées.
+- Le choix dynamique est volontaire : remplacer ces métadonnées par un objet statique unique risquerait d'appliquer la mauvaise règle d'indexation à l'une des catégories de boutiques.
+- **Validation navigateur non effectuée dans cette session** : aucun navigateur pilotable n'est disponible dans l'environnement d'édition GitHub. Après récupération, recharger `/p/yekola/devenir-partenaire` et contrôler le rendu visible ainsi que l'absence de l'Insight ; vérifier également une route sœur du layout, notamment `/p/yekola` et `/p/yekola/catalogue`. Ne pas considérer le correctif comme validé visuellement avant ce contrôle.
+- Les contrôles TypeScript, Vitest et build doivent être relancés après récupération. Les changements restent sur `feat/mobile-first-natural-redesign` ; aucun merge dans `main`.

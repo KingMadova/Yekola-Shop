@@ -51,10 +51,11 @@ type ShopWhatsAppLinkProps = {
   goal?: HealthGoal;
   children: ReactNode;
   className?: string;
+  "aria-label"?: string;
 };
 
 /** Lien WhatsApp utilisant toujours le numéro et le nom de la boutique active. */
-export function ShopWhatsAppLink({ kind, goal, children, className }: ShopWhatsAppLinkProps) {
+export function ShopWhatsAppLink({ kind, goal, children, className, "aria-label": ariaLabel }: ShopWhatsAppLinkProps) {
   const { partner, whatsappUrl } = useShop();
   let message: string;
   if (kind === "need" && goal) message = buildNeedAdviceMessage(goal, partner.displayName);
@@ -62,7 +63,7 @@ export function ShopWhatsAppLink({ kind, goal, children, className }: ShopWhatsA
   else if (kind === "distributor") message = buildDistributorMessage(partner.displayName);
   else message = buildAdviceMessage(partner.displayName);
 
-  return <a href={whatsappUrl(message)} target="_blank" rel="noopener noreferrer" className={className}>{children}</a>;
+  return <a href={whatsappUrl(message)} target="_blank" rel="noopener noreferrer" aria-label={ariaLabel} className={className}>{children}</a>;
 }
 
 export function ShopWelcomeText({ fallback }: { fallback: string }) {

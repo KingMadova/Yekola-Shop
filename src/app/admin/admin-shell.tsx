@@ -23,7 +23,7 @@ export default function AdminShell({ children, active, email }: AdminShellProps)
             <span><span className="block text-[15px] font-extrabold tracking-tight">Yekola <span className="text-emerald-700">Shop</span></span><span className="block text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Espace administration</span></span>
           </Link>
           <nav className="hidden items-center gap-1 md:flex" aria-label="Navigation principale">
-            {navItems.map(item => <Link key={item.key} href={item.href} className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition ${active === item.key ? "bg-emerald-50 text-emerald-900" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`}>{item.label}</Link>)}
+            {navItems.map(item => <Link key={item.key} href={item.href} className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition ${active === item.key || (active === "create" && item.key === "stores") ? "bg-emerald-50 text-emerald-900" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`}>{item.label}</Link>)}
           </nav>
           <div className="flex items-center gap-3">
             <div className="hidden text-right sm:block"><p className="text-xs font-semibold text-slate-700">Administrateur</p><p className="max-w-44 truncate text-[11px] text-slate-400">{email ?? "Compte sécurisé"}</p></div>
@@ -35,8 +35,11 @@ export default function AdminShell({ children, active, email }: AdminShellProps)
       <main className="mx-auto max-w-7xl px-4 pb-8 pt-6 sm:px-6 sm:pt-9 lg:px-8">{children}</main>
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/80 bg-white/95 px-5 pb-[max(env(safe-area-inset-bottom),12px)] pt-2 shadow-[0_-8px_30px_rgba(15,45,32,0.08)] backdrop-blur-xl md:hidden" aria-label="Navigation mobile">
         <div className="mx-auto flex max-w-md items-center justify-around">
-          {navItems.map(item => <Link key={item.key} href={item.href} className={`flex min-w-24 flex-col items-center gap-1 rounded-xl px-4 py-1.5 text-[11px] font-bold ${active === item.key ? "text-emerald-900" : "text-slate-400"}`}><span className={`grid size-8 place-items-center rounded-xl text-xl ${active === item.key ? "bg-emerald-100" : "bg-transparent"}`}>{item.icon}</span>{item.short}</Link>)}
-          <div className="flex min-w-24 flex-col items-center gap-1 text-[11px] font-bold text-slate-400"><span className="grid size-8 place-items-center rounded-xl text-xl">⋯</span><span className="sr-only">Autres options</span><span className="md:hidden"><AdminSignOut /></span></div>
+          {navItems.map(item => {
+            const selected = active === item.key || (active === "create" && item.key === "stores");
+            return <Link key={item.key} href={item.href} className={`flex min-w-24 flex-col items-center gap-1 rounded-xl px-4 py-1.5 text-[11px] font-bold ${selected ? "text-emerald-900" : "text-slate-400"}`}><span className={`grid size-8 place-items-center rounded-xl text-xl ${selected ? "bg-emerald-100" : "bg-transparent"}`}>{item.icon}</span>{item.short}</Link>;
+          })}
+          <div className="flex min-w-20 flex-col items-center gap-1"><span className="grid size-8 place-items-center rounded-xl bg-slate-50 text-lg text-slate-500">↪</span><AdminSignOut compact /></div>
         </div>
       </nav>
     </div>

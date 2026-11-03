@@ -1,6 +1,6 @@
 # Plan de projet : Boutique Forever (dépôt `yekola-shop`)
 
-Dernière mise à jour : 3 novembre 2026 (décisions commerciales VIP et codes promo ajoutées). Propriétaire : Alvine YOKA (Pointe-Noire). Interface, textes et commentaires en français.
+Dernière mise à jour : 3 novembre 2026 (réorientation prioritaire vers le back-office et l'administration des boutiques). Propriétaire : Alvine YOKA (Pointe-Noire). Interface, textes et commentaires en français.
 
 ## 0. À lire en premier (reprise par une autre personne)
 
@@ -127,7 +127,7 @@ Variables d'environnement actuelles (`.env.example`) :
 
 ### PAS ENCORE FAIT (résumé, détail en sections 6 bis et 7)
 
-À terminer : validation fonctionnelle complète contre Supabase réel (création/dédoublonnage des leads, RLS et parcours PDF), validation locale du routage public multi-boutiques, tests de bout en bout sur téléphone, exports CSV/PDF et espace partenaire, back-office `/admin`, interface de gestion des promos/packs/offres, compression d'images, PWA, page « Conditions générales de vente », photos et préparation de la mise en production.
+À terminer : **back-office `/admin` (priorité immédiate : accès administrateur sécurisé puis gestion des boutiques partenaires)**, validation fonctionnelle complète contre Supabase réel (création/dédoublonnage des leads, RLS et parcours PDF), validation locale du routage public multi-boutiques, tests de bout en bout sur téléphone, exports CSV/PDF et espace partenaire, interface de gestion des promos/packs/offres, compression d'images, PWA, page « Conditions générales de vente », photos et préparation de la mise en production.
 
 ### Limites actuelles à connaître
 
@@ -814,3 +814,71 @@ Réviser aussi les titres de sections, descriptions des besoins, cartes produits
 - Commit : `823f4b0acef912a75dd4dc5b7782fe6f3cb8eb94`.
 - **Validation locale requise :** `git pull --ff-only`, redémarrer `npm run dev`, ouvrir les routes maison et partenaire, vérifier l'absence de l'avertissement `blocking-prerender-metadata-runtime`, puis inspecter les balises robots/canonical : Yekola doit rester indexable ; les partenaires doivent rester `noindex, follow` avec canonical vers le site maison.
 - Ne pas fusionner dans `main` avant validations techniques et SEO réelles.
+
+
+## Réorientation du plan — 3 novembre 2026 : priorité au back-office
+
+### Décision du propriétaire
+
+Le développement public multi-boutiques ne peut pas avancer correctement tant que le propriétaire ne dispose pas d'un moyen clair et sécurisé de se connecter à l'administration. À ce jour, le propriétaire ne sait pas comment accéder à l'espace admin ; la base Supabase contient la table `admins`, mais aucun parcours d'administration utilisable n'a encore été confirmé.
+
+**La prochaine phase de développement est donc le back-office.** La correction secondaire de l'avertissement de métadonnées Next.js est mise en attente, sans abandon des exigences SEO déjà définies.
+
+### Objectif de la phase
+
+Depuis une interface protégée, le propriétaire doit pouvoir se connecter à l'administration et créer, consulter, modifier, activer ou suspendre les boutiques partenaires, sans éditer directement les tables Supabase.
+
+### Ordre obligatoire des travaux
+
+1. **Audit de l'existant, sans modification préalable :**
+   - inventorier les routes `/admin`, les composants et les API déjà présents ou absents ;
+   - examiner la table `admins`, les migrations, les politiques RLS, la fonction `is_admin()` et les mécanismes Supabase Auth ;
+   - vérifier comment un administrateur est actuellement identifié et comment un premier compte peut être provisionné ;
+   - repérer toutes les routes serveur qui utilisent `SUPABASE_SERVICE_ROLE_KEY` et vérifier leur authentification/autorisation.
+2. **Définir et mettre en place l'accès initial de manière sécurisée :**
+   - page de connexion admin, gestion de session, protection serveur de toutes les pages et actions admin, déconnexion ;
+   - procédure documentée de création ou d'invitation du premier administrateur ;
+   - aucun mot de passe, jeton ou secret codé en dur ; aucune clé `service_role` dans le navigateur ; aucune inscription admin publique.
+3. **Livrer un tableau de bord admin minimal :**
+   - accès évident à la gestion des boutiques ;
+   - états de chargement, erreurs, absence de données et confirmation des actions ;
+   - interface responsive et en français.
+4. **Livrer la gestion des boutiques partenaires :**
+   - liste avec recherche et statut ;
+   - création avec validation du slug unique, nom public et numéro WhatsApp obligatoire, puis champs facultatifs selon le modèle existant ;
+   - modification des informations autorisées ;
+   - activation et suspension avec confirmation ;
+   - aucune modification des règles métier, du catalogue global ou des prix sans décision explicite du propriétaire.
+5. **Vérifier les autorisations et l'isolation :**
+   - visiteur non connecté : accès admin refusé ;
+   - partenaire connecté : accès admin refusé ;
+   - administrateur autorisé : actions permises selon son rôle ;
+   - une boutique ne peut pas modifier les données d'une autre boutique ;
+   - les routes API vérifient elles-mêmes les droits côté serveur, même si l'interface masque les boutons.
+6. **Valider dans le navigateur et avec Supabase réel**, puis mettre à jour ce plan avant de passer aux autres modules du back-office.
+
+### Hors périmètre de la première livraison
+
+- L'espace partenaire `/espace` et le suivi des leads par les partenaires.
+- La gestion des produits, prix, promotions, packs et offres.
+- Les exports CSV/PDF, la PWA et les autres fonctionnalités secondaires.
+
+Ces modules viendront après la connexion admin et la gestion fiable des boutiques.
+
+### État de départ confirmé le 3 novembre 2026
+
+- La table `public.partners` contient uniquement la boutique maison `yekola`, avec `is_house = true` et `status = active`.
+- La vue `public.partners_public` retourne ce même enregistrement unique.
+- Aucun partenaire secondaire n'est actuellement enregistré ; il n'existe donc pas encore de boutique partenaire réelle pour tester son SEO.
+- Le propriétaire a confirmé ne pas savoir comment se connecter au back-office. Le premier livrable doit résoudre ce blocage avant de demander la création de boutiques dans Supabase.
+- Ne créer aucune donnée partenaire fictive pour les besoins des tests ; utiliser des données de test isolées ou un environnement dédié si nécessaire.
+
+### Critères d'acceptation de la première livraison
+
+- Le propriétaire dispose d'une procédure de connexion et de récupération/provisionnement initiale compréhensible et testée.
+- `/admin` redirige ou refuse proprement l'accès lorsqu'aucune session administrateur valide n'existe.
+- Un administrateur connecté peut consulter et gérer les boutiques partenaires depuis l'interface.
+- Les contrôles d'accès sont appliqués côté serveur et couverts par des tests.
+- Les migrations SQL, politiques RLS et éventuelles procédures d'amorçage sont documentées et réexécutables sans exposer de secret.
+- Les commandes `npx tsc --noEmit`, `npx vitest run` et `npm run build` passent avant toute fusion ; les tests manuels Supabase et navigateur sont consignés séparément.
+- Tout le travail reste sur `feat/mobile-first-natural-redesign`. Aucune fusion dans `main` sans l'accord explicite du propriétaire.

@@ -931,3 +931,13 @@ Ces modules viendront après la connexion admin et la gestion fiable des boutiqu
 - **À valider localement :** TypeScript, Vitest, build, création/modification/activation/suspension sur Supabase réel, unicité des slugs et comportement RLS. Aucune création de boutique réelle n'a été effectuée par l'assistant.
 
 **L'espace partenaire `/espace` reste bloqué jusqu'à la livraison et validation de tous les modules administrateur prévus.**
+
+
+## Journal de développement — 3 novembre 2026 (correction de compatibilité Cache Components)
+
+- Les premières vérifications locales du module de gestion des boutiques ont confirmé 41 tests Vitest réussis, mais ont révélé des erreurs TypeScript sur la validation du formulaire et des types de routes générés dans .next/dev/types.
+- Le build a identifié une incompatibilité certaine : les exports de segment dynamic = force-dynamic ne sont pas autorisés lorsque cacheComponents: true est activé. Ces exports ont été retirés des pages admin ; leur contenu reste protégé par requireAdmin() et les données utilisateur ne sont pas mises en cache publiquement.
+- Le type de retour de la validation des boutiques est désormais une union discriminée explicite. Les expressions régulières du numéro WhatsApp et de l'adresse e-mail ont également été corrigées pour reconnaître les espaces et caractères attendus.
+- À valider localement après récupération : arrêter le serveur Next.js, supprimer le cache généré avec rm -rf .next, puis exécuter npx tsc --noEmit, npx vitest run et npm run build. Cette suppression est destinée uniquement aux fichiers générés, pas aux sources.
+- Les contrôles précédents montrent 41 tests réussis ; ils ne valident pas encore le correctif présent. Aucun test navigateur ni mutation Supabase réelle n'a été effectué.
+- Les modifications restent sur feat/mobile-first-natural-redesign. Aucun merge dans main. L'espace partenaire /espace demeure bloqué jusqu'à la validation complète du back-office.

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, BadgePercent, PackageOpen } from "lucide-react";
 import { ShopLink } from "@/components/providers/ShopContext";
 import { SafeImage } from "@/components/ui/SafeImage";
@@ -9,6 +9,7 @@ import type { Product } from "@/lib/types";
 
 export function HeroOffersCarousel({ products }: { products: Product[] }) {
   const rail = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
   if (products.length === 0) return null;
 
   const move = (direction: -1 | 1) => {
@@ -27,7 +28,7 @@ export function HeroOffersCarousel({ products }: { products: Product[] }) {
           <button type="button" onClick={() => move(1)} aria-label="Offre suivante" className="grid size-8 place-items-center rounded-full border border-white/50 bg-white/10 hover:bg-white/20"><ArrowRight className="size-4" /></button>
         </div>}
       </div>
-      <div ref={rail} className="flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain rounded-2xl [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Carrousel des offres">
+      <div ref={rail} className="flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain rounded-2xl [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Carrousel des offres" onScroll={(event) => setActiveIndex(Math.round(event.currentTarget.scrollLeft / Math.max(1, event.currentTarget.clientWidth)))}>
         {products.map((product) => {
           const image = product.images[0];
           const hasPromo = Boolean(product.compareAtPrice && product.compareAtPrice > product.pricePublic);
@@ -54,7 +55,7 @@ export function HeroOffersCarousel({ products }: { products: Product[] }) {
         })}
       </div>
       {products.length > 1 && <div className="mt-1.5 flex items-center justify-center gap-1.5 sm:hidden" aria-hidden="true">
-        {products.slice(0, 6).map((product, index) => <span key={product.code} className={`h-1 rounded-full ${index === 0 ? "w-4 bg-white" : "w-1.5 bg-white/50"}`} />)}
+        {products.slice(0, 6).map((product, index) => <span key={product.code} className={`h-1 rounded-full ${index === activeIndex ? "w-4 bg-white" : "w-1.5 bg-white/50"}`} />)}
       </div>}
     </div>
   );

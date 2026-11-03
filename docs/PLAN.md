@@ -1016,3 +1016,12 @@ Ces modules viendront après la connexion admin et la gestion fiable des boutiqu
 - Brief visuel source : planche « Yekola Business » fournie le 3 novembre 2026.
 - Priorité : appliquer la nouvelle identité visuelle et améliorer le parcours d'achat mobile. Cette évolution ne change pas les règles de prix, de commandes WhatsApp ni l'isolation multi-boutiques.
 - Tests locaux et vérification visuelle non exécutés par l'assistant ; validation par le propriétaire requise avant de considérer cette refonte comme terminée.
+
+## Journal de développement — 3 novembre 2026 (reprise du brief hero, offres et identité visuelle)
+
+- Reprise du brief existant : la charte Yekola Business orange/ivoire, les polices Montserrat/Poppins, l'interdiction absolue de modifier le logo, l'agrandissement interne du visuel du hero, le carrousel d'offres, le message de bienvenue partenaire et les exigences mobile-first restent les références.
+- Audit du code sur `feat/mobile-first-natural-redesign` : la page `/offres`, l'onglet mobile « Offres », le lien desktop « Nos offres », le composant `OffersCarousel` et `PartnerWelcomeBar` existent déjà. Le message de bienvenue utilise bien le nom du partenaire actif et ne s'affiche pas sur la boutique maison.
+- Le hero affiche encore une seule carte produit compacte ; c'est le point d'interface prioritaire à remplacer/faire évoluer. La palette orange/ivoire et les polices de la charte sont déjà présentes dans `globals.css` et le layout, mais plusieurs composants ont encore des couleurs écrites en dur : harmonisation à poursuivre.
+- Aucun fichier logo source ni icône favicon/PWA de marque n'a pu être localisé parmi les chemins publics habituels du dépôt. Ne pas fabriquer de logo de remplacement et ne pas modifier les fichiers de marque sans disposer du fichier original. L'utilisateur devra joindre à cette conversation le logo original (idéalement PNG transparent ou SVG) et la planche de charte si elle n'est pas déjà présente dans le dépôt.
+- Le travail doit conserver les règles multi-boutiques, les liens via `ShopLink`, les numéros WhatsApp propres à chaque partenaire et les offres réelles issues du catalogue. Aucune remise, urgence ou date de fin ne doit être inventée.
+- Validation locale et visuelle non effectuée depuis GitHub. Après récupération, exécuter TypeScript, Vitest et build, puis vérifier 320/360/390/430 px et desktop. Aucun merge dans `main`.

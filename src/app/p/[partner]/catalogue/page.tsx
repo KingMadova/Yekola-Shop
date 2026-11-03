@@ -41,8 +41,8 @@ async function CatalogueContent({ searchParams }: CataloguePageProps) {
       {query.goal && <InterestSignal goal={query.goal} origin="catalogue" />}
 
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-[#173f35]">{title}</h1>
-        <p className="mt-1 text-[#68756c]" aria-live="polite">
+        <h1 className="text-3xl font-bold tracking-tight text-[#c1440e]">{title}</h1>
+        <p className="mt-1 text-[#71645d]" aria-live="polite">
           {results.length} produit{results.length > 1 ? "s" : ""}
         </p>
       </div>
@@ -52,18 +52,18 @@ async function CatalogueContent({ searchParams }: CataloguePageProps) {
       {results.length > 0 ? (
         <ProductGrid products={results} />
       ) : (
-        <div className="flex flex-col items-start gap-3 rounded-2xl border border-[#e9e5d9] bg-[#fbfaf6] p-6">
-          <p className="text-lg font-semibold text-[#26392e]">
+        <div className="flex flex-col items-start gap-3 rounded-2xl border border-[#f2d7c2] bg-[#fff9f3] p-6">
+          <p className="text-lg font-semibold text-[#30231d]">
             {query.goal ? "Nous préparons la sélection pour ce besoin." : "Aucun produit ne correspond à votre recherche."}
           </p>
-          <p className="max-w-prose text-[#68756c]">
+          <p className="max-w-prose text-[#71645d]">
             Écrivez-nous sur WhatsApp : un distributeur vous recommande les bons produits.
           </p>
           <div className="flex flex-wrap gap-3">
             <ShopWhatsAppLink kind={query.goal ? "need" : "advice"} goal={query.goal ?? undefined} className={btnWhatsApp}>
               Demander conseil sur WhatsApp
             </ShopWhatsAppLink>
-            <ShopLink href="/catalogue" className={`inline-flex min-h-12 items-center rounded-xl px-4 font-semibold text-[#173f35] underline ${focusRing}`}>
+            <ShopLink href="/catalogue" className={`inline-flex min-h-12 items-center rounded-xl px-4 font-semibold text-[#c1440e] underline ${focusRing}`}>
               Voir tout le catalogue
             </ShopLink>
           </div>

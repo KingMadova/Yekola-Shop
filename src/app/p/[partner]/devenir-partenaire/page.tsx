@@ -21,7 +21,8 @@ const steps = [
 
 export default function BecomePartnerPage() {
   return (
-    <section className={container + " flex flex-col gap-10 py-8 sm:py-12"}>
+    <>
+      <section className={container + " flex flex-col gap-10 py-8 sm:py-12"}>
       <header className="max-w-3xl">
         <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-[#9a7b40]">Projet professionnel</p>
         <h1 className="text-3xl font-bold tracking-tight text-[#173f35] sm:text-5xl">Et si vous développiez votre propre activité ?</h1>
@@ -60,10 +61,11 @@ export default function BecomePartnerPage() {
         <BookOpen aria-hidden className="hidden size-5 shrink-0 sm:block" />
         <Briefcase aria-hidden className="hidden size-5 shrink-0 sm:block" />
       </div>
-    </section>
-    <Suspense>
-      <DynamicMarker />
-    </Suspense>
+      </section>
+      <Suspense>
+        <DynamicMarker />
+      </Suspense>
+    </>
   );
 }
 

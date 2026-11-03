@@ -766,3 +766,10 @@ Réviser aussi les titres de sections, descriptions des besoins, cartes produits
 - Le contrôle local fourni par le propriétaire indique 40 tests réussis sur 41 ; le test WhatsApp échouait à cause de l'ancien appel de test incomplet. Le résultat après correction reste à confirmer localement.
 - Les erreurs TypeScript concernent des fichiers générés dans `.next/dev/types/` avec du contenu syntaxiquement tronqué. Hypothèse à vérifier : cache Next.js local corrompu/incomplet. Ne pas modifier ni versionner ces fichiers générés et ne pas contourner le contrôle en excluant les types Next.js. Procédure de vérification locale : arrêter `next dev`, supprimer `.next` avec `rm -rf .next`, puis relancer typage, tests et build.
 - **État :** correctif du test poussé sur `feat/mobile-first-natural-redesign`. Les commandes `npx tsc --noEmit`, `npx vitest run` et `npm run build` doivent encore être exécutées sur le poste du propriétaire ; aucune fusion dans `main` n'est autorisée avant leur réussite.
+
+## Journal de développement — 3 novembre 2026 (correction de la page d'erreur)
+
+- Les contrôles locaux du propriétaire confirment désormais **41 tests réussis sur 41** après la correction du test de commande 1 clic.
+- La suppression de `.next` a éliminé les erreurs de syntaxe des types générés. Le typage et le build ont ensuite révélé deux erreurs réelles dans `src/app/error.tsx` : cet écran global appelait `buildAdviceMessage()` sans nom de partenaire et `buildWhatsAppUrl()` sans numéro.
+- Correction poussée : la page d'erreur globale ne propose plus un contact WhatsApp sans contexte de boutique. Elle propose de réessayer ou de revenir à l'accueil. Le parcours WhatsApp des boutiques reste géré par `ShopContext`, qui utilise le nom et le numéro de la boutique active.
+- **À revalider localement après récupération du commit :** `npx tsc --noEmit`, `npx vitest run` et `npm run build`. Le succès des tests est confirmé avant ce dernier correctif ; le typage et le build après correction restent à confirmer par le propriétaire. Ne pas fusionner dans `main` avant les trois validations.

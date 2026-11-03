@@ -917,9 +917,17 @@ Ces modules viendront après la connexion admin et la gestion fiable des boutiqu
 
 1. [x] Socle initial de connexion et vérification du rôle côté serveur.
 2. [x] Tableau de bord initial et lecture de la liste des boutiques.
-3. [ ] Création, modification, activation et suspension des boutiques.
+3. [ ] Création, modification, activation et suspension des boutiques — **première implémentation ajoutée sur la branche, validation locale et navigateur en attente**.
 4. [ ] Modules de gestion du catalogue, des prix, packs, promotions, offres et témoignages.
 5. [ ] Gestion des leads, commandes et paramètres.
 6. [ ] Tests sécurité, RLS, parcours navigateur et validation bout en bout.
+
+**Lot livré dans cette session (validation requise avant de cocher l'étape) :**
+- Ajout de `/admin/boutiques` pour lister les boutiques, voir leur URL et changer leur statut.
+- Ajout de `/admin/boutiques/nouvelle` et `/admin/boutiques/[id]` pour créer et modifier les boutiques partenaires.
+- Le formulaire valide le slug réservé/format, le numéro WhatsApp congolais et l'adresse e-mail.
+- Les mutations serveur appellent d'abord `requireAdmin()`, puis utilisent le client privilégié uniquement côté serveur. La boutique maison est exclue des modifications et changements de statut.
+- Le tableau de bord pointe vers le module de gestion des boutiques.
+- **À valider localement :** TypeScript, Vitest, build, création/modification/activation/suspension sur Supabase réel, unicité des slugs et comportement RLS. Aucune création de boutique réelle n'a été effectuée par l'assistant.
 
 **L'espace partenaire `/espace` reste bloqué jusqu'à la livraison et validation de tous les modules administrateur prévus.**

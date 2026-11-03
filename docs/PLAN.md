@@ -773,3 +773,12 @@ Réviser aussi les titres de sections, descriptions des besoins, cartes produits
 - La suppression de `.next` a éliminé les erreurs de syntaxe des types générés. Le typage et le build ont ensuite révélé deux erreurs réelles dans `src/app/error.tsx` : cet écran global appelait `buildAdviceMessage()` sans nom de partenaire et `buildWhatsAppUrl()` sans numéro.
 - Correction poussée : la page d'erreur globale ne propose plus un contact WhatsApp sans contexte de boutique. Elle propose de réessayer ou de revenir à l'accueil. Le parcours WhatsApp des boutiques reste géré par `ShopContext`, qui utilise le nom et le numéro de la boutique active.
 - **À revalider localement après récupération du commit :** `npx tsc --noEmit`, `npx vitest run` et `npm run build`. Le succès des tests est confirmé avant ce dernier correctif ; le typage et le build après correction restent à confirmer par le propriétaire. Ne pas fusionner dans `main` avant les trois validations.
+
+## Journal de développement — 3 novembre 2026 (validation technique réussie)
+
+- Après récupération des commits de correction, le propriétaire a exécuté les trois contrôles sur son poste.
+- `npx tsc --noEmit` : **réussi**, sans erreur TypeScript.
+- `npx vitest run` : **7 fichiers de test réussis, 41 tests sur 41**.
+- `npm run build` : **réussi** avec Next.js 16.4.3 (Turbopack). Compilation, vérification TypeScript, collecte des données et génération des 77 pages terminées sans erreur.
+- Les erreurs de types générés dans `.next/dev/types` ont disparu après suppression du cache ; les deux erreurs de paramètres dans `src/app/error.tsx` ont été corrigées.
+- **État : validation technique locale réussie pour le commit récupéré.** Cela ne remplace pas les tests fonctionnels et visuels : vérifier les URL historiques, `/p/yekola`, une boutique partenaire active, les coordonnées WhatsApp propres à chaque boutique, l'isolation des paniers et le parcours mobile. La fusion dans `main` reste soumise à ces vérifications et à l'accord explicite du propriétaire.

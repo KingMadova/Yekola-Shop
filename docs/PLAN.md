@@ -1056,3 +1056,11 @@ Ces modules viendront après la connexion admin et la gestion fiable des boutiqu
 - Les anciennes couleurs vertes ont été retirées des pages partenaires `/besoins` et `/devenir-partenaire`, au profit des couleurs orange/ivoire de la charte Yekola Business. Les états actifs, boutons, textes, fonds, bordures et skeletons concernés ont été harmonisés.
 - Vérification par recherche de chaînes dans le dépôt : les anciennes teintes exactes `#173f35`, `#315d47`, `#edf1e9` ne sont plus retrouvées. Cela ne remplace pas une inspection visuelle de toutes les pages.
 - Modifications poussées sur `feat/mobile-first-natural-redesign`. **TypeScript, Vitest, build et navigateur non exécutés par l'assistant** ; validation locale nécessaire, notamment pour la rotation à 3 secondes, le rendu des images carrées, le tactile et les largeurs 320/360/390/430 px. Aucun merge dans `main`.
+
+## Ajustements UX — bandeau d'informations et bouton panier (3 novembre 2026)
+
+- Sur mobile, le bandeau « Informations pratiques » sous le hero affiche désormais les quatre icônes sur une seule rangée compacte. Les intitulés et descriptions sont visuellement masqués sur petit écran mais restent accessibles aux technologies d'assistance ; ils réapparaissent à partir du breakpoint tablette.
+- Le bouton « Confirmer ma commande sur WhatsApp » du panier utilise maintenant l'orange profond de la charte Yekola Business (#C1440E), avec un état hover plus sombre et un contour de focus assorti. Le vert WhatsApp n'est plus utilisé comme couleur de fond de ce bouton.
+- Fichiers modifiés : `src/components/home/TrustBand.tsx` et `src/components/cart/CheckoutForm.tsx`.
+- Commits sur `feat/mobile-first-natural-redesign` : `10dfc2a2` et `619c7eeb`. Aucun merge dans `main`.
+- Validation locale non effectuée depuis cette session GitHub : après récupération, vérifier le bandeau à 320/360/390 px et sur desktop, puis confirmer la couleur du bouton dans le panier. Exécuter `npx tsc --noEmit`, `npx vitest run` et `npm run build`. Aucun résultat de test n'est présumé.

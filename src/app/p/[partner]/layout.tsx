@@ -6,6 +6,7 @@ import { AnnouncementBar } from "@/components/layout/AnnouncementBar";
 import { FloatingWhatsAppButton } from "@/components/layout/FloatingWhatsAppButton";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
+import { MobileShopNav } from "@/components/layout/MobileShopNav";
 import { InterestTracker } from "@/components/lead/InterestTracker";
 import { LeadCaptureModal } from "@/components/lead/LeadCaptureModal";
 import { CartHydrator } from "@/components/providers/CartHydrator";
@@ -47,12 +48,12 @@ export default async function PartnerLayout({ children, params }: PartnerLayoutP
       <InterestTracker partnerSlug={partner.slug} />
       <AnnouncementBar />
       <Header />
-      <main id="contenu" className="flex-1">{children}</main>
+      <main id="contenu" className="flex-1 pb-24 md:pb-0">{children}</main>
       <Footer />
+      <MobileShopNav />
       <CartDrawer />
       <LeadCaptureModal />
       <FloatingWhatsAppButton />
     </ShopProvider>
   );
 }
-

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { ShopLink } from "@/components/providers/ShopContext";
 import { Suspense } from "react";
 import { ProductGrid } from "@/components/catalogue/ProductGrid";
 import { container } from "@/components/ui/styles";
@@ -8,6 +8,7 @@ import { getCatalog } from "@/lib/data/catalog";
 export const metadata: Metadata = {
   title: "Nos packs",
   description: "Retrouvez les packs Forever Living et leurs tarifs en FCFA.",
+  alternates: { canonical: `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3001"}/packs` },
 };
 
 export default function PacksPage() {
@@ -25,7 +26,7 @@ export default function PacksPage() {
         <PacksContent />
       </Suspense>
 
-      <p className="text-sm text-[#68756c]">Vous hésitez entre plusieurs références ? <Link href="/besoins" className="font-semibold text-[#173f35] underline underline-offset-4">Parlons de votre besoin.</Link></p>
+      <p className="text-sm text-[#68756c]">Vous hésitez entre plusieurs références ? <ShopLink href="/besoins" className="font-semibold text-[#173f35] underline underline-offset-4">Parlons de votre besoin.</ShopLink></p>
     </section>
   );
 }
@@ -39,7 +40,7 @@ async function PacksContent() {
     <div className="rounded-2xl border border-[#e9e5d9] bg-white p-6">
       <h2 className="text-lg font-semibold text-[#26392e]">Les packs arrivent bientôt.</h2>
       <p className="mt-2 text-sm text-[#68756c]">Vous pouvez déjà parcourir les autres références du catalogue.</p>
-      <Link href="/catalogue" className="mt-4 inline-flex min-h-11 items-center font-semibold text-[#173f35] underline underline-offset-4">Voir le catalogue</Link>
+      <ShopLink href="/catalogue" className="mt-4 inline-flex min-h-11 items-center font-semibold text-[#173f35] underline underline-offset-4">Voir le catalogue</ShopLink>
     </div>
   );
 }

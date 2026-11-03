@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { ShopLink, ShopWhatsAppLink } from "@/components/providers/ShopContext";
 import { MessageCircle, Users, BookOpen, Briefcase } from "lucide-react";
 import { container } from "@/components/ui/styles";
 import { DISTRIBUTOR_MENTION } from "@/lib/config";
-import { buildDistributorMessage, buildWhatsAppUrl } from "@/lib/whatsapp";
+
 
 export const metadata: Metadata = {
   title: "Devenir partenaire",
+  alternates: { canonical: `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3001"}/devenir-partenaire` },
   description: "Découvrez l'activité de distributeur indépendant Forever Living et échangez avec un conseiller avant de prendre votre décision.",
 };
 
@@ -25,9 +26,9 @@ export default function BecomePartnerPage() {
         <p className="mt-4 text-base leading-relaxed text-[#68756c] sm:text-lg">
           Découvrez le modèle de distributeur indépendant Forever Living, posez vos questions et prenez le temps de vérifier si cette activité correspond à vos objectifs.
         </p>
-        <a href={buildWhatsAppUrl(buildDistributorMessage())} target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex min-h-12 items-center gap-2 rounded-xl bg-[#173f35] px-5 font-semibold text-white hover:bg-[#10352d]">
+        <ShopWhatsAppLink kind="distributor" className="mt-6 inline-flex min-h-12 items-center gap-2 rounded-xl bg-[#173f35] px-5 font-semibold text-white hover:bg-[#10352d]">
           <MessageCircle aria-hidden className="size-5" /> Demander une présentation
-        </a>
+        </ShopWhatsAppLink>
       </header>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -48,7 +49,7 @@ export default function BecomePartnerPage() {
           </p>
           <p className="mt-3 text-xs text-[#68756c]">{DISTRIBUTOR_MENTION}</p>
         </div>
-        <Link href="/catalogue" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[#173f35] px-5 font-semibold text-[#173f35] hover:bg-white">Découvrir les produits</Link>
+        <ShopLink href="/catalogue" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[#173f35] px-5 font-semibold text-[#173f35] hover:bg-white">Découvrir les produits</ShopLink>
       </section>
 
       <div className="flex items-center gap-3 text-sm text-[#68756c]">

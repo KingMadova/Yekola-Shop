@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { ShopLink, useShop } from "@/components/providers/ShopContext";
 import { Search } from "lucide-react";
 import { useEffect, useMemo, useState, useId } from "react";
 import { useCatalog } from "@/components/providers/CatalogContext";
@@ -25,6 +25,7 @@ export function ProductSearch({
 }: ProductSearchProps) {
   const id = useId();
   const { products } = useCatalog();
+  const shop = useShop();
   const [query, setQuery] = useState(initialQuery);
   const [focused, setFocused] = useState(false);
   useEffect(() => setQuery(initialQuery), [initialQuery]);
@@ -44,7 +45,7 @@ export function ProductSearch({
 
   return (
     <div className="relative w-full">
-      <form action="/catalogue" role="search" className="flex w-full items-center gap-2">
+      <form action={shop.href("/catalogue")} role="search" className="flex w-full items-center gap-2">
         {categorySlug && <input type="hidden" name="categorie" value={categorySlug} />}
         {goalSlug && <input type="hidden" name="besoin" value={goalSlug} />}
         <label htmlFor={id} className="sr-only">Rechercher un produit par nom ou code</label>
@@ -80,7 +81,7 @@ export function ProductSearch({
             <ul id={id + "-suggestions"} role="listbox" aria-label="Suggestions de produits" className="divide-y divide-[#f0eee7]">
               {matches.map((product) => (
                 <li key={product.code}>
-                  <Link
+                  <ShopLink
                     href={"/produit/" + product.slug}
                     role="option"
                     aria-selected={false}
@@ -91,19 +92,19 @@ export function ProductSearch({
                       <span className="block text-xs text-[#778178]">{product.code} · {product.category}</span>
                     </span>
                     <span className="shrink-0 text-sm font-semibold text-[#173f35]">{formatFCFA(product.pricePublic)}</span>
-                  </Link>
+                  </ShopLink>
                 </li>
               ))}
             </ul>
           ) : (
             <p className="px-4 py-4 text-sm text-[#68756c]">Aucun produit ne correspond à « {query} ».</p>
           )}
-          <Link
+          <ShopLink
             href={searchHref}
             className="flex min-h-11 items-center justify-center border-t border-[#eeeae0] bg-[#fbfaf6] px-4 text-sm font-semibold text-[#173f35] hover:bg-[#f3f0e7]"
           >
             Voir tous les résultats
-          </Link>
+          </ShopLink>
         </div>
       )}
     </div>

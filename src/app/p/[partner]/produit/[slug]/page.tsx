@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { ShopLink } from "@/components/providers/ShopContext";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { ProductGrid } from "@/components/catalogue/ProductGrid";
@@ -24,6 +24,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     title: product.name,
     description: product.shortDesc,
     openGraph: { title: product.name, description: product.shortDesc, images: product.images.slice(0, 1) },
+    alternates: { canonical: `${SITE_URL}/produit/${product.slug}` },
   };
 }
 
@@ -68,7 +69,7 @@ async function ProductPageContent({ params }: ProductPageProps) {
       <ProductViewSignal code={product.code} goals={product.healthGoals} />
 
       <nav aria-label="Fil d'Ariane" className={`${container} pt-6 text-sm text-gray-800`}>
-        <Link href="/" className="hover:underline">Accueil</Link> / <Link href="/catalogue" className="hover:underline">Catalogue</Link> /{" "}
+        <ShopLink href="/" className="hover:underline">Accueil</ShopLink> / <ShopLink href="/catalogue" className="hover:underline">Catalogue</ShopLink> /{" "}
         <span aria-current="page" className="font-medium text-gray-900">{product.name}</span>
       </nav>
 

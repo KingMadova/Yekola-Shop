@@ -10,6 +10,7 @@ import {
   type RefObject,
 } from "react";
 import { COPY } from "@/lib/config";
+import { useShop } from "@/components/providers/ShopContext";
 import { normalizeCongoPhone } from "@/lib/phone";
 import { formatFCFA } from "@/lib/pricing";
 import {
@@ -19,7 +20,7 @@ import {
   type CartTotals,
   type CustomerInfo,
 } from "@/lib/types";
-import { buildCartOrderMessage, buildWhatsAppUrl } from "@/lib/whatsapp";
+import { buildCartOrderMessage } from "@/lib/whatsapp";
 
 type TextField = "fullName" | "phone" | "neighborhood";
 type FormErrors = Partial<Record<TextField, string>>;
@@ -85,6 +86,7 @@ interface CheckoutFormProps {
 /** Formulaire de commande express : valide les champs, puis ouvre WhatsApp avec le récapitulatif. */
 export function CheckoutForm({ items, totals }: CheckoutFormProps) {
   const uid = useId();
+  const { partner, whatsappUrl } = useShop();
   const [values, setValues] = useState<CustomerInfo>(INITIAL_VALUES);
   const [errors, setErrors] = useState<FormErrors>({});
   const [sent, setSent] = useState(false);
@@ -108,7 +110,7 @@ export function CheckoutForm({ items, totals }: CheckoutFormProps) {
       return;
     }
 
-    const url = buildWhatsAppUrl(buildCartOrderMessage(items, values));
+    const url = whatsappUrl(buildCartOrderMessage(items, values, partner.displayName));
     const popup = window.open(url, "_blank");
     if (popup) popup.opener = null;
     else window.location.assign(url); // pop-up bloqué : on ouvre WhatsApp dans l'onglet courant

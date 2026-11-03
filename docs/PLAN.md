@@ -1,6 +1,6 @@
 # Plan de projet : Boutique Forever (dépôt `yekola-shop`)
 
-Dernière mise à jour : 2 novembre 2026 (décisions commerciales VIP et codes promo ajoutées). Propriétaire : Alvine YOKA (Pointe-Noire). Interface, textes et commentaires en français.
+Dernière mise à jour : 3 novembre 2026 (décisions commerciales VIP et codes promo ajoutées). Propriétaire : Alvine YOKA (Pointe-Noire). Interface, textes et commentaires en français.
 
 ## 0. À lire en premier (reprise par une autre personne)
 
@@ -71,7 +71,6 @@ Variables d'environnement actuelles (`.env.example`) :
 
 | Variable | Rôle |
 |---|---|
-| `NEXT_PUBLIC_WHATSAPP_NUMBER` | Numéro de la boutique maison, format international sans « + » (ex. `242061234567`). **Transitoire : disparaît en phase 2** (le numéro vient de la base, par partenaire) |
 | `NEXT_PUBLIC_SITE_URL` | URL publique (métadonnées, données structurées). En dev : `http://localhost:3001` |
 | `NEXT_PUBLIC_SUPABASE_URL` | URL du projet Supabase |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clé anon ou publishable (publique, protégée par RLS) |
@@ -129,7 +128,7 @@ Variables d'environnement actuelles (`.env.example`) :
 
 ### PAS ENCORE FAIT (résumé, détail en sections 6 bis et 7)
 
-À terminer : validation fonctionnelle complète contre Supabase réel (création/dédoublonnage des leads, RLS et parcours PDF), initialisation et routage public multi-boutiques, tests de bout en bout sur téléphone, exports CSV/PDF et espace partenaire, back-office `/admin`, interface de gestion des promos/packs/offres, compression d'images, PWA, page « Conditions générales de vente », photos et préparation de la mise en production.
+À terminer : validation fonctionnelle complète contre Supabase réel (création/dédoublonnage des leads, RLS et parcours PDF), validation locale du routage public multi-boutiques, tests de bout en bout sur téléphone, exports CSV/PDF et espace partenaire, back-office `/admin`, interface de gestion des promos/packs/offres, compression d'images, PWA, page « Conditions générales de vente », photos et préparation de la mise en production.
 
 ### Limites actuelles à connaître
 
@@ -753,3 +752,17 @@ Réviser aussi les titres de sections, descriptions des besoins, cartes produits
 - La PR #4 de refonte reste un brouillon. La fusion dans `main` attend les validations techniques, visuelles et fonctionnelles. Le dernier statut Vercel vérifié sur le commit de tête `0d0f031` est en échec ; consulter les logs du déploiement avant toute fusion.
 - Les contrôles `npx tsc --noEmit`, `npx vitest run` et `npm run build` n'ont pas été exécutés dans cette session après les ajouts des migrations. Ils restent obligatoires avant fusion.
 - Le parcours réel d'import des 53 références, le test mobile du Hero et les parcours visiteur contre Supabase restent à valider.
+
+## Journal de développement — 3 novembre 2026
+
+### Phase 2 — première implémentation du routage public multi-boutiques
+
+- Ajout de `proxy.ts` : les URL publiques historiques sont réécrites vers la boutique maison `/p/yekola`, tandis que `/p/:slug`, `/api`, `/admin`, `/espace` et les ressources statiques sont préservés.
+- Déplacement des pages publiques (accueil, catalogue, produit, packs, besoins, panier, devenir partenaire et pages légales) sous `src/app/p/[partner]/`. Le contenu n'est plus dupliqué dans les routes racine.
+- Le layout partenaire charge le profil public Supabase, refuse les boutiques inconnues/inactives et monte le `ShopProvider` avec l'en-tête, le pied de page et les composants de boutique.
+- Les liens internes et les actions WhatsApp utilisent le contexte de la boutique ; les messages de commande commencent par le nom de la boutique.
+- Les clés locales du panier, du suivi d'intérêt et des états de capture de lead sont séparées par slug. Les anciennes clés du panier et du suivi d'intérêt sont migrées vers la boutique maison ; les anciennes clés de lead restent lues pour préserver l'état des visiteurs existants.
+- Les boutiques partenaires reçoivent les métadonnées `noindex, follow` et un canonical vers le site maison. Le sitemap reste limité aux URL publiques de la boutique maison.
+- Le numéro WhatsApp n'est plus une variable d'environnement globale : il provient du profil public du partenaire.
+
+**Statut : code préparé sur la branche de travail, validation locale obligatoire avant de considérer cette étape comme terminée.** À exécuter sur le poste du propriétaire : `npx tsc --noEmit`, `npx vitest run`, `npm run build`, puis vérifier `/`, `/p/yekola`, une boutique partenaire active, le numéro WhatsApp, l'isolation des paniers et le parcours mobile. Ne pas fusionner la PR avant ces vérifications et l'accord explicite du propriétaire.

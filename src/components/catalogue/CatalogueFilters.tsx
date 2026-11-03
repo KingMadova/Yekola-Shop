@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { ShopLink } from "@/components/providers/ShopContext";
 import { ProductSearch } from "./ProductSearch";
 import { focusRing } from "@/components/ui/styles";
 import { buildCatalogueHref, type CatalogueQuery } from "@/lib/catalogue";
@@ -24,15 +24,15 @@ export function CatalogueFilters({ query }: { query: CatalogueQuery }) {
         <p className="mb-2 text-sm font-semibold text-[#26392e]">Catégories</p>
         <ul className="flex gap-2 overflow-x-auto pb-1">
           <li>
-            <Link href={buildCatalogueHref({ ...query, category: undefined })} aria-current={!query.category ? "true" : undefined} className={pill(!query.category)}>
+            <ShopLink href={buildCatalogueHref({ ...query, category: undefined })} aria-current={!query.category ? "true" : undefined} className={pill(!query.category)}>
               Tout
-            </Link>
+            </ShopLink>
           </li>
           {CATEGORIES.map((category) => (
             <li key={category}>
-              <Link href={buildCatalogueHref({ ...query, category })} aria-current={query.category === category ? "true" : undefined} className={pill(query.category === category)}>
+              <ShopLink href={buildCatalogueHref({ ...query, category })} aria-current={query.category === category ? "true" : undefined} className={pill(query.category === category)}>
                 {category}
-              </Link>
+              </ShopLink>
             </li>
           ))}
         </ul>
@@ -40,9 +40,9 @@ export function CatalogueFilters({ query }: { query: CatalogueQuery }) {
 
       <div className="flex flex-wrap items-center gap-2 border-t border-[#e9e5d9] pt-3">
         <p className="text-sm text-[#68756c]">Vous préférez commencer par un objectif ?</p>
-        <Link href="/besoins" className="inline-flex min-h-10 items-center font-semibold text-[#173f35] underline underline-offset-4">
+        <ShopLink href="/besoins" className="inline-flex min-h-10 items-center font-semibold text-[#173f35] underline underline-offset-4">
           Explorer vos besoins
-        </Link>
+        </ShopLink>
       </div>
     </div>
   );

@@ -1,11 +1,10 @@
-import Link from "next/link";
+import { ShopLink, ShopWhatsAppLink, ShopWelcomeText } from "@/components/providers/ShopContext";
 import { ArrowRight, MessageCircle, PackageCheck } from "lucide-react";
 import { SafeImage } from "@/components/ui/SafeImage";
 import { btn, container } from "@/components/ui/styles";
 import { getCatalog } from "@/lib/data/catalog";
 import { COPY, DISTRIBUTOR_MENTION, VIP_THRESHOLD } from "@/lib/config";
 import { formatFCFA } from "@/lib/pricing";
-import { buildAdviceMessage, buildWhatsAppUrl } from "@/lib/whatsapp";
 
 export async function Hero() {
   const products = await getCatalog();
@@ -27,28 +26,26 @@ export async function Hero() {
             {COPY.heroTitle}
           </h1>
           <p className="max-w-xl text-[13px] leading-relaxed text-[#e0e9e2] sm:text-base">
-            {COPY.heroSubtitle}
+            <ShopWelcomeText fallback={COPY.heroSubtitle} />
           </p>
           <div className="flex w-full flex-wrap gap-2 pt-1 sm:w-auto sm:gap-3">
-            <Link href="/catalogue" className={`${btn} min-h-11 flex-1 bg-[#f7f6f0] px-4 text-sm text-[#173f35] hover:bg-white sm:flex-none sm:px-6`}>
+            <ShopLink href="/catalogue" className={`${btn} min-h-11 flex-1 bg-[#f7f6f0] px-4 text-sm text-[#173f35] hover:bg-white sm:flex-none sm:px-6`}>
               {COPY.heroPrimaryCta}
               <ArrowRight aria-hidden className="size-4" />
-            </Link>
-            <a
-              href={buildWhatsAppUrl(buildAdviceMessage())}
-              target="_blank"
-              rel="noopener noreferrer"
+            </ShopLink>
+            <ShopWhatsAppLink
+              kind="advice"
               className={`${btn} min-h-11 flex-1 border border-white/35 px-3 text-sm text-white hover:bg-white/10 sm:flex-none sm:px-5`}
             >
               <MessageCircle aria-hidden className="size-4" />
               {COPY.heroSecondaryCta}
-            </a>
+            </ShopWhatsAppLink>
           </div>
           <p className="text-[10px] leading-snug text-[#d4e0d7] sm:text-xs">{DISTRIBUTOR_MENTION}</p>
         </div>
 
         {featured && (
-          <Link
+          <ShopLink
             href={`/produit/${featured.slug}`}
             className="group flex min-h-[104px] items-center gap-3 rounded-2xl border border-white/15 bg-[#f8f7f1] p-3 text-[#1d2923] shadow-[0_16px_45px_rgba(0,0,0,0.14)] transition-transform hover:-translate-y-0.5 sm:gap-5 sm:p-5 lg:min-h-52"
           >
@@ -68,7 +65,7 @@ export async function Hero() {
                 {vipImmediate && <span className="ml-1.5 text-[10px] font-semibold text-[#8b713e] sm:text-xs">prix VIP</span>}
               </p>
             </div>
-          </Link>
+          </ShopLink>
         )}
         <p className="text-center text-[10px] text-[#c9d8ce] sm:text-left sm:text-xs lg:col-span-2">
           {COPY.heroReassurance}

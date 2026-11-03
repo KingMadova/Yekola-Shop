@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { ShopLink } from "@/components/providers/ShopContext";
 import { ProductGrid } from "@/components/catalogue/ProductGrid";
 import { container } from "@/components/ui/styles";
 import { getCatalog } from "@/lib/data/catalog";
@@ -19,7 +19,7 @@ export async function PackSolutions() {
         </p>
       </div>
       <ProductGrid products={packs} highlightVip />
-      <div className="mt-5"><Link href="/packs" className="inline-flex min-h-11 items-center font-semibold text-[#173f35] underline underline-offset-4">Voir tous les packs</Link></div>
+      <div className="mt-5"><ShopLink href="/packs" className="inline-flex min-h-11 items-center font-semibold text-[#173f35] underline underline-offset-4">Voir tous les packs</ShopLink></div>
     </section>
   );
 }

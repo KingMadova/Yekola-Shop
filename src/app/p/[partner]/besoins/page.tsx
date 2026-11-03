@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { ShopLink, ShopWhatsAppLink } from "@/components/providers/ShopContext";
 import { Suspense } from "react";
 import { InterestSignal } from "@/components/lead/InterestSignal";
 import { container } from "@/components/ui/styles";
 import { HEALTH_GOAL_META, HEALTH_GOAL_SLUGS } from "@/lib/config";
 import { parseCatalogueQuery } from "@/lib/catalogue";
 import { HEALTH_GOALS } from "@/lib/types";
-import { buildNeedAdviceMessage, buildWhatsAppUrl } from "@/lib/whatsapp";
+
 
 export const metadata: Metadata = {
   title: "Vos besoins",
   description: "Choisissez le thème qui vous intéresse et échangez avec un conseiller pour découvrir les produits adaptés à votre recherche.",
+  alternates: { canonical: `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3001"}/besoins` },
 };
 
 interface NeedsPageProps {
@@ -50,9 +51,9 @@ async function NeedsContent({ searchParams }: NeedsPageProps) {
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-[#e4ece6]">
             Expliquez-nous ce que vous recherchez au quotidien. Nous vous aiderons à parcourir le catalogue et à comprendre les informations produit.
           </p>
-          <a href={buildWhatsAppUrl(buildNeedAdviceMessage(selected))} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-[#f6f3ea] px-5 font-semibold text-[#173f35] hover:bg-white">
+          <ShopWhatsAppLink kind="need" goal={selected} className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-[#f6f3ea] px-5 font-semibold text-[#173f35] hover:bg-white">
             Être conseillé sur WhatsApp
-          </a>
+          </ShopWhatsAppLink>
         </section>
       )}
 
@@ -60,7 +61,7 @@ async function NeedsContent({ searchParams }: NeedsPageProps) {
         {HEALTH_GOALS.map((goal) => {
           const active = goal === selected;
           return (
-            <Link
+            <ShopLink
               key={goal}
               href={"/besoins?besoin=" + HEALTH_GOAL_SLUGS[goal]}
               aria-current={active ? "page" : undefined}
@@ -68,14 +69,14 @@ async function NeedsContent({ searchParams }: NeedsPageProps) {
             >
               <span className="text-sm font-semibold text-[#26392e]">{HEALTH_GOAL_META[goal].shortLabel}</span>
               <span className="mt-3 text-xs font-semibold text-[#8b713e]">Explorer ce thème →</span>
-            </Link>
+            </ShopLink>
           );
         })}
       </div>
 
       <div className="flex flex-wrap items-center gap-4 border-t border-[#e9e5d9] pt-5">
-        <Link href="/catalogue" className="inline-flex min-h-11 items-center rounded-xl bg-[#173f35] px-5 font-semibold text-white hover:bg-[#10352d]">Parcourir tous les produits</Link>
-        {selected && <Link href="/besoins" className="text-sm font-semibold text-[#173f35] underline underline-offset-4">Effacer ma sélection</Link>}
+        <ShopLink href="/catalogue" className="inline-flex min-h-11 items-center rounded-xl bg-[#173f35] px-5 font-semibold text-white hover:bg-[#10352d]">Parcourir tous les produits</ShopLink>
+        {selected && <ShopLink href="/besoins" className="text-sm font-semibold text-[#173f35] underline underline-offset-4">Effacer ma sélection</ShopLink>}
       </div>
     </div>
   );

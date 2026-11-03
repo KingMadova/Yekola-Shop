@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { ShopLink } from "@/components/providers/ShopContext";
 import { ShoppingBag } from "lucide-react";
 import { container } from "@/components/ui/styles";
 import { formatFCFA } from "@/lib/pricing";
@@ -30,7 +30,7 @@ export function CartPageContent() {
           <ShoppingBag aria-hidden className="size-10 text-[#315d47]" />
           <h2 className="text-lg font-semibold text-[#26392e]">Votre panier est encore vide.</h2>
           <p className="max-w-sm text-sm text-[#68756c]">Découvrez le catalogue et ajoutez les références qui vous intéressent.</p>
-          <Link href="/catalogue" className="mt-2 inline-flex min-h-11 items-center rounded-xl bg-[#173f35] px-5 font-semibold text-white hover:bg-[#10352d]">Découvrir les produits</Link>
+          <ShopLink href="/catalogue" className="mt-2 inline-flex min-h-11 items-center rounded-xl bg-[#173f35] px-5 font-semibold text-white hover:bg-[#10352d]">Découvrir les produits</ShopLink>
         </div>
       ) : (
         <div className="grid items-start gap-6 lg:grid-cols-[1.1fr_0.9fr]">

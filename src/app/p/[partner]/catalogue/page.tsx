@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { ShopLink, ShopWhatsAppLink } from "@/components/providers/ShopContext";
 import { Suspense } from "react";
 import { CatalogueFilters } from "@/components/catalogue/CatalogueFilters";
 import { ProductGrid } from "@/components/catalogue/ProductGrid";
@@ -8,11 +8,12 @@ import { btnWhatsApp, container, focusRing } from "@/components/ui/styles";
 import { filterProducts, parseCatalogueQuery } from "@/lib/catalogue";
 import { HEALTH_GOAL_META } from "@/lib/config";
 import { getCatalog } from "@/lib/data/catalog";
-import { buildAdviceMessage, buildNeedAdviceMessage, buildWhatsAppUrl } from "@/lib/whatsapp";
+
 
 export const metadata: Metadata = {
   title: "Catalogue",
   description: "Tous les produits Forever, classés par catégorie et par besoin, avec les prix en FCFA.",
+  alternates: { canonical: `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3001"}/catalogue` },
 };
 
 interface CataloguePageProps {
@@ -59,17 +60,12 @@ async function CatalogueContent({ searchParams }: CataloguePageProps) {
             Écrivez-nous sur WhatsApp : un distributeur vous recommande les bons produits.
           </p>
           <div className="flex flex-wrap gap-3">
-            <a
-              href={buildWhatsAppUrl(query.goal ? buildNeedAdviceMessage(query.goal) : buildAdviceMessage())}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={btnWhatsApp}
-            >
+            <ShopWhatsAppLink kind={query.goal ? "need" : "advice"} goal={query.goal ?? undefined} className={btnWhatsApp}>
               Demander conseil sur WhatsApp
-            </a>
-            <Link href="/catalogue" className={`inline-flex min-h-12 items-center rounded-xl px-4 font-semibold text-[#173f35] underline ${focusRing}`}>
+            </ShopWhatsAppLink>
+            <ShopLink href="/catalogue" className={`inline-flex min-h-12 items-center rounded-xl px-4 font-semibold text-[#173f35] underline ${focusRing}`}>
               Voir tout le catalogue
-            </Link>
+            </ShopLink>
           </div>
         </div>
       )}

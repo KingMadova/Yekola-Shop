@@ -1,8 +1,8 @@
 import { ArrowRight, MessageCircle } from "lucide-react";
+import { ShopWhatsAppLink } from "@/components/providers/ShopContext";
 import { btn, container } from "@/components/ui/styles";
 import { VIP_THRESHOLD } from "@/lib/config";
 import { formatFCFA } from "@/lib/pricing";
-import { buildDistributorMessage, buildVipInfoMessage, buildWhatsAppUrl } from "@/lib/whatsapp";
 
 export function DualConversion() {
   return (
@@ -13,9 +13,9 @@ export function DualConversion() {
         <p className="text-sm leading-relaxed text-[#e0e9e2]">
           À partir de ce montant, les tarifs client privilégié de la grille officielle s'appliquent automatiquement à votre commande.
         </p>
-        <a href={buildWhatsAppUrl(buildVipInfoMessage())} target="_blank" rel="noopener noreferrer" className={`${btn} mt-1 min-h-11 bg-[#f7f6f0] text-sm text-[#173f35] hover:bg-white`}>
+        <ShopWhatsAppLink kind="vip" className={`${btn} mt-1 min-h-11 bg-[#f7f6f0] text-sm text-[#173f35] hover:bg-white`}>
           En savoir plus <ArrowRight aria-hidden className="size-4" />
-        </a>
+        </ShopWhatsAppLink>
       </div>
       <div className="flex flex-col items-start gap-3 rounded-3xl border border-[#e3dac4] bg-[#f0eadb] p-5 text-[#253b2f] sm:p-7">
         <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#8b713e]">Projet professionnel</p>
@@ -23,9 +23,9 @@ export function DualConversion() {
         <p className="text-sm leading-relaxed text-[#59685d]">
           Découvrez le fonctionnement de l’activité de distributeur indépendant et l’accompagnement proposé.
         </p>
-        <a href={buildWhatsAppUrl(buildDistributorMessage())} target="_blank" rel="noopener noreferrer" className={`${btn} mt-1 min-h-11 bg-[#173f35] text-sm text-white hover:bg-[#10352d]`}>
+        <ShopWhatsAppLink kind="distributor" className={`${btn} mt-1 min-h-11 bg-[#173f35] text-sm text-white hover:bg-[#10352d]`}>
           Échanger sur WhatsApp <MessageCircle aria-hidden className="size-4" />
-        </a>
+        </ShopWhatsAppLink>
       </div>
     </section>
   );

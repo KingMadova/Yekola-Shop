@@ -1,5 +1,5 @@
 import { Bone, Leaf, Salad, ShieldCheck, Sparkles, Zap, type LucideIcon } from "lucide-react";
-import Link from "next/link";
+import { ShopLink } from "@/components/providers/ShopContext";
 import { card, container, focusRing } from "@/components/ui/styles";
 import { HEALTH_GOAL_META, HEALTH_GOAL_SLUGS, type HealthGoalIcon } from "@/lib/config";
 import { HEALTH_GOALS } from "@/lib/types";
@@ -21,7 +21,7 @@ export function HealthGoalPicker() {
           const Icon = ICONS[icon];
           return (
             <li key={goal}>
-              <Link
+              <ShopLink
                 href={"/besoins?besoin=" + HEALTH_GOAL_SLUGS[goal]}
                 className={`${card} flex h-full min-h-[112px] flex-col items-start justify-between gap-3 border-[#e9e5d9] p-3 text-left text-sm font-semibold text-[#2a4034] transition-colors hover:border-[#bda36d] hover:bg-[#fbfaf6] sm:min-h-32 sm:p-4 ${focusRing}`}
               >
@@ -29,7 +29,7 @@ export function HealthGoalPicker() {
                   <Icon aria-hidden className="size-[18px] text-[#315d47]" />
                 </span>
                 <span>{shortLabel}</span>
-              </Link>
+              </ShopLink>
             </li>
           );
         })}

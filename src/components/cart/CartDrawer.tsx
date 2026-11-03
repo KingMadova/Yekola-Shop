@@ -1,7 +1,7 @@
 "use client";
 
 import { ShoppingBag, X } from "lucide-react";
-import Link from "next/link";
+import { ShopLink } from "@/components/providers/ShopContext";
 import { useEffect, useId, useRef } from "react";
 import { formatFCFA } from "@/lib/pricing";
 import {
@@ -107,7 +107,7 @@ export function CartDrawer() {
             </dl>
 
             <CheckoutForm items={items} totals={totals} />
-            <Link href="/panier" onClick={closeCart} className="min-h-11 self-center text-sm font-semibold text-[#173f35] underline underline-offset-4">Ouvrir la page panier</Link>
+            <ShopLink href="/panier" onClick={closeCart} className="min-h-11 self-center text-sm font-semibold text-[#173f35] underline underline-offset-4">Ouvrir la page panier</ShopLink>
 
             <button
               type="button"

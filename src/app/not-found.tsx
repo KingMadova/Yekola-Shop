@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { MessageCircle } from 'lucide-react';
 
 export default function NotFound() {
   return (
@@ -31,20 +30,6 @@ export default function NotFound() {
           </Link>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-gray-200">
-          <p className="text-gray-600 mb-4">
-            Besoin d'aide ? Contactez-nous sur WhatsApp
-          </p>
-          <a
-            href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '242061234567'}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-medium rounded-lg text-white bg-[#25D366] hover:bg-[#1DA851] transition-colors min-h-[44px]"
-          >
-            <MessageCircle className="w-5 h-5" />
-            Nous contacter
-          </a>
-        </div>
       </div>
     </main>
   );

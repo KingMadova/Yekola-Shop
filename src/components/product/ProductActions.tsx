@@ -2,9 +2,10 @@
 
 import { MessageCircle, Minus, Plus, ShoppingCart } from "lucide-react";
 import { useState } from "react";
+import { useShop } from "@/components/providers/ShopContext";
 import { clampQuantity, computeCartTotals, formatFCFA } from "@/lib/pricing";
 import type { Product } from "@/lib/types";
-import { buildSingleProductMessage, buildWhatsAppUrl } from "@/lib/whatsapp";
+import { buildSingleProductMessage } from "@/lib/whatsapp";
 import { useCartStore } from "@/store/useCartStore";
 
 const stepperButton =
@@ -14,9 +15,10 @@ const stepperButton =
 export function ProductActions({ product }: { product: Product }) {
   const [quantity, setQuantity] = useState(1);
   const addItem = useCartStore((state) => state.addItem);
+  const { partner, whatsappUrl } = useShop();
 
   const totals = computeCartTotals([{ product, quantity }]);
-  const whatsappUrl = buildWhatsAppUrl(buildSingleProductMessage(product, quantity));
+  const orderUrl = whatsappUrl(buildSingleProductMessage(product, quantity, partner.displayName));
 
   return (
     <div className="flex flex-col gap-4">
@@ -59,7 +61,7 @@ export function ProductActions({ product }: { product: Product }) {
           Ajouter au panier
         </button>
         <a
-          href={whatsappUrl}
+          href={orderUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#075E54] px-5 text-center font-semibold text-white hover:bg-[#064c44] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"

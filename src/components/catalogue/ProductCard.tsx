@@ -1,5 +1,5 @@
 import { ImageOff } from "lucide-react";
-import Link from "next/link";
+import { ShopLink } from "@/components/providers/ShopContext";
 import { SafeImage } from "@/components/ui/SafeImage";
 import { card, focusRing } from "@/components/ui/styles";
 import { COPY, VIP_THRESHOLD } from "@/lib/config";
@@ -18,7 +18,7 @@ export function ProductCard({ product, highlightVip = false }: ProductCardProps)
 
   return (
     <li className={`${card} flex min-w-0 flex-col gap-2.5 border-[#e9e5d9] bg-white p-2.5 sm:gap-3 sm:p-3`}>
-      <Link href={`/produit/${product.slug}`} className={`group flex flex-col gap-2.5 rounded-xl ${focusRing}`}>
+      <ShopLink href={`/produit/${product.slug}`} className={`group flex flex-col gap-2.5 rounded-xl ${focusRing}`}>
         <div className="relative aspect-[4/4.4] overflow-hidden rounded-xl bg-[#edf1e9] sm:aspect-square">
           {photo ? (
             <SafeImage src={photo} alt="" fill sizes="(min-width: 1024px) 280px, 50vw" className="object-cover" />
@@ -40,7 +40,7 @@ export function ProductCard({ product, highlightVip = false }: ProductCardProps)
           <p className="text-[10px] text-[#7b857c] sm:text-xs">{product.category}</p>
           <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-[#26392e] group-hover:underline sm:text-base">{product.name}</h3>
         </div>
-      </Link>
+      </ShopLink>
 
       {highlightVip && vipImmediate && (
         <p className="w-fit rounded-full bg-[#f4efdf] px-2 py-1 text-[9px] font-semibold leading-snug text-[#705a2f] sm:text-[10px]">{COPY.vipBadge}</p>

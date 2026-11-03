@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
+import { Suspense } from "react";
 import { ShopLink, ShopWhatsAppLink } from "@/components/providers/ShopContext";
 import { MessageCircle, Users, BookOpen, Briefcase } from "lucide-react";
 import { container } from "@/components/ui/styles";
@@ -59,5 +61,13 @@ export default function BecomePartnerPage() {
         <Briefcase aria-hidden className="hidden size-5 shrink-0 sm:block" />
       </div>
     </section>
+    <Suspense>
+      <DynamicMarker />
+    </Suspense>
   );
+}
+
+async function DynamicMarker() {
+  await connection();
+  return null;
 }

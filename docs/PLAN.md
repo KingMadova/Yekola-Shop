@@ -794,3 +794,13 @@ Réviser aussi les titres de sections, descriptions des besoins, cartes produits
 - **À valider localement après pull :** `/` doit répondre `200` et afficher la boutique Yekola ; `/catalogue` doit répondre `200) ; les routes explicites `/p/yekola` et `/p/yekola/catalogue` doivent rester fonctionnelles. Vérifier aussi qu'une route réservée telle que `/api/leads` n'est pas réécrite.
 - **Point restant distinct :** Next.js 16.4.3 affiche en développement un avertissement d'instant navigation dans `src/app/p/[partner]/layout.tsx` lors de `await params`. Il n'a pas été modifié dans ce correctif de routage. Examiner séparément l'option documentée `export const instant = false` ou une architecture Suspense adaptée, sans confondre cet avertissement avec le 404 des anciennes URL.
 - Ne pas fusionner dans `main` avant validation locale et tests fonctionnels/mobile, avec accord explicite du propriétaire.
+
+
+## Journal de développement — 3 novembre 2026 (navigation du layout partenaire)
+
+- Le propriétaire a confirmé par tests HTTP que les quatre URL `/`, `/catalogue`, `/p/yekola` et `/p/yekola/catalogue` répondent toutes `200 OK`. Les deux anciennes URL sont bien réécrites vers la boutique maison par `src/proxy.ts`.
+- Un avertissement distinct Next.js 16.4.3 subsiste dans `src/app/p/[partner]/layout.tsx` : le layout doit lire `params.partner` pour charger le partenaire et construire le `ShopProvider`, indispensable à l'isolation du catalogue, du panier et du numéro WhatsApp.
+- Correction appliquée : ajout de `export const instant = false` au layout partenaire. Ce choix assume explicitement un rendu bloquant pour ce segment, plutôt que de promettre un shell instantané qui ne peut pas être construit correctement avant de connaître le partenaire. Il ne désactive pas le prérendu des routes.
+- Commit de correction : `22ba61e9abb47171f5ce4b9ba5ccae8baec6da85`.
+- **Validation locale encore requise :** arrêter puis relancer le serveur de développement, ouvrir `/`, `/catalogue`, `/p/yekola` et `/p/yekola/catalogue`, puis vérifier que l'avertissement `instant-shell-url-data` a disparu et que le contexte de chaque boutique reste correct. Le comportement de navigation client et les performances doivent être contrôlés dans le navigateur.
+- Ne pas considérer ce correctif comme validé avant ces tests ; ne pas fusionner dans `main` sans les validations techniques, fonctionnelles et l'accord explicite du propriétaire.

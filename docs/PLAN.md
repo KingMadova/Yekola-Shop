@@ -959,3 +959,13 @@ Ces modules viendront après la connexion admin et la gestion fiable des boutiqu
 - Le marqueur mal placé a été retiré du layout partagé. Aucun changement aux règles SEO de `generateMetadata()` (boutique maison indexable ; partenaires `noindex, follow` avec canonical maison).
 - **Limite de validation :** aucun navigateur local pilotable n'est disponible depuis cette session. Il faut récupérer les commits, redémarrer le serveur Next, recharger `/p/yekola/devenir-partenaire` et confirmer que l'Insight disparaît et que le contenu est visible. Puis exécuter TypeScript, Vitest et build. Le rendu visuel n'est pas déclaré vérifié.
 - Seule la route signalée a été ciblée. Si le même Insight apparaît sur une autre route enfant du layout, appliquer le pattern à cette page précise après confirmation, sans envelopper tout son contenu dans `<Suspense>`.
+
+## Journal de développement — 3 novembre 2026 (rendu dynamique et Suspense du back-office)
+
+- À partir des logs Next.js 16.4.3, deux erreurs distinctes ont été isolées : `Date.now()` pendant le prérendu de `/admin` et `/admin/boutiques`, puis lecture de `searchParams` hors de `<Suspense>` sur `/admin/boutiques/nouvelle`.
+- `/admin` appelle désormais `await connection()` avant l'authentification et les lectures Supabase. Le tableau de bord est rendu à la requête, ce qui correspond à sa nature privée et personnalisée.
+- `/admin/boutiques` place le composant qui lit `searchParams` sous une frontière `<Suspense>` et utilise également `connection()` avant l'accès à la session et aux données. Le shell de chargement reste limité à cette page.
+- `/admin/boutiques/nouvelle` place également la lecture de `searchParams` sous `<Suspense>`. La page vérifie désormais explicitement `requireAdmin()` côté serveur avant d'afficher le formulaire, y compris en accès direct par URL.
+- Modifications poussées sur `feat/mobile-first-natural-redesign` : `d1fb1332`, `f570552c`, `73b2b2da`. Aucun merge dans `main`.
+- **Validation non effectuée depuis l'environnement GitHub.** Après récupération locale, arrêter le serveur, exécuter `rm -rf .next`, redémarrer `npm run dev`, puis recharger `/admin`, `/admin/boutiques` et `/admin/boutiques/nouvelle`. Vérifier que les deux erreurs signalées ont disparu, que l'accès direct à la création redirige un non-admin et que le formulaire reste visible pour l'administrateur.
+- Relancer ensuite `npx tsc --noEmit`, `npx vitest run` et `npm run build`. Aucun résultat de test n'est présumé ni déclaré réussi. L'espace partenaire `/espace` reste bloqué jusqu'à la livraison et validation complète du back-office.

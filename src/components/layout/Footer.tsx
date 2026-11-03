@@ -11,7 +11,7 @@ export function Footer() {
   const { partner } = useShop();
 
   return (
-    <footer className="mt-12 bg-[#123d32] pb-20 text-white md:pb-0">
+    <footer className="mt-12 bg-[#123d32] pb-[calc(6rem_+_env(safe-area-inset-bottom))] text-white md:pb-0">
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
         <div className="grid gap-9 md:grid-cols-[1.2fr_1fr_1fr]">
           <div>

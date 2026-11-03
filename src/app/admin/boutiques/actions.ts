@@ -23,7 +23,7 @@ type StoreValidation =
 function validateStore(formData: FormData): StoreValidation {
   const displayName = readText(formData, "display_name");
   const slug = readText(formData, "slug").toLowerCase();
-  const whatsappNumber = readText(formData, "whatsapp_number").replace(/[\\s+()-]/g, "");
+  const whatsappNumber = readText(formData, "whatsapp_number").replace(/[\s+()-]/g, "");
   const email = readText(formData, "email").toLowerCase();
   const fboId = readText(formData, "fbo_id");
   const city = readText(formData, "city");
@@ -32,7 +32,7 @@ function validateStore(formData: FormData): StoreValidation {
   if (!/^[a-z0-9][a-z0-9-]{1,28}[a-z0-9]$/.test(slug)) return { error: "Le slug doit contenir 3 à 30 caractères : minuscules, chiffres et tirets." };
   if (RESERVED_SLUGS.has(slug)) return { error: "Ce slug est réservé par le système." };
   if (!/^242[0-9]{9}$/.test(whatsappNumber)) return { error: "Le WhatsApp doit être au format congolais : 242 suivi de 9 chiffres." };
-  if (email && !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) return { error: "L'adresse e-mail n'est pas valide." };
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: "L'adresse e-mail n'est pas valide." };
 
   return { value: { display_name: displayName, slug, whatsapp_number: whatsappNumber, email: email || null, fbo_id: fboId || null, city: city || null } };
 }

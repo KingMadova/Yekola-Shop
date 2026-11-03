@@ -950,3 +950,12 @@ Ces modules viendront après la connexion admin et la gestion fiable des boutiqu
 - Le choix dynamique est volontaire : remplacer ces métadonnées par un objet statique unique risquerait d'appliquer la mauvaise règle d'indexation à l'une des catégories de boutiques.
 - **Validation navigateur non effectuée dans cette session** : aucun navigateur pilotable n'est disponible dans l'environnement d'édition GitHub. Après récupération, recharger `/p/yekola/devenir-partenaire` et contrôler le rendu visible ainsi que l'absence de l'Insight ; vérifier également une route sœur du layout, notamment `/p/yekola` et `/p/yekola/catalogue`. Ne pas considérer le correctif comme validé visuellement avant ce contrôle.
 - Les contrôles TypeScript, Vitest et build doivent être relancés après récupération. Les changements restent sur `feat/mobile-first-natural-redesign` ; aucun merge dans `main`.
+
+
+## Journal de développement — 3 novembre 2026 (placement du marqueur de métadonnées)
+
+- Le premier essai avait placé `DynamicMarker` dans le layout partagé `src/app/p/[partner]/layout.tsx`. Le navigateur du propriétaire a montré que l'Insight `blocking-prerender-metadata-runtime` persistait sur `generateMetadata()` de ce layout.
+- Relecture du guide officiel : le pattern « Mark the route as dynamic » demande un composant serveur qui appelle `await connection()`, rendu dans une frontière `<Suspense>` **dans le corps de la page concernée**. Le marqueur a donc été déplacé vers `src/app/p/[partner]/devenir-partenaire/page.tsx`. Le contenu principal reste directement dans le shell ; seule la sortie nulle du marqueur est sous `<Suspense>`.
+- Le marqueur mal placé a été retiré du layout partagé. Aucun changement aux règles SEO de `generateMetadata()` (boutique maison indexable ; partenaires `noindex, follow` avec canonical maison).
+- **Limite de validation :** aucun navigateur local pilotable n'est disponible depuis cette session. Il faut récupérer les commits, redémarrer le serveur Next, recharger `/p/yekola/devenir-partenaire` et confirmer que l'Insight disparaît et que le contenu est visible. Puis exécuter TypeScript, Vitest et build. Le rendu visuel n'est pas déclaré vérifié.
+- Seule la route signalée a été ciblée. Si le même Insight apparaît sur une autre route enfant du layout, appliquer le pattern à cette page précise après confirmation, sans envelopper tout son contenu dans `<Suspense>`.

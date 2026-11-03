@@ -899,3 +899,27 @@ Ces modules viendront après la connexion admin et la gestion fiable des boutiqu
 - Les migrations SQL, politiques RLS et éventuelles procédures d'amorçage sont documentées et réexécutables sans exposer de secret.
 - Les commandes `npx tsc --noEmit`, `npx vitest run` et `npm run build` passent avant toute fusion ; les tests manuels Supabase et navigateur sont consignés séparément.
 - Tout le travail reste sur `feat/mobile-first-natural-redesign`. Aucune fusion dans `main` sans l'accord explicite du propriétaire.
+
+
+## Journal de développement — 3 novembre 2026 (socle initial du back-office)
+
+- Création de la page de connexion `/admin/connexion` avec authentification e-mail/mot de passe via Supabase Auth ; aucun parcours d'inscription publique n'est exposé.
+- Ajout des clients Supabase SSR serveur/navigateur et actualisation des cookies de session dans `src/proxy.ts`.
+- Ajout de `requireAdmin()` : les pages protégées valident l'utilisateur avec `auth.getUser()`, puis vérifient son rattachement à `public.admins` côté serveur.
+- Création du premier tableau de bord `/admin` : compteurs et liste des boutiques, avec les données lues via le client serveur authentifié soumis aux politiques RLS.
+- Ajout de `docs/ADMIN_SETUP.md` décrivant la création du premier compte Auth et son rattachement à `public.admins`, sans exposer de secret.
+- Dépendance `@supabase/ssr` ajoutée à `package.json`. **Le fichier `package-lock.json` doit être régénéré localement par `npm install`** après récupération des changements.
+- Limites de ce premier lot : la gestion CRUD des boutiques, les modules produits/offres/promotions/commandes/clients, la récupération de mot de passe et les tests automatisés dédiés ne sont pas encore livrés.
+- **Validation non exécutée depuis GitHub :** TypeScript, Vitest, build et parcours réel Supabase restent à vérifier sur le poste du propriétaire. Ne pas considérer la connexion comme opérationnelle tant que le premier compte n'a pas été provisionné et testé.
+- Les changements restent sur `feat/mobile-first-natural-redesign`. Aucun merge dans `main`.
+
+### État du back-office
+
+1. [x] Socle initial de connexion et vérification du rôle côté serveur.
+2. [x] Tableau de bord initial et lecture de la liste des boutiques.
+3. [ ] Création, modification, activation et suspension des boutiques.
+4. [ ] Modules de gestion du catalogue, des prix, packs, promotions, offres et témoignages.
+5. [ ] Gestion des leads, commandes et paramètres.
+6. [ ] Tests sécurité, RLS, parcours navigateur et validation bout en bout.
+
+**L'espace partenaire `/espace` reste bloqué jusqu'à la livraison et validation de tous les modules administrateur prévus.**

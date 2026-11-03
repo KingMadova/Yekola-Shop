@@ -1,5 +1,5 @@
-import type { PublicPartner } from "@/lib/data/partners";
-import { isValidPartnerSlug } from "@/lib/partner-slug";
+import type { PublicPartner } from "./data/partners";
+import { isValidPartnerSlug } from "./partner-slug";
 
 /** Construit un chemin interne dans la boutique courante, sans changer les URL de la boutique maison. */
 export function buildShopHref(partner: Pick<PublicPartner, "slug" | "isHouse">, path: string): string {

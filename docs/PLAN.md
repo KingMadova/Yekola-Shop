@@ -1,6 +1,6 @@
 # Plan de projet : Boutique Forever (dépôt `yekola-shop`)
 
-Dernière mise à jour : 3 novembre 2026 (réorientation prioritaire vers le back-office et l'administration des boutiques). Propriétaire : Alvine YOKA (Pointe-Noire). Interface, textes et commentaires en français.
+Dernière mise à jour : 3 novembre 2026 (back-office et expérience boutique mobile-first). Propriétaire : Alvine YOKA (Pointe-Noire). Interface, textes et commentaires en français.
 
 ## 0. À lire en premier (reprise par une autre personne)
 
@@ -982,3 +982,17 @@ Ces modules viendront après la connexion admin et la gestion fiable des boutiqu
 - Commits du lot : `b2550692`, `714d3769`, `23007ee7`, `c0c84dc5`, `80641d4a`, `fb46116f`, `472b27c6`.
 - **Non vérifié à ce stade :** aucune exécution locale de TypeScript, Vitest, build ni inspection navigateur n'a été faite par l'assistant. Après récupération, exécuter les contrôles et vérifier `/admin`, `/admin/boutiques` et `/admin/boutiques/nouvelle` en largeur mobile (environ 390 px) et desktop. Confirmer notamment l'absence de `blocking-prerender-dynamic`, la visibilité du shell, la barre mobile et l'absence de débordement horizontal.
 - Ne pas démarrer l'espace partenaire `/espace` avant validation complète du back-office par le propriétaire.
+
+
+## Journal de développement — 3 novembre 2026 (première passe mobile-first de la boutique publique)
+
+- Le propriétaire confirme que l'expérience principale doit être conçue pour les smartphones, en tenant compte d'une audience majoritairement mobile en Afrique. Le chiffre de 83 % est une hypothèse d'audience communiquée par le propriétaire, pas une mesure analytique vérifiée dans ce dépôt.
+- Ajout de `src/components/layout/MobileShopNav.tsx` : barre de navigation mobile persistante avec Accueil, Catalogue, Packs et Panier, état actif, compteur de panier après hydratation et respect de la zone de sécurité.
+- Le header mobile a été simplifié : marque de la boutique, accès rapide à la recherche/catalogue et panier. La navigation complète reste disponible sur desktop ; la barre mobile devient le moyen principal de navigation au pouce.
+- Le layout public des boutiques monte cette navigation, réserve de l'espace sous le contenu et garde la barre hors de la zone de lecture. Le pied de page reçoit également une marge basse mobile pour ne pas être masqué.
+- Le bouton WhatsApp flottant est positionné au-dessus de la barre mobile. Il continue d'utiliser le numéro de la boutique active via `ShopContext`, sans numéro global ni mélange entre partenaires.
+- Le lien WhatsApp accepte désormais un libellé accessible `aria-label`, utilisé par le bouton flottant.
+- Les cartes produits, le catalogue, le panier et le formulaire de commande existants ont été audités à la lecture. Ils comportent déjà des éléments tactiles et une grille mobile à deux colonnes ; ils nécessitent encore une vérification réelle sur petits écrans et des tests de parcours complets.
+- **Validation non effectuée dans cette session :** aucune exécution locale de TypeScript, Vitest, build ou navigateur n'a été possible depuis l'édition GitHub. Le propriétaire doit récupérer les commits, vérifier le rendu à 320/360/390/430 px et sur desktop, puis exécuter les contrôles du dépôt.
+- **Prochaine étape UX :** tester l'ensemble du parcours Accueil → recherche/filtre → fiche produit → panier → formulaire → WhatsApp, contrôler les performances sur réseau lent et corriger les irritants observés avant d'étendre les changements aux autres pages publiques.
+- Les modifications restent sur `feat/mobile-first-natural-redesign`. Aucun merge dans `main`. Le chantier back-office garde sa priorité de validation ; l'espace partenaire `/espace` ne démarre pas avant cette validation.

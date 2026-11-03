@@ -9,67 +9,38 @@ import { buildSingleProductMessage } from "@/lib/whatsapp";
 import { useCartStore } from "@/store/useCartStore";
 
 const stepperButton =
-  "inline-flex size-11 items-center justify-center rounded-xl border border-[#deded4] bg-white text-[#30231d] hover:bg-[#fff5e9] disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-[#c1440e]";
+  "inline-flex size-11 items-center justify-center rounded-xl border border-[#ead9ca] bg-white text-[#30231d] transition hover:bg-[#fff5e9] disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c1440e]";
 
-/** Double bouton d'achat : « Ajouter au panier » et « Commander en 1 clic via WhatsApp » (sans passer par le panier). */
+/** Quantité, ajout au panier et commande directe sur le WhatsApp de la boutique active. */
 export function ProductActions({ product }: { product: Product }) {
   const [quantity, setQuantity] = useState(1);
   const addItem = useCartStore((state) => state.addItem);
   const { partner, whatsappUrl } = useShop();
-
   const totals = computeCartTotals([{ product, quantity }]);
   const orderUrl = whatsappUrl(buildSingleProductMessage(product, quantity, partner.displayName));
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <div role="group" aria-label="Quantité" className="flex items-center gap-2">
-          <button
-            type="button"
-            className={stepperButton}
-            aria-label="Diminuer la quantité"
-            disabled={quantity <= 1}
-            onClick={() => setQuantity((current) => clampQuantity(current - 1))}
-          >
-            <Minus aria-hidden className="size-4" />
-          </button>
-          <span aria-live="polite" className="w-10 text-center text-lg font-semibold">
-            {quantity}
-          </span>
-          <button
-            type="button"
-            className={stepperButton}
-            aria-label="Augmenter la quantité"
-            onClick={() => setQuantity((current) => clampQuantity(current + 1))}
-          >
-            <Plus aria-hidden className="size-4" />
-          </button>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#8a7668]">Quantité</span>
+          <div role="group" aria-label="Quantité" className="inline-flex w-fit items-center gap-2 rounded-xl border border-[#ead9ca] bg-white p-1">
+            <button type="button" className={stepperButton} aria-label="Diminuer la quantité" disabled={quantity <= 1} onClick={() => setQuantity((current) => clampQuantity(current - 1))}><Minus aria-hidden className="size-4" /></button>
+            <span aria-live="polite" className="min-w-9 text-center text-base font-bold tabular-nums text-[#30231d]">{quantity}</span>
+            <button type="button" className={stepperButton} aria-label="Augmenter la quantité" onClick={() => setQuantity((current) => clampQuantity(current + 1))}><Plus aria-hidden className="size-4" /></button>
+          </div>
         </div>
-        <p className="text-sm text-gray-800">
-          Total : <strong>{formatFCFA(totals.total)}</strong>
-          {totals.vipUnlocked && " (tarif privilégié appliqué)"}
-        </p>
+        <p className="text-right text-sm text-[#71645d]">Total estimé <strong className="block text-lg text-[#30231d]">{formatFCFA(totals.total)}</strong>{totals.vipUnlocked && <span className="text-xs text-[#9a5430]">Tarif privilégié appliqué</span>}</p>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <button
-          type="button"
-          onClick={() => addItem(product, quantity)}
-          className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#c1440e] px-5 font-semibold text-white hover:bg-[#a9360b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
-        >
-          <ShoppingCart aria-hidden className="size-5" />
-          Ajouter au panier
-        </button>
-        <a
-          href={orderUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#075E54] px-5 text-center font-semibold text-white hover:bg-[#064c44] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
-        >
-          <MessageCircle aria-hidden className="size-5" />
-          Commander en 1 clic via WhatsApp
-        </a>
-      </div>
+      <button type="button" onClick={() => addItem(product, quantity)} className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#c1440e] px-5 font-bold tracking-[0.04em] text-white shadow-sm transition hover:bg-[#a9360b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c1440e]">
+        <ShoppingCart aria-hidden className="size-5" />
+        Ajouter au panier
+      </button>
+      <a href={orderUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-[#d8a78a] bg-[#fff9f3] px-5 text-center text-sm font-semibold text-[#a9360b] transition hover:bg-[#fff0df] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c1440e]">
+        <MessageCircle aria-hidden className="size-5" />
+        Commander directement sur WhatsApp
+      </a>
     </div>
   );
 }

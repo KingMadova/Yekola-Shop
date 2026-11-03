@@ -11,10 +11,10 @@ const ITEMS = [
 
 export function TrustBand() {
   return <section aria-label="Informations pratiques" className={`${container} pt-3 sm:pt-6`}>
-    <ul className={`${card} grid grid-cols-2 gap-3 border-[#f2d7c2] bg-white p-3 sm:grid-cols-2 sm:gap-4 sm:p-5 lg:grid-cols-4`}>
-      {ITEMS.map(({ icon: Icon, title, detail }) => <li key={title} className="flex items-start gap-2.5">
-        <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-[#fff0df]"><Icon aria-hidden className="size-[17px] text-[#c1440e]" /></span>
-        <p className="text-[10px] leading-relaxed sm:text-sm"><strong className="block text-[#30231d]">{title}</strong><span className="text-[#71645d]">{detail}</span></p>
+    <ul className={`${card} grid grid-cols-4 items-center gap-2 border-[#f2d7c2] bg-white p-2 sm:grid-cols-2 sm:gap-4 sm:p-5 lg:grid-cols-4`}>
+      {ITEMS.map(({ icon: Icon, title, detail }) => <li key={title} className="flex min-w-0 items-center justify-center gap-2.5 sm:justify-start">
+        <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-[#fff0df] sm:size-9"><Icon aria-hidden className="size-[19px] text-[#c1440e]" /></span>
+        <p className="sr-only text-[10px] leading-relaxed sm:not-sr-only sm:text-sm"><strong className="block text-[#30231d]">{title}</strong><span className="text-[#71645d]">{detail}</span></p>
       </li>)}
     </ul>
   </section>;

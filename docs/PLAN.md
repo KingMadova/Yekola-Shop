@@ -857,6 +857,23 @@ Depuis une interface protégée, le propriétaire doit pouvoir se connecter à l
    - les routes API vérifient elles-mêmes les droits côté serveur, même si l'interface masque les boutons.
 6. **Valider dans le navigateur et avec Supabase réel**, puis mettre à jour ce plan avant de passer aux autres modules du back-office.
 
+### Dépendance obligatoire : espace partenaire après le back-office
+
+Le propriétaire précise l'ordre de livraison suivant : **l'espace partenaire ne commence qu'après la livraison complète du back-office**, lorsque le propriétaire peut s'y connecter et que toutes les fonctionnalités administrateur prévues sont opérationnelles.
+
+En conséquence :
+- La phase back-office doit être terminée et validée avant d'ouvrir le chantier partenaire.
+- La phase suivante sera la connexion sécurisée des partenaires à leur propre espace `/espace`, associé à leur boutique.
+- Chaque partenaire pourra accéder uniquement aux fonctionnalités qui lui sont attribuées et aux données de sa boutique (notamment ses leads et, selon le périmètre validé, les informations de sa boutique).
+- Les contrôles d'accès doivent être vérifiés côté serveur et par RLS ; masquer une page ou un bouton ne constitue jamais une protection suffisante.
+- Un partenaire ne doit jamais pouvoir consulter ou modifier les leads, commandes, paramètres ou données d'un autre partenaire.
+- Le parcours de connexion partenaire, la récupération d'accès et la procédure d'activation du compte seront définis à partir du modèle Supabase Auth et des données partenaires existants, sans création de comptes fictifs en production.
+
+**Ordre global confirmé :**
+1. Back-office administrateur complet et opérationnel (connexion, tableau de bord, gestion des boutiques et autres fonctionnalités prévues).
+2. Espace partenaire complet (connexion, accès à sa boutique et à ses données, fonctionnalités autorisées).
+3. Validation de bout en bout du modèle multi-boutiques, puis poursuite des modules secondaires et préparation de la mise en production.
+
 ### Hors périmètre de la première livraison
 
 - L'espace partenaire `/espace` et le suivi des leads par les partenaires.

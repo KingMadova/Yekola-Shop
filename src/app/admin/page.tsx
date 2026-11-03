@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { connection } from "next/server";
 import { requireAdmin } from "@/lib/auth/admin";
 import AdminSignOut from "./sign-out";
 
 export const metadata = { title: "Administration | Yekola Shop", robots: { index: false, follow: false } };
 
 export default async function AdminPage() {
+  await connection();
   const { supabase, user } = await requireAdmin();
   const [partnersResult, productsResult, leadsResult] = await Promise.all([
     supabase.from("partners").select("id,slug,display_name,whatsapp_number,status,is_house,created_at").order("created_at", { ascending: false }),

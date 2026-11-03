@@ -6,7 +6,7 @@ import { ShopLink, useShop } from "@/components/providers/ShopContext";
 import { useCartHydrated, useCartTotals } from "@/store/useCartStore";
 
 const ITEMS = [
-  { label: "Accueil", href: "/", icon: Home, matches: (path: string, home: string) => path === home },
+  { label: "Accueil", href: "/", icon: Home, matches: (path: string, home: string) => path === home || path === "/" },
   { label: "Catalogue", href: "/catalogue", icon: LayoutGrid, matches: (path: string, _home: string) => path.endsWith("/catalogue") || path.includes("/produit/") },
   { label: "Packs", href: "/packs", icon: Package, matches: (path: string, _home: string) => path.endsWith("/packs") },
   { label: "Panier", href: "/panier", icon: ShoppingBag, matches: (path: string, _home: string) => path.endsWith("/panier") },

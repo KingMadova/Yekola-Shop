@@ -197,7 +197,7 @@ export function CheckoutForm({ items, totals }: CheckoutFormProps) {
       <button
         type="submit"
         disabled={items.length === 0}
-        className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#075E54] px-5 font-semibold text-white hover:bg-[#064c44] disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
+        className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#c1440e] px-5 font-semibold text-white hover:bg-[#a9380c] disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c1440e]"
       >
         <MessageCircle aria-hidden className="size-5" />
         Confirmer ma commande sur WhatsApp ({formatFCFA(totals.total)})

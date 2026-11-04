@@ -12,6 +12,7 @@ interface ProductSearchProps {
   categorySlug?: string;
   goalSlug?: string;
   compact?: boolean;
+  autoFocus?: boolean;
 }
 
 const normalize = (value: string) =>
@@ -22,6 +23,7 @@ export function ProductSearch({
   categorySlug,
   goalSlug,
   compact = false,
+  autoFocus = false,
 }: ProductSearchProps) {
   const id = useId();
   const { products } = useCatalog();
@@ -60,16 +62,17 @@ export function ProductSearch({
             onFocus={() => setFocused(true)}
             onBlur={() => window.setTimeout(() => setFocused(false), 140)}
             autoComplete="off"
+            autoFocus={autoFocus}
             role="combobox"
             aria-autocomplete="list"
             aria-expanded={showSuggestions}
             aria-controls={id + "-suggestions"}
-            placeholder="Un produit, un code, une gamme…"
-            className={"min-h-11 w-full rounded-xl border border-[#deded4] bg-white pl-10 pr-3 text-base text-[#30231d] placeholder:text-[#879087] " + focusRing + (compact ? " rounded-full text-sm" : "")}
+            placeholder="Rechercher un produit, un code…"
+            className={"min-h-12 w-full rounded-xl border border-[#deded4] bg-white pl-10 pr-3 text-base text-[#30231d] placeholder:text-[#879087] " + focusRing + (compact ? " rounded-full text-sm" : "")}
           />
         </div>
         {!compact && (
-          <button type="submit" className={"inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl bg-[#c1440e] px-4 text-sm font-semibold text-white hover:bg-[#a9360b] " + focusRing}>
+          <button type="submit" className={"inline-flex min-h-12 shrink-0 items-center justify-center rounded-xl bg-[#c1440e] px-4 text-sm font-semibold text-white hover:bg-[#a9360b] " + focusRing}>
             Rechercher
           </button>
         )}
@@ -101,7 +104,7 @@ export function ProductSearch({
           )}
           <ShopLink
             href={searchHref}
-            className="flex min-h-11 items-center justify-center border-t border-[#eeeae0] bg-[#fff9f3] px-4 text-sm font-semibold text-[#c1440e] hover:bg-[#f3f0e7]"
+            className="flex min-h-12 items-center justify-center border-t border-[#eeeae0] bg-[#fff9f3] px-4 text-sm font-semibold text-[#c1440e] hover:bg-[#f3f0e7]"
           >
             Voir tous les résultats
           </ShopLink>

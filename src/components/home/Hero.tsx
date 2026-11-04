@@ -3,7 +3,7 @@ import { ArrowRight, MessageCircle } from "lucide-react";
 import { HeroOffersCarousel } from "@/components/home/HeroOffersCarousel";
 import { btn, container } from "@/components/ui/styles";
 import { getCatalog } from "@/lib/data/catalog";
-import { COPY, DISTRIBUTOR_MENTION } from "@/lib/config";
+import { COPY } from "@/lib/config";
 
 export async function Hero() {
   const products = await getCatalog();
@@ -16,9 +16,6 @@ export async function Hero() {
       <div aria-hidden className="pointer-events-none absolute -bottom-24 -left-20 size-64 rounded-full bg-[#fff9f3]/10 blur-3xl" />
       <div className={`${container} relative grid gap-3 py-3 sm:grid-cols-[1.05fr_0.95fr] sm:items-center sm:gap-6 sm:py-7 lg:gap-10 lg:py-8`}>
         <div className="flex flex-col items-start gap-2 sm:gap-3">
-          <p className="inline-flex items-center gap-2 text-[9px] font-extrabold uppercase tracking-[0.16em] text-white/95 sm:text-xs">
-            <span className="size-1.5 rounded-full bg-white" /> {COPY.heroEyebrow}
-          </p>
           <h1 className="max-w-[17ch] text-[clamp(1.75rem,7vw,2.45rem)] font-extrabold leading-[1.04] tracking-[-0.045em] sm:text-4xl lg:text-[3.1rem]">
             {COPY.heroTitle}
           </h1>
@@ -33,7 +30,6 @@ export async function Hero() {
               <MessageCircle aria-hidden className="size-4" /> {COPY.heroSecondaryCta}
             </ShopWhatsAppLink>
           </div>
-          <p className="text-[9px] leading-snug text-white/90 sm:text-[11px]">{DISTRIBUTOR_MENTION}</p>
         </div>
 
         {offers.length > 0 && <div className="min-w-0 sm:pl-1">

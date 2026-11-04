@@ -1220,3 +1220,15 @@ Fichiers concernés :
 - Commit : ecb162e984998ff337d73b2ffff32a05dd9b0b9e.
 - **Validation à faire localement :** récupérer la branche, exécuter TypeScript, Vitest et build, puis ouvrir `/admin/boutiques/4c2d3666-e46d-44d4-b5bf-ae1ac490bbc2`. Vérifier le chargement du formulaire et confirmer qu'aucune mutation n'est déclenchée à l'ouverture. Le résultat navigateur n'est pas encore connu.
 - Aucun changement dans `main`.
+
+
+## Correction du prérendu de la page d'édition boutique — 4 novembre 2026
+
+- Après le correctif 404, la route répondait maintenant HTTP 200, mais Next.js 16.4.3 signalait un appel instable à `Date.now()` pendant le prérendu de `/admin/boutiques/[id]`.
+- Diagnostic par comparaison avec les autres pages admin : `/admin`, `/admin/boutiques` et `/admin/boutiques/nouvelle` attendent toutes `connection()` avant d'appeler `requireAdmin()`. La page d'édition était la seule à appeler `requireAdmin()` directement pendant son rendu. L'accès Supabase Auth peut déclencher la lecture de l'horloge ; avec `cacheComponents: true`, cet accès doit être différé au rendu de la requête.
+- Correction : la page d'édition suit maintenant le même modèle que les autres pages admin : frontière `Suspense`, composant asynchrone de contenu et `await connection()` avant `requireAdmin()`. Le client privilégié reste côté serveur, après contrôle du rôle.
+- Amélioration du diagnostic : une erreur Supabase de lecture est désormais levée explicitement au lieu d'être silencieusement transformée en 404 ; une boutique absente ou maison reste traitée par `notFound()`.
+- Fichier modifié : `src/app/admin/boutiques/[id]/page.tsx`.
+- Commit : f622386f69049eed1c90cac0a918c07dd348fd47, branche `feat/mobile-first-natural-redesign`.
+- **Validation locale en attente** : récupérer le commit, exécuter TypeScript, Vitest et build, puis vérifier la page d'édition dans le navigateur. Vérifier aussi qu'aucun avertissement `blocking-prerender-current-time` ne réapparaît.
+- Aucun changement dans `main`. Aucun CRUD Supabase réel exécuté.

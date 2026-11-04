@@ -196,15 +196,33 @@ Ajouts de la phase 1 : `supabase/{schema,seed}.sql` · `scripts/import-products.
 *Statut au 01/11/2026 : conception décidée ; migrations partenaires/leads et capture initiale fusionnées dans `main`, configuration Supabase/Vercel déclarée terminée. Le routage public multi-boutiques et l'espace partenaire ne sont pas encore implémentés. Hypothèses sur les points marqués Q-P : section 9.*
 
 **Vocabulaire.** *Admin* = Alvine. *Boutique maison* = la boutique d'Alvine (aussi un partenaire, avec `is_house`). *Partenaire* = un filleul. *Client* = visiteur final.
-### Droits
+### Rôles et isolation des données — décision confirmée le 04/11/2026
 
-| Action | Admin | Partenaire | Client |
-|---|---|---|---|
-| Produits, prix, promos, packs, offres, réglages | oui | non (lecture) | lecture |
-| Inviter, activer, suspendre un partenaire | oui | non | non |
-| Modifier son profil (nom, photo, texte d'accueil, note de livraison) | tous | le sien | non |
-| Modifier son numéro WhatsApp | oui | oui, avec journal (Q-P3) | non |
-| Voir leads et commandes | tous | **seulement les siens** | non |
+Yekola Shop adopte trois niveaux d'accès distincts. Le contrôle doit être appliqué côté serveur et dans Supabase ; masquer une page ou un bouton ne constitue jamais une autorisation.
+
+| Action / ressource | Super administrateur | Partenaire propriétaire | Employé de partenaire | Client |
+|---|---|---|---|---|
+| Consulter toutes les boutiques | oui | non | non | non |
+| Gérer les boutiques et les partenaires | toutes | sa boutique uniquement (profil autorisé) | non, sauf délégation explicite | non |
+| Produits, prix, promotions, packs et offres globaux | créer / modifier / supprimer | lecture | lecture | lecture publique |
+| Produits spécifiques à une boutique (si cette fonctionnalité est introduite) | toutes | sa boutique | selon permission attribuée | lecture publique |
+| Leads et commandes | toutes les boutiques | uniquement les siens | uniquement ceux de sa boutique, selon permission | non |
+| Statistiques commerciales | globales et par boutique | sa boutique | selon permission | non |
+| Informations personnelles et paramètres privés | toutes | les siens / sa boutique | uniquement les données nécessaires à sa fonction | non |
+| Inviter, activer ou suspendre un partenaire | oui | non | non | non |
+| Gérer les employés et leurs permissions | toutes les boutiques | ses employés uniquement | non | non |
+
+**Règles impératives :**
+- Le super administrateur dispose d'une visibilité globale sur toutes les boutiques et leurs données.
+- Un partenaire propriétaire est isolé à l'identifiant de sa propre boutique (partner_id). Il ne peut jamais lire ou modifier les données d'un autre partenaire, même en modifiant une URL, un identifiant envoyé par le navigateur ou une requête HTTP.
+- Un employé est rattaché à un seul partenaire. Il ne reçoit que les permissions explicitement accordées par le propriétaire ; aucun droit n'est accordé par défaut. Les permissions doivent être vérifiées côté serveur et dans les politiques d'accès aux données.
+- Les produits, prix officiels, promotions, packs et offres restent globaux et administrés centralement. Un éventuel catalogue spécifique à une boutique devra faire l'objet d'une décision et d'un modèle de données séparés.
+- Les routes, pages, Server Actions, API, requêtes Supabase et politiques RLS doivent appliquer le même périmètre d'accès. Les contrôles d'interface ne sont qu'une aide ergonomique.
+- Toute utilisation du client Supabase service_role doit être précédée, côté serveur, d'une authentification et d'une vérification explicite du rôle et du périmètre autorisé. La clé ne doit jamais être exposée au navigateur.
+- La suspension d'un partenaire doit révoquer l'accès de son propriétaire et de ses employés aux espaces privés et aux leads de cette boutique.
+- Les accès d'employés, invitations, révocations et changements de permissions devront être traçables.
+
+**État d'implémentation :** le rôle super administrateur et le contrôle requireAdmin() existent ; le cloisonnement partenaire est prévu par les règles et les politiques RLS existantes, mais doit être audité sur l'ensemble des routes et opérations. Le modèle des employés, leurs permissions configurables et leur interface de gestion ne sont pas encore implémentés.
 
 ### Adresses
 

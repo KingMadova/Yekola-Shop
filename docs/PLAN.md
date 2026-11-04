@@ -1232,3 +1232,48 @@ Fichiers concernés :
 - Commit : f622386f69049eed1c90cac0a918c07dd348fd47, branche `feat/mobile-first-natural-redesign`.
 - **Validation locale en attente** : récupérer le commit, exécuter TypeScript, Vitest et build, puis vérifier la page d'édition dans le navigateur. Vérifier aussi qu'aucun avertissement `blocking-prerender-current-time` ne réapparaît.
 - Aucun changement dans `main`. Aucun CRUD Supabase réel exécuté.
+
+
+## Validation navigateur de la page d'édition boutique — 4 novembre 2026
+
+- L'utilisateur confirme que la page de modification de la boutique fonctionne désormais après le correctif du prérendu `Date.now()`.
+- Le chargement de la page d'édition est donc confirmé dans le navigateur. Cela ne valide pas encore les mutations de création, modification ou changement de statut des boutiques.
+- Aucun changement dans `main`.
+
+
+## Première livraison du module de gestion des leads — 4 novembre 2026
+
+### Fonctionnalités ajoutées sur `feat/mobile-first-natural-redesign`
+
+- Nouvelle page `/admin/leads` : liste paginée (20 lignes), recherche par nom/téléphone, filtre par statut et filtre par boutique.
+- Affichage responsive : tableau sur desktop et cartes tactiles sur mobile.
+- Nouvelle fiche `/admin/leads/[id]` : coordonnées, besoin principal et secondaires, produits consultés, valeur du panier, nombre et dates de demandes, boutique d'origine et informations d'acquisition.
+- Suivi commercial : formulaire de mise à jour du statut (`Nouveau`, `Contacté`, `Intéressé`, `Client`, `Perdu`) et d'une note interne limitée à 2 000 caractères.
+- Ajout de la rubrique « Demandes clients » à la navigation d'administration, avec adaptation de la barre mobile à trois rubriques.
+- L'accès aux données et les mutations passent par le serveur : chaque lecture/action exige `requireAdmin()`, puis utilise `createAdminClient()`. La clé `service_role` n'est jamais exposée au navigateur.
+- Les mutations vérifient l'erreur Supabase et l'existence d'une ligne affectée avant d'afficher le succès. Aucun endpoint public de modification des leads n'est ajouté.
+- La recherche borne les caractères transmis au filtre PostgREST. Les données GPS exactes ne sont pas affichées dans la fiche d'administration.
+
+### Fichiers ajoutés/modifiés
+
+- Ajout : `src/app/admin/leads/actions.ts`
+- Ajout : `src/app/admin/leads/lead-update-form.tsx`
+- Ajout : `src/app/admin/leads/page.tsx`
+- Ajout : `src/app/admin/leads/[id]/page.tsx`
+- Modification : `src/app/admin/admin-shell.tsx`
+- Modification : `docs/PLAN.md`
+
+### Sécurité et limites connues
+
+- La migration 003 n'accorde pas de politique RLS de mise à jour admin sur `leads`. Le module utilise donc exclusivement le client `service_role` côté serveur, après contrôle obligatoire de l'identité et du rôle administrateur. Ne pas déplacer ces opérations dans un composant client ou une route publique.
+- Les partenaires restent cloisonnés par les politiques RLS existantes ; la nouvelle interface est réservée aux administrateurs.
+- Aucun changement de statut ni de note n'a encore été envoyé à Supabase pendant cette livraison.
+- Le listing dépend de la présence de la relation `partners` via les identifiants de partenaire ; les noms sont chargés séparément pour éviter de dépendre d'une jointure PostgREST implicite.
+- La limite de 20 lignes et les filtres doivent être contrôlés avec le volume réel des leads ; aucun export CSV ni suppression de leads n'est prévu dans ce premier périmètre.
+
+### État de validation
+
+- Code poussé sur `feat/mobile-first-natural-redesign`; **TypeScript, Vitest, build et tests navigateur restent à exécuter localement**.
+- Vérifier en priorité : affichage liste vide/peuplée, recherche nom/téléphone, filtres statut/boutique, pagination, fiche détail, enregistrement d'une note et changement de statut sur un lead de test identifié.
+- Après les tests de code, faire une mutation contrôlée sur un lead de test réversible uniquement ; ne pas modifier de vraies demandes clients sans accord explicite.
+- Aucun merge dans `main`.

@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/admin";
+import AdminShell from "../../admin-shell";
 import PartnerStoreForm from "../form";
 
 export const metadata = { title: "Modifier une boutique | Administration Yekola Shop", robots: { index: false, follow: false } };
@@ -9,7 +9,7 @@ type Params = Promise<{ id: string }>;
 type SearchParams = Promise<{ erreur?: string }>;
 
 export default async function EditPartnerStorePage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
-  const [{ id }, query, { supabase }] = await Promise.all([params, searchParams, requireAdmin()]);
+  const [{ id }, query, { supabase, user }] = await Promise.all([params, searchParams, requireAdmin()]);
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
 
   const { data: store, error } = await supabase.from("partners")
@@ -20,13 +20,15 @@ export default async function EditPartnerStorePage({ params, searchParams }: { p
   if (error || !store || store.is_house) notFound();
 
   return (
-    <main className="min-h-screen bg-slate-50 px-5 py-10 text-slate-900">
+    <AdminShell active="stores" email={user.email ?? undefined}>
       <div className="mx-auto max-w-4xl">
-        <Link href="/admin/boutiques" className="text-sm font-medium text-emerald-800 hover:underline">← Gestion des boutiques</Link>
-        <h1 className="mt-6 text-3xl font-bold">Modifier {store.display_name}</h1>
-        <p className="mb-8 mt-2 text-slate-600">Modifiez les coordonnées et l'adresse publique de cette boutique.</p>
+        <div className="mb-7">
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-emerald-700">Gestion des boutiques</p>
+          <h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Modifier {store.display_name}</h1>
+          <p className="mt-2 text-sm text-slate-500">Modifiez les coordonnées et l'adresse publique de cette boutique.</p>
+        </div>
         <PartnerStoreForm store={store} error={query.erreur} />
       </div>
-    </main>
+    </AdminShell>
   );
 }

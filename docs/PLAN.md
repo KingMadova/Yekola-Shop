@@ -1098,3 +1098,12 @@ Ces modules viendront après la connexion admin et la gestion fiable des boutiqu
 - Fichier modifié : `src/components/product/ProductImageGallery.tsx`.
 - Commit : `a175a1d3`, toujours sur `feat/mobile-first-natural-redesign`, sans fusion dans `main`.
 - Validation à effectuer : TypeScript, tests, build et contrôle navigateur mobile. Si aucune vignette ne s'affiche après ce changement, vérifier le contenu réel de `products.images` dans Supabase : la galerie ne peut présenter que les images réellement enregistrées pour ce produit.
+
+
+## Simplification du Hero et diagnostic mobile — 4 novembre 2026
+
+- Hero : suppression du surtitre « Sélection de la boutique » (piloté par `COPY.heroEyebrow`) et de la mention « Entrepreneur Forever Indépendant Agréé » dans le bloc Hero afin de donner la priorité au titre, au message d'accueil, aux appels à l'action et au carrousel d'offres. La mention légale reste affichée dans le pied de page ; la règle métier R6 n'est donc pas supprimée.
+- Fichier modifié : `src/components/home/Hero.tsx`. Commit : `0ac79d3d`, branche `feat/mobile-first-natural-redesign`. Aucun merge dans `main`.
+- Diagnostic galerie : le composant ne rend aucune rangée de vignettes lorsque `product.images` est vide. Les URL proviennent directement de `products.images` dans Supabase via `parseProductRows` et `buildCatalog`. Il faut contrôler les données réelles et les erreurs de chargement avant de modifier davantage le CSS ou d'inventer des images.
+- Diagnostic mobile physique : le rendu sur navigateur émulateur ne valide pas le comportement tactile et les dimensions du téléphone réel. Contrôle à poursuivre avec le modèle du téléphone, le navigateur utilisé et une capture d'écran du rendu physique.
+- Validation TypeScript, Vitest, build et tests sur appareil non effectués dans cette session ; ne pas considérer les corrections comme validées.

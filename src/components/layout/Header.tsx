@@ -54,7 +54,7 @@ export function Header() {
             aria-label="Ouvrir la recherche de produits"
             aria-haspopup="dialog"
             aria-expanded={searchOpen}
-            className={`inline-flex size-11 items-center justify-center rounded-full text-[#9b310d] hover:bg-[#fff0df] md:hidden ${focusRing}`}
+            className={`inline-flex size-11 items-center justify-center rounded-full text-[#9b310d] hover:bg-[#fff0df] lg:hidden ${focusRing}`}
           >
             <Search aria-hidden className="size-5" />
           </button>
@@ -62,7 +62,7 @@ export function Header() {
         </div>
       </div>
 
-      {searchOpen && <div className="fixed inset-0 z-[60] md:hidden">
+      {searchOpen && <div className="fixed inset-0 z-[60] lg:hidden">
         <button type="button" aria-label="Fermer la recherche" onClick={() => setSearchOpen(false)} className="absolute inset-0 h-full w-full bg-[#21170f]/45" />
         <section role="dialog" aria-modal="true" aria-labelledby="mobile-search-title" className="relative z-10 border-b border-[#f0dfd0] bg-[#fff9f3] px-4 pb-5 pt-4 shadow-xl">
           <div className="mb-3 flex items-center justify-between gap-3">

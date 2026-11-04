@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createPartnerStore, updatePartnerStore } from "./actions";
+import StoreSubmitButton from "./submit-button";
 
 type StoreValues = {
   id?: string;
@@ -48,7 +49,7 @@ export default function PartnerStoreForm({ store, error }: { store?: StoreValues
       </div>
       <div className="flex flex-col-reverse gap-3 border-t border-slate-100 bg-white p-5 sm:flex-row sm:justify-end sm:px-7 sm:py-5">
         <Link href="/admin/boutiques" className="inline-flex min-h-12 items-center justify-center rounded-2xl border border-slate-200 px-5 text-sm font-bold text-slate-600 transition hover:bg-slate-50">Annuler</Link>
-        <button type="submit" className="inline-flex min-h-12 items-center justify-center rounded-2xl bg-[#123d2c] px-6 text-sm font-extrabold text-white shadow-lg shadow-emerald-950/15 transition hover:bg-emerald-900">{store ? "Enregistrer les modifications" : "Créer la boutique"}</button>
+        <StoreSubmitButton editing={Boolean(store)} />
       </div>
     </form>
   );

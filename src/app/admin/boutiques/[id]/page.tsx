@@ -1,3 +1,6 @@
+import Link from "next/link";
+import { Suspense } from "react";
+import { connection } from "next/server";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -9,12 +12,24 @@ export const metadata = { title: "Modifier une boutique | Administration Yekola 
 type Params = Promise<{ id: string }>;
 type SearchParams = Promise<{ erreur?: string }>;
 
-export default async function EditPartnerStorePage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
+export default function EditPartnerStorePage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
+  return (
+    <Suspense fallback={<AdminShell active="stores"><div className="mx-auto max-w-4xl"><div className="h-10 w-2/3 animate-pulse rounded-xl bg-slate-200" /><div className="mt-6 h-96 animate-pulse rounded-3xl bg-white" /></div></AdminShell>}>
+      <EditPartnerStoreContent params={params} searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+async function EditPartnerStoreContent({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
+  // Cette page utilise Supabase Auth et des données propres à la requête.
+  // Attendre la connexion avant tout accès susceptible d'appeler Date.now()
+  // afin d'éviter son exécution pendant le prérendu avec Cache Components.
+  await connection();
+
   const [{ id }, query, { user }] = await Promise.all([params, searchParams, requireAdmin()]);
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
 
-  // La page est déjà protégée par requireAdmin(). Utiliser le client serveur
-  // privilégié comme les actions CRUD, sans exposer service_role au navigateur.
+  // L'accès est protégé par requireAdmin(). Le client privilégié reste côté serveur.
   const adminClient = createAdminClient();
   if (!adminClient) throw new Error("La clé serveur Supabase est absente. Vérifiez SUPABASE_SERVICE_ROLE_KEY.");
 
@@ -23,7 +38,8 @@ export default async function EditPartnerStorePage({ params, searchParams }: { p
     .eq("id", id)
     .maybeSingle();
 
-  if (error || !store || store.is_house) notFound();
+  if (error) throw new Error(`Impossible de charger la boutique : ${error.message}`);
+  if (!store || store.is_house) notFound();
 
   return (
     <AdminShell active="stores" email={user.email ?? undefined}>

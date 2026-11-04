@@ -21,7 +21,7 @@ async function AdminLeadsContent({ searchParams }: { searchParams: SearchParams 
   const client = createAdminClient();
   if (!client) throw new Error("La configuration serveur Supabase est incomplète.");
 
-  const q = (params.q ?? "").replace(/[,%()_*\\]/g, " ").replace(/\s+/g, " ").trim().slice(0, 80);
+  const q = (params.q ?? "").replace(/[^a-zA-Z0-9À-ÿ\\s+-]/g, " ").replace(/\s+/g, " ").trim().slice(0, 80);
   const status = statuses.includes(params.status as (typeof statuses)[number]) ? params.status! : "";
   const partnerId = /^[0-9a-f-]{36}$/i.test(params.partner ?? "") ? params.partner! : "";
   const parsedPage = Number.parseInt(params.page ?? "1", 10);

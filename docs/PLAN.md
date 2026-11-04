@@ -1076,3 +1076,14 @@ Ces modules viendront après la connexion admin et la gestion fiable des boutiqu
 - Fichiers modifiés : `ProductDetail.tsx`, `ProductImageGallery.tsx`, `ProductActions.tsx`, `ProductAccordion.tsx`. Commits : `757f97d2`, `3c0d3502`, `c88ada92`, `1123123f`.
 - Validation locale non effectuée depuis cette session GitHub : récupérer la branche, lancer TypeScript, Vitest et build, puis tester la galerie (y compris plein écran/échappement), l'ajout au panier, la commande WhatsApp et le rendu à 320/360/390/430 px et desktop. Aucun test n'est déclaré réussi. Aucun merge dans `main`.
 - Correctif complémentaire : la navigation clavier de l'aperçu plein écran (Échap, flèches gauche/droite) utilise désormais directement les mises à jour d'état dans l'effet, sans dépendances de fonctions recréées à chaque rendu. Commit : `45c495fb`.
+
+
+## Correctifs fiche produit et état vide du panier — 4 novembre 2026
+
+- Galerie produit mobile compactée : l'image principale reste visible dans un bloc de hauteur maîtrisée (jusqu'à 300 px), afin de laisser apparaître dès le chargement le nom, la description et le prix sans imposer un long défilement.
+- Les vignettes sont maintenant intégrées en bas de la zone image et restent visibles même lorsqu'une seule image est renseignée (une vignette réelle, sans duplication artificielle). Jusqu'à cinq vignettes sont affichées ; les photos défilent automatiquement toutes les 4 secondes, avec navigation manuelle et arrêt de la rotation en plein écran. La préférence système « réduire les animations » désactive la rotation.
+- La description catalogue est désormais identifiée explicitement par le titre « Description » et placée juste sous le nom du produit, avant le prix. Les espacements et tailles typographiques mobiles ont été resserrés.
+- Correction de l'état panier vide : suppression des dernières couleurs vertes (titre, icône, texte, surface, bordures et bouton) au profit de la palette orange/ivoire Yekola Business. Les autres informations de récapitulatif du panier ont également été harmonisées.
+- Fichiers modifiés : `ProductImageGallery.tsx`, `ProductDetail.tsx`, `CartPageContent.tsx`.
+- Commits : `fdb4e205`, `76c76c5e`, `abc14aad`. Changements conservés sur `feat/mobile-first-natural-redesign` ; aucun merge dans `main`.
+- **Validation à effectuer localement :** `npx tsc --noEmit`, `npx vitest run`, `npm run build`, puis contrôle visuel à 320/360/390/430 px. Vérifier la rotation 4 s, la présence des vignettes avec 1 et plusieurs images, la description et le prix dans le premier écran, ainsi que l'état vide après avoir vidé le panier. Aucun résultat de test ni contrôle navigateur n'est présumé.

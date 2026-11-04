@@ -1132,3 +1132,59 @@ Ces modules viendront après la connexion admin et la gestion fiable des boutiqu
 - Commits : `60697de8` (galerie), `62cbc3a1` (recherche), `15516595` et `b5b8d0e0` (header), `69c8be9c` (accessibilité des vignettes).
 - **À vérifier localement avant validation** : les cinq URL distinctes dans `products.images` pour chaque produit, l'affichage des quatre vignettes sur 320/360/390/430 px et tablette/desktop, la rotation toutes les 4 secondes, l'agrandissement tactile, Échap et les flèches clavier, la recherche depuis la loupe et les suggestions. Exécuter `npx tsc --noEmit`, `npx vitest run` et `npm run build`. Aucun de ces contrôles n'a été exécuté dans cette session.
 - Aucun merge dans `main`.
+
+## Audit du back-office et priorités de réalisation — 4 novembre 2026
+
+Audit statique du dépôt sur la branche `feat/mobile-first-natural-redesign`, complété par une vérification navigateur des écrans de connexion, tableau de bord, liste des boutiques, création et modification. **Aucun code métier ni aucune donnée Supabase n'a été modifié pendant cet audit.** Les mutations CRUD n'ont pas été exécutées ; leur fonctionnement réel n'est donc pas déclaré validé.
+
+### État constaté
+
+- **Connexion et contrôle d'accès :** la connexion Supabase Auth est en place. Les pages et actions administrateur examinées utilisent `requireAdmin()`, qui vérifie la session et l'appartenance à la table `admins` côté serveur. Aucune inscription administrateur publique n'est proposée.
+- **Tableau de bord et boutiques :** tableau de bord, liste, formulaire de création et formulaire de modification présents. La lecture des boutiques réelles a été constatée dans le navigateur. La création, la modification et la suspension/réactivation n'ont pas été soumises en test réel.
+- **Cohérence d'interface :** la page `/admin/boutiques/[id]` ne réutilise pas `AdminShell`, contrairement à la liste et à la création ; la navigation et la déconnexion sont absentes sur cet écran.
+- **Fiabilité des mutations boutiques :** les actions de modification et de changement de statut contrôlent les erreurs Supabase, mais ne vérifient pas explicitement qu'une ligne a effectivement été affectée. Un retour de succès sans modification réelle reste donc possible.
+- **Confirmation d'action :** aucune confirmation explicite avant suspension/réactivation n'a été constatée.
+- **Autres modules :** dans l'arborescence `src/app/admin` examinée, seuls le tableau de bord, la connexion et la gestion des boutiques sont présents. Les interfaces d'administration des leads, produits, promotions, packs, offres, témoignages et paramètres restent à construire. La présence de tables SQL ne signifie pas que leurs interfaces CRUD existent.
+- **Leads et RLS :** la migration 003 autorise la lecture des leads par l'admin et la lecture/mise à jour par le partenaire de son propre périmètre. Les privilèges de mise à jour portent sur `status` et `note`. Aucune politique de mise à jour administrateur des leads n'a été identifiée dans les migrations examinées ; prévoir explicitement le mécanisme serveur sécurisé nécessaire à la gestion administrative.
+- **Partenaires suspendus :** la migration 006 modifie `current_partner_id()` et les politiques du profil pour bloquer la lecture et la mise à jour du profil partenaire suspendu ; les politiques de leads qui utilisent cette fonction héritent de ce blocage.
+- **Boutique maison :** les actions serveur de mise à jour filtrent `is_house = false`. Le rôle `service_role` contourne RLS ; la protection dépend donc aussi de ces contrôles applicatifs. Toute nouvelle action privilégiée doit préserver cette règle.
+- **API publique des leads :** validation de payload, honeypot et limite de fréquence en mémoire présents. La limite en mémoire n'est pas une protection distribuée durable pour un déploiement multi-instance ; réévaluer avant montée en charge.
+
+### Plan d'exécution — ordre retenu
+
+1. **Fiabiliser la gestion des boutiques**
+   - intégrer `AdminShell` à la page de modification ;
+   - vérifier qu'une mise à jour ou un changement de statut affecte exactement la boutique attendue avant d'afficher un succès ;
+   - ajouter une confirmation accessible avant suspension/réactivation et empêcher les soumissions répétées ;
+   - gérer explicitement les états d'attente et les erreurs de déconnexion/soumission ;
+   - préserver l'impossibilité de modifier ou suspendre la boutique maison ;
+   - valider création, modification, activation et suspension avec un jeu de test contrôlé, puis vérifier les données Supabase.
+2. **Construire la gestion des leads**
+   - liste, recherche/filtrage, détail, notes et statuts ;
+   - définir et implémenter une voie serveur administrateur sécurisée, sans exposer la clé service role au navigateur ;
+   - vérifier le cloisonnement des leads entre partenaires et le comportement d'un partenaire suspendu.
+3. **Construire la gestion du catalogue**
+   - CRUD produits et images ;
+   - gestion des compositions de packs ;
+   - promotions globales, dates de validité et règles de non-cumul avec les codes partenaires.
+4. **Construire les autres modules**
+   - offres globales ;
+   - témoignages ;
+   - paramètres publics strictement nécessaires.
+5. **Auditer et valider la sécurité**
+   - relire l'ensemble des migrations, privilèges SQL, fonctions SECURITY DEFINER et politiques RLS ;
+   - vérifier l'isolation entre deux partenaires, les restrictions de la boutique maison et les permissions admin ;
+   - tester les accès non authentifiés, partenaire actif, partenaire suspendu et administrateur.
+6. **Validation fonctionnelle et responsive**
+   - exécuter `npx tsc --noEmit`, `npx vitest run` et `npm run build` ;
+   - effectuer les parcours CRUD réels sur un jeu de test sans toucher aux données commerciales réelles ;
+   - vérifier les interfaces à 320, 360, 390, 430 px et sur desktop ;
+   - consigner séparément les tests de code, les tests navigateur et les vérifications Supabase.
+
+### Garde-fous de travail
+
+- Conserver le travail sur `feat/mobile-first-natural-redesign` ; aucun merge ou rebase de `main` sans accord explicite.
+- Ne pas déclarer une mutation validée avant d'avoir observé son résultat dans l'application et dans Supabase.
+- Ne pas utiliser de vraies données clients pour les tests de création/modification/suppression ; préférer des données de test identifiables et réversibles.
+- Après chaque étape, mettre à jour ce plan avec les fichiers touchés, les résultats réellement obtenus et les contrôles encore en attente.
+

@@ -62,7 +62,7 @@ export function ProductImageGallery({ images, alt, bestseller = false }: Product
 
   return (
     <div className="flex min-w-0 flex-col gap-2 sm:gap-3">
-      <div className="relative h-[clamp(220px,65vw,320px)] min-h-0 w-full overflow-hidden rounded-3xl border border-[#f2d7c2] bg-[#fff9f3] sm:h-[360px] lg:aspect-[4/5] lg:h-auto">
+      <div className="relative h-[clamp(170px,48vw,240px)] min-h-0 w-full overflow-hidden rounded-2xl border border-[#f2d7c2] bg-[#fff9f3] sm:h-[360px] sm:rounded-3xl lg:aspect-[4/5] lg:h-auto">
         <SafeImage key={active} src={active} alt={alt} fill priority={activeIndex === 0} sizes="(min-width: 1024px) 560px, (min-width: 640px) 90vw, 100vw" className="object-contain p-3" />
         {bestseller && <span className="absolute left-3 top-3 z-10 rounded-full bg-[#f6e5c8] px-3 py-1.5 text-xs font-bold text-[#68451d] shadow-sm">Bestseller</span>}
         <button type="button" onClick={() => setIsExpanded(true)} aria-label="Agrandir la photo du produit" className="absolute right-3 top-3 z-10 inline-flex size-11 items-center justify-center rounded-full border border-[#eadfd3] bg-white/95 text-[#30231d] shadow-sm transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c1440e]">
@@ -80,7 +80,7 @@ export function ProductImageGallery({ images, alt, bestseller = false }: Product
             <SafeImage src={src} alt="" fill sizes="72px" className="object-contain p-1" />
           </button>
         ))}
-        <span className="sticky right-0 ml-auto flex min-h-16 shrink-0 items-center bg-[#fff9f3]/95 px-2 text-xs font-semibold tabular-nums text-[#68452f] sm:min-h-[72px]" aria-live="polite">{activeIndex + 1}/{galleryImages.length}</span>
+        <span className="sticky right-0 ml-auto flex min-h-14 shrink-0 items-center bg-[#fff9f3]/95 px-2 text-xs font-semibold tabular-nums text-[#68452f] sm:min-h-[72px]" aria-live="polite">{activeIndex + 1}/{galleryImages.length}</span>
       </div>
 
       {isExpanded && <div role="dialog" aria-modal="true" aria-label={`Aperçu de ${alt}`} className="fixed inset-0 z-[100] flex items-center justify-center bg-[#1b1714]/95 p-4" onClick={() => setIsExpanded(false)}>

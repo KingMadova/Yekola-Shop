@@ -68,7 +68,7 @@ async function ProductPageContent({ params }: ProductPageProps) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\\\u003c") }} />
       <ProductViewSignal code={product.code} goals={product.healthGoals} />
 
-      <nav aria-label="Fil d'Ariane" className={`${container} pt-6 text-sm text-gray-800`}>
+      <nav aria-label="Fil d'Ariane" className={`${container} pt-2 text-xs leading-relaxed text-gray-800 sm:pt-6 sm:text-sm`}>
         <ShopLink href="/" className="hover:underline">Accueil</ShopLink> / <ShopLink href="/catalogue" className="hover:underline">Catalogue</ShopLink> /{" "}
         <span aria-current="page" className="font-medium text-gray-900">{product.name}</span>
       </nav>

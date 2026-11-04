@@ -11,6 +11,9 @@ const RESERVED_SLUGS = new Set([
   "livraison-paiement", "sitemap", "robots", "manifest", "www",
 ]);
 
+const STORE_STATUSES = ["pending", "active", "suspended"] as const;
+type StoreStatus = (typeof STORE_STATUSES)[number];
+
 function readText(formData: FormData, key: string) {
   const value = formData.get(key);
   return typeof value === "string" ? value.trim() : "";
@@ -73,19 +76,24 @@ export async function updatePartnerStore(formData: FormData) {
   const parsed = validateStore(formData);
   if ("error" in parsed) redirect(`/admin/boutiques/${id}?erreur=${encodeURIComponent(parsed.error)}`);
 
-  const { error } = await getAdminDatabase().from("partners")
+  const { data: updated, error } = await getAdminDatabase().from("partners")
     .update(parsed.value)
     .eq("id", id)
-    .eq("is_house", false);
+    .eq("is_house", false)
+    .select("id,slug")
+    .maybeSingle();
 
   if (error) {
     const message = error.code === "23505" ? "Ce slug est déjà utilisé." : error.message;
     redirect(`/admin/boutiques/${id}?erreur=${encodeURIComponent(message)}`);
   }
+  if (!updated) {
+    redirect(`/admin/boutiques/${id}?erreur=${encodeURIComponent("Aucune boutique partenaire n'a été modifiée. Elle est peut-être protégée ou n'existe plus.")}`);
+  }
 
   revalidatePath("/admin");
   revalidatePath("/admin/boutiques");
-  revalidatePath(`/p/${parsed.value.slug}`);
+  revalidatePath(`/p/${updated.slug}`);
   redirect("/admin/boutiques?succes=updated");
 }
 
@@ -93,18 +101,32 @@ export async function updatePartnerStoreStatus(formData: FormData) {
   await requireAdmin();
   const id = readText(formData, "id");
   const status = readText(formData, "status");
-  if (!/^[0-9a-f-]{36}$/i.test(id) || !["pending", "active", "suspended"].includes(status)) {
+  const currentStatus = readText(formData, "current_status");
+
+  if (
+    !/^[0-9a-f-]{36}$/i.test(id) ||
+    !STORE_STATUSES.includes(status as StoreStatus) ||
+    !STORE_STATUSES.includes(currentStatus as StoreStatus) ||
+    status === currentStatus
+  ) {
     redirect("/admin/boutiques?erreur=Paramètres%20invalides");
   }
 
-  const { error } = await getAdminDatabase().from("partners")
-    .update({ status })
+  const { data: updated, error } = await getAdminDatabase().from("partners")
+    .update({ status: status as StoreStatus })
     .eq("id", id)
-    .eq("is_house", false);
+    .eq("is_house", false)
+    .eq("status", currentStatus)
+    .select("id,slug")
+    .maybeSingle();
 
   if (error) redirect(`/admin/boutiques?erreur=${encodeURIComponent(error.message)}`);
+  if (!updated) {
+    redirect(`/admin/boutiques?erreur=${encodeURIComponent("Le statut n'a pas été modifié : la boutique est protégée, introuvable ou son statut a changé. Actualisez la page.")}`);
+  }
 
   revalidatePath("/admin");
   revalidatePath("/admin/boutiques");
+  revalidatePath(`/p/${updated.slug}`);
   redirect("/admin/boutiques?succes=status");
 }

@@ -1119,3 +1119,16 @@ Ces modules viendront après la connexion admin et la gestion fiable des boutiqu
 - Fiche produit : réduction des espaces verticaux, titres fluides, description plus compacte et fil d'Ariane réduit sur petit écran pour mieux exposer image, titre, description et prix dans le premier écran. Commits : `f3d166e9`, `01b57daf`.
 - Fichiers concernés : `HeroOffersCarousel.tsx`, `next.config.ts`, `ProductImageGallery.tsx`, `SafeImage.tsx`, `ProductDetail.tsx`, `src/app/p/[partner]/produit/[slug]/page.tsx`.
 - **Validation non exécutée dans cette session** : TypeScript, Vitest, build et contrôle visuel multi-largeurs restent à effectuer localement. La configuration d'images suppose que les photos catalogue sont stockées dans le stockage public du projet Supabase ; si les vignettes restent absentes, la valeur effective de `products.images` devra être contrôlée, car aucune galerie ne peut afficher des fichiers inexistants ou des URL invalides. Aucun merge dans `main`.
+
+
+## Galerie produit carrée et recherche mobile fonctionnelle — 4 novembre 2026
+
+- Galerie produit : cadre principal strictement carré (ratio 1:1), avec une colonne latérale de quatre emplacements de vignettes. La photo principale et les quatre aperçus proviennent de cinq URL distinctes au maximum issues de `products.images` ; aucune photo n'est dupliquée pour remplir la galerie.
+- Sélection d'une vignette : la photo choisie devient la photo principale et les quatre autres vues disponibles sont recalculées dans la colonne latérale. Les emplacements sans photo réelle restent neutres.
+- Rotation automatique entre les cinq premières photos disponibles toutes les 4 secondes. Elle est désactivée si le visiteur préfère réduire les animations et suspendue pendant l'affichage plein écran.
+- Agrandissement : toucher ou cliquer sur la photo principale ouvre un aperçu plein écran ; navigation précédente/suivante, fermeture par bouton ou Échap, et blocage du défilement de la page derrière l'aperçu.
+- Recherche mobile : la loupe du header ouvre désormais un panneau de recherche avec focus initial, suggestions de produits, recherche par nom/code/catégorie/description, accès à tous les résultats et fermeture par bouton, arrière-plan ou Échap. Le bouton reste disponible jusqu'au breakpoint desktop (y compris sur les tablettes où le champ desktop n'est pas affiché).
+- Fichiers : `src/components/product/ProductImageGallery.tsx`, `src/components/catalogue/ProductSearch.tsx`, `src/components/layout/Header.tsx`.
+- Commits : `60697de8` (galerie), `62cbc3a1` (recherche), `15516595` et `b5b8d0e0` (header), `69c8be9c` (accessibilité des vignettes).
+- **À vérifier localement avant validation** : les cinq URL distinctes dans `products.images` pour chaque produit, l'affichage des quatre vignettes sur 320/360/390/430 px et tablette/desktop, la rotation toutes les 4 secondes, l'agrandissement tactile, Échap et les flèches clavier, la recherche depuis la loupe et les suggestions. Exécuter `npx tsc --noEmit`, `npx vitest run` et `npm run build`. Aucun de ces contrôles n'a été exécuté dans cette session.
+- Aucun merge dans `main`.

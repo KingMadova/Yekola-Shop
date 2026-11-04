@@ -10,31 +10,31 @@ export function ProductDetail({ product }: { product: Product }) {
   const vipImmediate = product.pricePublic >= VIP_THRESHOLD;
 
   return (
-    <article className="mx-auto grid max-w-7xl items-start gap-4 px-4 py-3 sm:gap-10 sm:py-8 lg:grid-cols-2 lg:gap-12 lg:px-6">
+    <article className="mx-auto grid min-w-0 max-w-7xl items-start gap-3 px-4 py-2 sm:gap-10 sm:py-8 lg:grid-cols-2 lg:gap-12 lg:px-6">
       <ProductImageGallery key={product.slug} images={product.images} alt={product.name} bestseller={product.isBestSeller} />
 
-      <div className="flex min-w-0 flex-col gap-3 sm:gap-6">
-        <header className="flex flex-col gap-1.5 sm:gap-2">
+      <div className="flex min-w-0 flex-col gap-2.5 sm:gap-6">
+        <header className="flex min-w-0 flex-col gap-1 sm:gap-2">
           <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#9a6a43] sm:text-[11px]">{product.category} <span className="px-1 text-[#d7a47b]">/</span> Réf. {product.code}</p>
-          <h1 className="font-serif text-2xl font-bold leading-tight tracking-tight text-[#30231d] sm:text-4xl">{product.name}</h1>
+          <h1 className="break-words font-serif text-[clamp(1.3rem,5vw,1.6rem)] font-bold leading-tight tracking-tight text-[#30231d] sm:text-4xl">{product.name}</h1>
         </header>
 
         {product.shortDesc && <section aria-labelledby="product-description-title" className="flex flex-col gap-1">
           <h2 id="product-description-title" className="text-xs font-bold uppercase tracking-[0.12em] text-[#9a5430]">Description</h2>
-          <p className="max-w-prose text-sm leading-relaxed text-[#71645d] sm:text-base">{product.shortDesc}</p>
+          <p className="max-w-prose text-xs leading-relaxed text-[#71645d] sm:text-base">{product.shortDesc}</p>
         </section>}
 
-        <section aria-label="Prix du produit" className="flex flex-col gap-1.5 border-y border-[#f0dfd0] py-3 sm:gap-2 sm:py-4">
+        <section aria-label="Prix du produit" className="flex flex-col gap-1 border-y border-[#f0dfd0] py-2.5 sm:gap-2 sm:py-4">
           {vipImmediate ? <>
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              <p className="text-2xl font-extrabold tracking-tight text-[#a9360b] sm:text-4xl">{formatFCFA(product.priceVip)}</p>
+              <p className="text-[1.4rem] font-extrabold tracking-tight text-[#a9360b] sm:text-4xl">{formatFCFA(product.priceVip)}</p>
               <span className="text-sm font-medium text-[#68452f]">Prix client privilégié</span>
             </div>
             <p className="text-xs text-[#71645d] sm:text-sm">Prix public : <s>{formatFCFA(product.compareAtPrice ?? product.pricePublic)}</s></p>
             <p className="w-fit rounded-full bg-[#fff0df] px-3 py-1 text-[11px] font-semibold text-[#9b310d] sm:py-1.5 sm:text-xs">{COPY.vipBadge}</p>
           </> : <>
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              <p className="text-2xl font-extrabold tracking-tight text-[#30231d] sm:text-4xl">{formatFCFA(product.pricePublic)}</p>
+              <p className="text-[1.4rem] font-extrabold tracking-tight text-[#30231d] sm:text-4xl">{formatFCFA(product.pricePublic)}</p>
               <span className="text-xs font-medium text-[#68452f] sm:text-sm">{product.compareAtPrice ? "Prix promotionnel" : "Prix public"}</span>
               {product.compareAtPrice && <s className="text-xs text-[#89796e] sm:text-sm">{formatFCFA(product.compareAtPrice)}</s>}
               {product.compareAtPrice && product.promoBadge && <span className="rounded-full bg-[#c1440e] px-2.5 py-1 text-xs font-bold text-white">{product.promoBadge}</span>}

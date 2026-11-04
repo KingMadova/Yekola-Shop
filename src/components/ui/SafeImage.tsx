@@ -4,7 +4,7 @@ import { ImageOff } from "lucide-react";
 import Image, { type ImageProps } from "next/image";
 import { useState } from "react";
 
-/** next/image avec repli : si la photo est absente ou cassée, on affiche un emplacement neutre au lieu d'une image brisée. */
+/** Image avec repli visuel neutre aux couleurs de la boutique si le chargement échoue. */
 export function SafeImage(props: ImageProps) {
   const [failed, setFailed] = useState(false);
 
@@ -14,7 +14,7 @@ export function SafeImage(props: ImageProps) {
         role={props.alt ? "img" : undefined}
         aria-label={props.alt || undefined}
         aria-hidden={props.alt ? undefined : true}
-        className="absolute inset-0 flex items-center justify-center bg-emerald-50 text-emerald-800"
+        className="absolute inset-0 flex items-center justify-center bg-[#fff0df] text-[#c1440e]"
       >
         <ImageOff aria-hidden className="size-6" />
       </div>

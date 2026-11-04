@@ -1087,3 +1087,14 @@ Ces modules viendront après la connexion admin et la gestion fiable des boutiqu
 - Fichiers modifiés : `ProductImageGallery.tsx`, `ProductDetail.tsx`, `CartPageContent.tsx`.
 - Commits : `fdb4e205`, `76c76c5e`, `abc14aad`. Changements conservés sur `feat/mobile-first-natural-redesign` ; aucun merge dans `main`.
 - **Validation à effectuer localement :** `npx tsc --noEmit`, `npx vitest run`, `npm run build`, puis contrôle visuel à 320/360/390/430 px. Vérifier la rotation 4 s, la présence des vignettes avec 1 et plusieurs images, la description et le prix dans le premier écran, ainsi que l'état vide après avoir vidé le panier. Aucun résultat de test ni contrôle navigateur n'est présumé.
+
+
+## Correctif d'affichage des vignettes produit — 4 novembre 2026
+
+- Retour sur la galerie après signalement utilisateur : l'intégration des vignettes en superposition dans la zone image ne garantissait pas une visibilité suffisante sur mobile.
+- Les vignettes sont désormais rendues dans une rangée distincte, immédiatement sous l'image principale, hors du conteneur avec débordement masqué. Elles ne peuvent donc plus être recouvertes par la photo principale.
+- Rangée responsive en grille de cinq colonnes, avec état actif orange, compteur de photos et boutons accessibles. Les cinq premières images sont visibles ; la navigation par flèches et la rotation automatique de 4 secondes continuent de parcourir la galerie.
+- Ajout d'un sélecteur stable `data-testid="product-thumbnails"` pour faciliter les tests automatisés.
+- Fichier modifié : `src/components/product/ProductImageGallery.tsx`.
+- Commit : `a175a1d3`, toujours sur `feat/mobile-first-natural-redesign`, sans fusion dans `main`.
+- Validation à effectuer : TypeScript, tests, build et contrôle navigateur mobile. Si aucune vignette ne s'affiche après ce changement, vérifier le contenu réel de `products.images` dans Supabase : la galerie ne peut présenter que les images réellement enregistrées pour ce produit.

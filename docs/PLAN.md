@@ -1107,3 +1107,15 @@ Ces modules viendront après la connexion admin et la gestion fiable des boutiqu
 - Diagnostic galerie : le composant ne rend aucune rangée de vignettes lorsque `product.images` est vide. Les URL proviennent directement de `products.images` dans Supabase via `parseProductRows` et `buildCatalog`. Il faut contrôler les données réelles et les erreurs de chargement avant de modifier davantage le CSS ou d'inventer des images.
 - Diagnostic mobile physique : le rendu sur navigateur émulateur ne valide pas le comportement tactile et les dimensions du téléphone réel. Contrôle à poursuivre avec le modèle du téléphone, le navigateur utilisé et une capture d'écran du rendu physique.
 - Validation TypeScript, Vitest, build et tests sur appareil non effectués dans cette session ; ne pas considérer les corrections comme validées.
+
+
+## Reprise mobile-first transversale — 4 novembre 2026
+
+- Décision UX/technique : ne pas cibler un modèle de téléphone ni un navigateur précis. Les composants doivent s'adapter aux largeurs, hauteurs, densités et capacités variables avec des règles fluides, des contrôles tactiles, des images dimensionnées et une dégradation accessible.
+- Hero : suppression également du libellé « Sélection de la boutique » qui subsistait dans l'en-tête du carrousel « Nos offres du moment ». Le titre du carrousel est maintenant direct ; les commandes et indicateurs tactiles ont une zone d'interaction minimale de 44 px. Commit : `efb39fce`.
+- Images distantes : configuration de `next/image` pour autoriser les images publiques du projet Supabase, en dérivant le protocole et l'hôte de `NEXT_PUBLIC_SUPABASE_URL`. Cela corrige le cas des URL Supabase rejetées par la configuration distante vide précédente. Commit : `b5208e5e`.
+- Galerie produit : toutes les images non vides sont maintenant accessibles dans un rail horizontal tactile (au lieu de limiter les vignettes visibles aux cinq premières). La vignette active est amenée dans la zone visible ; hauteur de l'image principale fluide et réduite sur mobile, cibles tactiles conservées. Commits : `4dc648f5`, `46fc84ea`, `1698712e`.
+- Repli image : remplacement des couleurs vertes résiduelles par la palette orange/ivoire. Commit : `4e37abb7`.
+- Fiche produit : réduction des espaces verticaux, titres fluides, description plus compacte et fil d'Ariane réduit sur petit écran pour mieux exposer image, titre, description et prix dans le premier écran. Commits : `f3d166e9`, `01b57daf`.
+- Fichiers concernés : `HeroOffersCarousel.tsx`, `next.config.ts`, `ProductImageGallery.tsx`, `SafeImage.tsx`, `ProductDetail.tsx`, `src/app/p/[partner]/produit/[slug]/page.tsx`.
+- **Validation non exécutée dans cette session** : TypeScript, Vitest, build et contrôle visuel multi-largeurs restent à effectuer localement. La configuration d'images suppose que les photos catalogue sont stockées dans le stockage public du projet Supabase ; si les vignettes restent absentes, la valeur effective de `products.images` devra être contrôlée, car aucune galerie ne peut afficher des fichiers inexistants ou des URL invalides. Aucun merge dans `main`.

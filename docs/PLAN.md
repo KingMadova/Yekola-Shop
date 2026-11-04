@@ -1188,3 +1188,24 @@ Audit statique du dépôt sur la branche `feat/mobile-first-natural-redesign`, c
 - Ne pas utiliser de vraies données clients pour les tests de création/modification/suppression ; préférer des données de test identifiables et réversibles.
 - Après chaque étape, mettre à jour ce plan avec les fichiers touchés, les résultats réellement obtenus et les contrôles encore en attente.
 
+## Fiabilisation du CRUD boutiques — code poussé, validation locale en attente — 4 novembre 2026
+
+Modifications réalisées sur `feat/mobile-first-natural-redesign` :
+
+- La page `/admin/boutiques/[id]` réutilise maintenant `AdminShell` avec l'entrée « Boutiques » active. L'en-tête, la navigation et la déconnexion sont donc présents comme sur les autres pages d'administration.
+- `updatePartnerStore` demande maintenant à Supabase de retourner l'identifiant et le slug de la ligne modifiée. Si aucune boutique partenaire n'est affectée (identifiant inexistant ou boutique maison protégée), l'action renvoie une erreur au lieu d'afficher un succès. Le slug retourné sert à invalider le cache de la boutique publique.
+- `updatePartnerStoreStatus` valide les statuts source et cible, exige le statut courant transmis par le formulaire et applique une mise à jour conditionnelle sur `id`, `is_house = false` et le statut courant. Elle vérifie également qu'une ligne a effectivement été modifiée et invalide la page publique concernée.
+- Nouveau composant `StoreStatusForm` partagé par les vues mobile et desktop : confirmation explicite avant activation/suspension, désactivation du bouton pendant l'envoi et protection contre un formulaire obsolète grâce au statut courant.
+- Nouveau composant `StoreSubmitButton` : état « Enregistrement… » et désactivation pendant la soumission du formulaire de création/modification.
+- La création conserve le statut initial `pending`. La boutique maison reste exclue des actions de modification et de changement de statut.
+
+Fichiers concernés :
+- `src/app/admin/boutiques/actions.ts`
+- `src/app/admin/boutiques/[id]/page.tsx`
+- `src/app/admin/boutiques/page.tsx`
+- `src/app/admin/boutiques/form.tsx`
+- `src/app/admin/boutiques/store-status-form.tsx` (nouveau)
+- `src/app/admin/boutiques/submit-button.tsx` (nouveau)
+
+**État de validation :** les changements sont enregistrés sur GitHub, mais aucun contrôle TypeScript, Vitest, build, test navigateur ou mutation Supabase n'a été exécuté par cette session. Ne pas déclarer le CRUD terminé avant les vérifications locales et les tests réels contrôlés. Aucun changement dans `main`.
+

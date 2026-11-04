@@ -31,13 +31,10 @@ export function HeroOffersCarousel({ products }: { products: Product[] }) {
   return (
     <div className="w-full min-w-0" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} onFocusCapture={() => setPaused(true)} onBlurCapture={() => setPaused(false)}>
       <div className="mb-1.5 flex items-center justify-between gap-2 px-1 text-white sm:mb-2">
-        <div>
-          <p className="text-[9px] font-extrabold uppercase tracking-[0.16em] text-white/90 sm:text-[10px]">Sélection de la boutique</p>
-          <h2 className="text-sm font-extrabold sm:text-base">Nos offres du moment</h2>
-        </div>
+        <h2 className="text-sm font-extrabold sm:text-base">Nos offres du moment</h2>
         {count > 1 && <div className="hidden gap-1.5 sm:flex">
-          <button type="button" onClick={() => goTo(activeIndex - 1)} aria-label="Offre précédente" className="grid size-8 place-items-center rounded-full border border-white/50 bg-white/10 hover:bg-white/20"><ArrowLeft className="size-4" /></button>
-          <button type="button" onClick={() => goTo(activeIndex + 1)} aria-label="Offre suivante" className="grid size-8 place-items-center rounded-full border border-white/50 bg-white/10 hover:bg-white/20"><ArrowRight className="size-4" /></button>
+          <button type="button" onClick={() => goTo(activeIndex - 1)} aria-label="Offre précédente" className="grid size-11 place-items-center rounded-full border border-white/50 bg-white/10 hover:bg-white/20"><ArrowLeft className="size-4" /></button>
+          <button type="button" onClick={() => goTo(activeIndex + 1)} aria-label="Offre suivante" className="grid size-11 place-items-center rounded-full border border-white/50 bg-white/10 hover:bg-white/20"><ArrowRight className="size-4" /></button>
         </div>}
       </div>
       <div
@@ -74,7 +71,9 @@ export function HeroOffersCarousel({ products }: { products: Product[] }) {
         })}
       </div>
       {count > 1 && <div className="mt-2 flex items-center justify-center gap-1.5" aria-label={`Offre ${activeIndex + 1} sur ${count}`}>
-        {products.map((product, index) => <button key={product.code} type="button" onClick={() => goTo(index)} aria-label={`Afficher l'offre ${index + 1}`} aria-current={index === activeIndex ? "true" : undefined} className={`h-1.5 rounded-full transition-all ${index === activeIndex ? "w-5 bg-white" : "w-1.5 bg-white/55"}`} />)}
+        {products.map((product, index) => <button key={product.code} type="button" onClick={() => goTo(index)} aria-label={`Afficher l'offre ${index + 1}`} aria-current={index === activeIndex ? "true" : undefined} className={`inline-flex min-h-8 min-w-8 items-center justify-center rounded-full transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white `}>
+          <span className={`h-1.5 rounded-full transition-all ${index === activeIndex ? "w-5 bg-white" : "w-1.5 bg-white/55"}`} />
+        </button>)}
       </div>}
     </div>
   );

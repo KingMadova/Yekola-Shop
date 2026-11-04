@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/admin";
+import { createAdminClient } from "@/lib/supabase/admin";
 import AdminShell from "../../admin-shell";
 import PartnerStoreForm from "../form";
 
@@ -9,10 +10,15 @@ type Params = Promise<{ id: string }>;
 type SearchParams = Promise<{ erreur?: string }>;
 
 export default async function EditPartnerStorePage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
-  const [{ id }, query, { supabase, user }] = await Promise.all([params, searchParams, requireAdmin()]);
+  const [{ id }, query, { user }] = await Promise.all([params, searchParams, requireAdmin()]);
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
 
-  const { data: store, error } = await supabase.from("partners")
+  // La page est déjà protégée par requireAdmin(). Utiliser le client serveur
+  // privilégié comme les actions CRUD, sans exposer service_role au navigateur.
+  const adminClient = createAdminClient();
+  if (!adminClient) throw new Error("La clé serveur Supabase est absente. Vérifiez SUPABASE_SERVICE_ROLE_KEY.");
+
+  const { data: store, error } = await adminClient.from("partners")
     .select("id,slug,display_name,whatsapp_number,email,fbo_id,city,is_house")
     .eq("id", id)
     .maybeSingle();

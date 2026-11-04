@@ -38,9 +38,9 @@ export default function AdminShell({ children, active, email }: AdminShellProps)
         <div className="mx-auto flex max-w-md items-center justify-around">
           {navItems.map(item => {
             const selected = active === item.key || (active === "create" && item.key === "stores");
-            return <Link key={item.key} href={item.href} className={`flex min-w-24 flex-col items-center gap-1 rounded-xl px-4 py-1.5 text-[11px] font-bold ${selected ? "text-emerald-900" : "text-slate-400"}`}><span className={`grid size-8 place-items-center rounded-xl text-xl ${selected ? "bg-emerald-100" : "bg-transparent"}`}>{item.icon}</span>{item.short}</Link>;
+            return <Link key={item.key} href={item.href} className={`flex min-w-0 flex-1 flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[11px] font-bold ${selected ? "text-emerald-900" : "text-slate-400"}`}><span className={`grid size-8 place-items-center rounded-xl text-xl ${selected ? "bg-emerald-100" : "bg-transparent"}`}>{item.icon}</span>{item.short}</Link>;
           })}
-          <div className="flex min-w-20 flex-col items-center gap-1"><span className="grid size-8 place-items-center rounded-xl bg-slate-50 text-lg text-slate-500">↪</span><AdminSignOut compact /></div>
+          <div className="flex min-w-0 flex-1 flex-col items-center gap-1"><span className="grid size-8 place-items-center rounded-xl bg-slate-50 text-lg text-slate-500">↪</span><AdminSignOut compact /></div>
         </div>
       </nav>
     </div>

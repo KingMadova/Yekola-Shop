@@ -51,7 +51,7 @@ export function ProductImageGallery({ images, alt, bestseller = false }: Product
 
   if (!active) {
     return (
-      <div role="img" aria-label={`Photo de ${alt} bientôt disponible`} className="flex h-[clamp(220px,65vw,320px)] min-w-0 items-center justify-center rounded-3xl border border-dashed border-[#f2d7c2] bg-[#fff5e9] text-[#c1440e] lg:aspect-[4/5] lg:h-auto">
+      <div role="img" aria-label={`Photo de ${alt} bientôt disponible`} className="flex h-[clamp(170px,48vw,240px)] min-w-0 items-center justify-center rounded-3xl border border-dashed border-[#f2d7c2] bg-[#fff5e9] text-[#c1440e] lg:aspect-[4/5] lg:h-auto">
         <div className="flex flex-col items-center gap-2 px-4 text-center">
           <ImageOff aria-hidden className="size-10" />
           <span className="text-xs font-medium">Photos bientôt disponibles</span>
@@ -61,7 +61,7 @@ export function ProductImageGallery({ images, alt, bestseller = false }: Product
   }
 
   return (
-    <div className="flex min-w-0 flex-col gap-3">
+    <div className="flex min-w-0 flex-col gap-2 sm:gap-3">
       <div className="relative h-[clamp(220px,65vw,320px)] min-h-0 w-full overflow-hidden rounded-3xl border border-[#f2d7c2] bg-[#fff9f3] sm:h-[360px] lg:aspect-[4/5] lg:h-auto">
         <SafeImage key={active} src={active} alt={alt} fill priority={activeIndex === 0} sizes="(min-width: 1024px) 560px, (min-width: 640px) 90vw, 100vw" className="object-contain p-3" />
         {bestseller && <span className="absolute left-3 top-3 z-10 rounded-full bg-[#f6e5c8] px-3 py-1.5 text-xs font-bold text-[#68451d] shadow-sm">Bestseller</span>}
@@ -74,9 +74,9 @@ export function ProductImageGallery({ images, alt, bestseller = false }: Product
         </>}
       </div>
 
-      <div ref={thumbnailRail} role="group" aria-label="Vignettes des photos du produit" data-testid="product-thumbnails" className="flex w-full min-w-0 gap-2 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:thin]">
+      <div ref={thumbnailRail} role="group" aria-label="Vignettes des photos du produit" data-testid="product-thumbnails" className="flex w-full min-w-0 gap-2 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:thin] [scrollbar-color:#d8a78a_transparent]">
         {galleryImages.map((src, index) => (
-          <button key={`${src}-${index}`} data-image-index={index} type="button" onClick={() => setActiveIndex(index)} aria-label={`Afficher la photo ${index + 1} sur ${galleryImages.length}`} aria-current={index === activeIndex ? "true" : undefined} className={`relative size-16 shrink-0 touch-manipulation overflow-hidden rounded-xl border-2 bg-white shadow-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c1440e] sm:size-[72px] ${index === activeIndex ? "border-[#c1440e] opacity-100" : "border-[#f2d7c2] opacity-80"}`}>
+          <button key={`${src}-${index}`} data-image-index={index} type="button" onClick={() => setActiveIndex(index)} aria-label={`Afficher la photo ${index + 1} sur ${galleryImages.length}`} aria-current={index === activeIndex ? "true" : undefined} className={`relative size-14 shrink-0 touch-manipulation overflow-hidden rounded-xl border-2 bg-white shadow-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c1440e] sm:size-[72px] ${index === activeIndex ? "border-[#c1440e] opacity-100" : "border-[#f2d7c2] opacity-80"}`}>
             <SafeImage src={src} alt="" fill sizes="72px" className="object-contain p-1" />
           </button>
         ))}

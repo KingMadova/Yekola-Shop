@@ -1209,3 +1209,14 @@ Fichiers concernés :
 
 **État de validation :** les changements sont enregistrés sur GitHub, mais aucun contrôle TypeScript, Vitest, build, test navigateur ou mutation Supabase n'a été exécuté par cette session. Ne pas déclarer le CRUD terminé avant les vérifications locales et les tests réels contrôlés. Aucun changement dans `main`.
 
+
+
+## Correctif 404 de la page de modification boutique — 4 novembre 2026
+
+- La boutique `medhine` (UUID `4c2d3666-e46d-44d4-b5bf-ae1ac490bbc2`) a été confirmée présente dans `public.partners`, avec `is_house = false` et `status = active`.
+- Diagnostic de code : la page d'édition effectuait sa lecture avec le client Supabase authentifié, alors que les mutations administratives utilisent le client serveur. La page transformait aussi toute erreur de lecture en 404 (`notFound()`), masquant la cause réelle.
+- Correctif : après le contrôle d'accès obligatoire `requireAdmin()`, la page charge désormais la boutique avec `createAdminClient()`, alignée sur les actions CRUD. Le client privilégié reste exclusivement côté serveur ; la clé `service_role` n'est jamais envoyée au navigateur. La boutique maison reste refusée par la page.
+- Fichier modifié : `src/app/admin/boutiques/[id]/page.tsx`.
+- Commit : ecb162e984998ff337d73b2ffff32a05dd9b0b9e.
+- **Validation à faire localement :** récupérer la branche, exécuter TypeScript, Vitest et build, puis ouvrir `/admin/boutiques/4c2d3666-e46d-44d4-b5bf-ae1ac490bbc2`. Vérifier le chargement du formulaire et confirmer qu'aucune mutation n'est déclenchée à l'ouverture. Le résultat navigateur n'est pas encore connu.
+- Aucun changement dans `main`.

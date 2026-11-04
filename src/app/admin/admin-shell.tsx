@@ -4,13 +4,14 @@ import AdminSignOut from "./sign-out";
 
 type AdminShellProps = {
   children: ReactNode;
-  active: "dashboard" | "stores" | "create";
+  active: "dashboard" | "stores" | "create" | "leads";
   email?: string;
 };
 
 const navItems = [
   { href: "/admin", label: "Accueil", short: "Accueil", icon: "⌂", key: "dashboard" },
   { href: "/admin/boutiques", label: "Boutiques", short: "Boutiques", icon: "▦", key: "stores" },
+  { href: "/admin/leads", label: "Demandes clients", short: "Demandes", icon: "◎", key: "leads" },
 ] as const;
 
 export default function AdminShell({ children, active, email }: AdminShellProps) {
